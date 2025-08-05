@@ -1,0 +1,331 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 0,
+ "autoname": "CLICK-.YYYY.MM.DD.-.#####",
+ "creation": "2024-01-15 10:50:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_info_section",
+  "tracked_link",
+  "campaign",
+  "visitor_id",
+  "column_break_4",
+  "click_timestamp",
+  "processing_time_ms",
+  "session_id",
+  "visitor_info_section",
+  "ip_address",
+  "user_agent",
+  "referrer",
+  "column_break_10",
+  "device_type",
+  "browser",
+  "os",
+  "device_info_html",
+  "location_section",
+  "country",
+  "country_code",
+  "region",
+  "city",
+  "column_break_19",
+  "latitude",
+  "longitude",
+  "timezone",
+  "isp",
+  "tracking_data_section",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "column_break_28",
+  "landing_page",
+  "page_title",
+  "query_parameters",
+  "conversion_section",
+  "led_to_conversion",
+  "conversion_value",
+  "conversion_type",
+  "time_to_conversion"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_info_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "tracked_link",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tracked Link",
+   "options": "Tracked Link",
+   "reqd": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Link Campaign",
+   "reqd": 1
+  },
+  {
+   "fieldname": "visitor_id",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Visitor ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "click_timestamp",
+   "fieldtype": "Datetime",
+   "label": "Click Timestamp",
+   "reqd": 1
+  },
+  {
+   "fieldname": "processing_time_ms",
+   "fieldtype": "Int",
+   "label": "Processing Time (ms)"
+  },
+  {
+   "fieldname": "session_id",
+   "fieldtype": "Data",
+   "label": "Session ID"
+  },
+  {
+   "fieldname": "visitor_info_section",
+   "fieldtype": "Section Break",
+   "label": "Visitor Information"
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "user_agent",
+   "fieldtype": "Text",
+   "label": "User Agent"
+  },
+  {
+   "fieldname": "referrer",
+   "fieldtype": "Text",
+   "label": "Referrer"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "device_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Device Type",
+   "options": "Desktop\nMobile\nTablet\nBot\nUnknown"
+  },
+  {
+   "fieldname": "browser",
+   "fieldtype": "Data",
+   "label": "Browser"
+  },
+  {
+   "fieldname": "os",
+   "fieldtype": "Data",
+   "label": "Operating System"
+  },
+  {
+   "fieldname": "device_info_html",
+   "fieldtype": "HTML",
+   "label": "Device Info"
+  },
+  {
+   "fieldname": "location_section",
+   "fieldtype": "Section Break",
+   "label": "Location Information"
+  },
+  {
+   "fieldname": "country",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Country"
+  },
+  {
+   "fieldname": "country_code",
+   "fieldtype": "Data",
+   "label": "Country Code",
+   "length": 2
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Data",
+   "label": "Region/State"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "latitude",
+   "fieldtype": "Float",
+   "label": "Latitude",
+   "precision": 6
+  },
+  {
+   "fieldname": "longitude",
+   "fieldtype": "Float",
+   "label": "Longitude",
+   "precision": 6
+  },
+  {
+   "fieldname": "timezone",
+   "fieldtype": "Data",
+   "label": "Timezone"
+  },
+  {
+   "fieldname": "isp",
+   "fieldtype": "Data",
+   "label": "ISP"
+  },
+  {
+   "fieldname": "tracking_data_section",
+   "fieldtype": "Section Break",
+   "label": "Tracking Data"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "UTM Source"
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "UTM Medium"
+  },
+  {
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "UTM Campaign"
+  },
+  {
+   "fieldname": "utm_term",
+   "fieldtype": "Data",
+   "label": "UTM Term"
+  },
+  {
+   "fieldname": "utm_content",
+   "fieldtype": "Data",
+   "label": "UTM Content"
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "landing_page",
+   "fieldtype": "Text",
+   "label": "Landing Page"
+  },
+  {
+   "fieldname": "page_title",
+   "fieldtype": "Data",
+   "label": "Page Title"
+  },
+  {
+   "fieldname": "query_parameters",
+   "fieldtype": "JSON",
+   "label": "Query Parameters"
+  },
+  {
+   "fieldname": "conversion_section",
+   "fieldtype": "Section Break",
+   "label": "Conversion Information"
+  },
+  {
+   "default": "0",
+   "fieldname": "led_to_conversion",
+   "fieldtype": "Check",
+   "label": "Led to Conversion"
+  },
+  {
+   "fieldname": "conversion_value",
+   "fieldtype": "Currency",
+   "label": "Conversion Value"
+  },
+  {
+   "fieldname": "conversion_type",
+   "fieldtype": "Data",
+   "label": "Conversion Type"
+  },
+  {
+   "fieldname": "time_to_conversion",
+   "fieldtype": "Duration",
+   "label": "Time to Conversion"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-15 10:50:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "Click Event",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 0
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow Manager",
+   "share": 1,
+   "write": 0
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 1,
+   "print": 0,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "visitor_id,campaign,tracked_link",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 0
+}
