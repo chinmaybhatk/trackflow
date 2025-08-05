@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "CONV-.YYYY.MM.DD.-.#####",
+ "creation": "2024-01-15 11:20:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "conversion_details_section",
+  "click_event",
+  "tracked_link",
+  "campaign",
+  "column_break_4",
+  "visitor_id",
+  "conversion_timestamp",
+  "time_to_conversion",
+  "conversion_info_section",
+  "conversion_type",
+  "conversion_value",
+  "column_break_11",
+  "conversion_status",
+  "attribution_model",
+  "attribution_weight",
+  "source_data_section",
+  "source_type",
+  "source_document",
+  "source_doctype",
+  "column_break_18",
+  "lead",
+  "contact",
+  "deal",
+  "metadata_section",
+  "conversion_metadata"
+ ],
+ "fields": [
+  {
+   "fieldname": "conversion_details_section",
+   "fieldtype": "Section Break",
+   "label": "Conversion Details"
+  },
+  {
+   "fieldname": "click_event",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Click Event",
+   "options": "Click Event",
+   "reqd": 1
+  },
+  {
+   "fieldname": "tracked_link",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Tracked Link",
+   "options": "Tracked Link",
+   "reqd": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Link Campaign",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "visitor_id",
+   "fieldtype": "Data",
+   "label": "Visitor ID",
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversion_timestamp",
+   "fieldtype": "Datetime",
+   "label": "Conversion Timestamp",
+   "reqd": 1
+  },
+  {
+   "fieldname": "time_to_conversion",
+   "fieldtype": "Duration",
+   "label": "Time to Conversion",
+   "read_only": 1
+  },
+  {
+   "fieldname": "conversion_info_section",
+   "fieldtype": "Section Break",
+   "label": "Conversion Information"
+  },
+  {
+   "fieldname": "conversion_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Conversion Type",
+   "options": "Lead\nSign Up\nPurchase\nSubscription\nDownload\nDemo Request\nContact Form\nCustom",
+   "reqd": 1
+  },
+  {
+   "fieldname": "conversion_value",
+   "fieldtype": "Currency",
+   "in_list_view": 1,
+   "label": "Conversion Value"
+  },
+  {
+   "fieldname": "column_break_11",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "conversion_status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Pending\nConfirmed\nRejected"
+  },
+  {
+   "fieldname": "attribution_model",
+   "fieldtype": "Link",
+   "label": "Attribution Model",
+   "options": "Attribution Model"
+  },
+  {
+   "default": "1.0",
+   "fieldname": "attribution_weight",
+   "fieldtype": "Float",
+   "label": "Attribution Weight",
+   "precision": 2
+  },
+  {
+   "fieldname": "source_data_section",
+   "fieldtype": "Section Break",
+   "label": "Source Data"
+  },
+  {
+   "fieldname": "source_type",
+   "fieldtype": "Select",
+   "label": "Source Type",
+   "options": "Direct\nOrganic\nReferral\nPaid\nSocial\nEmail"
+  },
+  {
+   "fieldname": "source_document",
+   "fieldtype": "Dynamic Link",
+   "label": "Source Document",
+   "options": "source_doctype"
+  },
+  {
+   "fieldname": "source_doctype",
+   "fieldtype": "Link",
+   "label": "Source DocType",
+   "options": "DocType"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "lead",
+   "fieldtype": "Link",
+   "label": "Lead",
+   "options": "Lead"
+  },
+  {
+   "fieldname": "contact",
+   "fieldtype": "Link",
+   "label": "Contact",
+   "options": "Contact"
+  },
+  {
+   "fieldname": "deal",
+   "fieldtype": "Link",
+   "label": "Deal",
+   "options": "Deal"
+  },
+  {
+   "fieldname": "metadata_section",
+   "fieldtype": "Section Break",
+   "label": "Metadata"
+  },
+  {
+   "fieldname": "conversion_metadata",
+   "fieldtype": "JSON",
+   "label": "Conversion Metadata"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-15 11:20:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "Link Conversion",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 0,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 0,
+   "delete": 0,
+   "email": 0,
+   "export": 1,
+   "print": 0,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow User",
+   "share": 0,
+   "write": 0
+  }
+ ],
+ "search_fields": "visitor_id,conversion_type,campaign",
+ "sort_field": "conversion_timestamp",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
