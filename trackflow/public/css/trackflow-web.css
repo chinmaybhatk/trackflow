@@ -1,0 +1,51 @@
+/* TrackFlow Web Tracking Styles */
+
+/* Tracking pixel */
+.trackflow-pixel {
+    display: none;
+    width: 1px;
+    height: 1px;
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+
+/* Tracked link indicators */
+a[data-trackflow] {
+    position: relative;
+}
+
+a[data-trackflow]:hover::after {
+    content: attr(data-trackflow-campaign);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+/* TrackFlow badge */
+.trackflow-badge {
+    display: inline-flex;
+    align-items: center;
+    background: #f0f4ff;
+    color: #2563eb;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    margin-left: 4px;
+}
+
+.trackflow-badge svg {
+    width: 12px;
+    height: 12px;
+    margin-right: 4px;
+}

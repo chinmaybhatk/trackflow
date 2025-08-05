@@ -1,375 +1,186 @@
-// TrackFlow Main JavaScript
+// Copyright (c) 2024, Chinmay Bhat and contributors
+// For license information, please see license.txt
 
-// TrackFlow namespace
-window.TrackFlow = window.TrackFlow || {};
+// TrackFlow Dashboard Scripts
+frappe.provide('trackflow');
 
-(function(TrackFlow) {
-    'use strict';
-
-    // Configuration
-    TrackFlow.config = {
-        apiEndpoint: '/api/method/trackflow.api',
-        refreshInterval: 30000, // 30 seconds
-        chartColors: {
-            primary: '#2490ef',
-            secondary: '#5f6368',
-            success: '#00c853',
-            warning: '#ff9800',
-            danger: '#f44336'
-        }
-    };
-
-    // Utility functions
-    TrackFlow.utils = {
-        // Format numbers with commas
-        formatNumber: function(num) {
-            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        },
-
-        // Format percentage
-        formatPercent: function(num, decimals = 1) {
-            return num.toFixed(decimals) + '%';
-        },
-
-        // Copy to clipboard
-        copyToClipboard: function(text) {
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(text).then(function() {
+trackflow = {
+    init: function() {
+        // Initialize TrackFlow features
+        this.setup_realtime();
+        this.setup_shortcuts();
+    },
+    
+    setup_realtime: function() {
+        // Listen for real-time campaign alerts
+        frappe.realtime.on('trackflow_campaign_alert', function(data) {
+            frappe.show_alert({
+                message: data.message,
+                indicator: 'orange'
+            });
+        });
+    },
+    
+    setup_shortcuts: function() {
+        // Add keyboard shortcuts
+        frappe.ui.keys.add_shortcut({
+            shortcut: 'ctrl+shift+t',
+            action: () => {
+                frappe.set_route('List', 'Tracked Link');
+            },
+            description: __('Go to Tracked Links')
+        });
+    },
+    
+    create_tracked_link: function(opts) {
+        // Quick create tracked link
+        frappe.prompt([
+            {
+                label: 'Link Name',
+                fieldname: 'link_name',
+                fieldtype: 'Data',
+                reqd: 1
+            },
+            {
+                label: 'Destination URL',
+                fieldname: 'destination_url',
+                fieldtype: 'Data',
+                reqd: 1
+            },
+            {
+                label: 'Campaign',
+                fieldname: 'campaign',
+                fieldtype: 'Link',
+                options: 'Link Campaign'
+            },
+            {
+                label: 'UTM Source',
+                fieldname: 'utm_source',
+                fieldtype: 'Data'
+            },
+            {
+                label: 'UTM Medium',
+                fieldname: 'utm_medium',
+                fieldtype: 'Data'
+            }
+        ], (values) => {
+            frappe.call({
+                method: 'frappe.client.insert',
+                args: {
+                    doc: {
+                        doctype: 'Tracked Link',
+                        ...values
+                    }
+                },
+                callback: (r) => {
+                    if (r.exc) return;
+                    
                     frappe.show_alert({
-                        message: __('Copied to clipboard'),
+                        message: __('Tracked link created'),
                         indicator: 'green'
                     });
-                });
-            } else {
-                // Fallback for older browsers
-                const textarea = document.createElement('textarea');
-                textarea.value = text;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
+                    
+                    // Copy short URL to clipboard
+                    let short_url = frappe.utils.get_url() + '/r/' + r.message.short_code;
+                    trackflow.copy_to_clipboard(short_url);
+                }
+            });
+        }, __('Create Tracked Link'), __('Create'));
+    },
+    
+    copy_to_clipboard: function(text) {
+        // Copy text to clipboard
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
                 frappe.show_alert({
-                    message: __('Copied to clipboard'),
+                    message: __('Short URL copied to clipboard'),
                     indicator: 'green'
                 });
-            }
-        },
-
-        // Debounce function
-        debounce: function(func, wait) {
-            let timeout;
-            return function executedFunction(...args) {
-                const later = () => {
-                    clearTimeout(timeout);
-                    func(...args);
-                };
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-            };
-        },
-
-        // Generate QR Code
-        generateQRCode: function(text, container, size = 200) {
-            if (typeof QRCode !== 'undefined') {
-                new QRCode(container, {
-                    text: text,
-                    width: size,
-                    height: size,
-                    colorDark: '#000000',
-                    colorLight: '#ffffff',
-                    correctLevel: QRCode.CorrectLevel.H
+            });
+        } else {
+            // Fallback for older browsers
+            let temp = $('<input>');
+            $('body').append(temp);
+            temp.val(text).select();
+            document.execCommand('copy');
+            temp.remove();
+            
+            frappe.show_alert({
+                message: __('Short URL copied to clipboard'),
+                indicator: 'green'
+            });
+        }
+    },
+    
+    show_analytics: function(campaign) {
+        // Show campaign analytics in modal
+        frappe.call({
+            method: 'trackflow.api.analytics.get_analytics',
+            args: {
+                campaign: campaign
+            },
+            callback: (r) => {
+                if (r.exc) return;
+                
+                let dialog = new frappe.ui.Dialog({
+                    title: __('Campaign Analytics'),
+                    fields: [
+                        {
+                            fieldtype: 'HTML',
+                            fieldname: 'analytics_html'
+                        }
+                    ]
                 });
-            } else {
-                console.warn('QRCode library not loaded');
-            }
-        }
-    };
-
-    // API functions
-    TrackFlow.api = {
-        // Call TrackFlow API
-        call: function(method, args = {}) {
-            return frappe.call({
-                method: `trackflow.api.${method}`,
-                args: args
-            });
-        },
-
-        // Get dashboard stats
-        getDashboardStats: function(filters = {}) {
-            return this.call('get_dashboard_stats', { filters });
-        },
-
-        // Get click analytics
-        getClickAnalytics: function(link_id, filters = {}) {
-            return this.call('get_click_analytics', { link_id, filters });
-        },
-
-        // Generate short link
-        generateShortLink: function(data) {
-            return this.call('generate_short_link', { data });
-        },
-
-        // Get campaign performance
-        getCampaignPerformance: function(campaign_id, filters = {}) {
-            return this.call('get_campaign_performance', { campaign_id, filters });
-        }
-    };
-
-    // UI Components
-    TrackFlow.ui = {
-        // Show loading state
-        showLoading: function(container) {
-            $(container).html(`
-                <div class="tf-loading">
-                    <div class="spinner"></div>
-                </div>
-            `);
-        },
-
-        // Show empty state
-        showEmptyState: function(container, options = {}) {
-            const defaults = {
-                icon: 'fa fa-inbox',
-                title: 'No data found',
-                description: 'There is no data to display at the moment.',
-                buttonText: '',
-                buttonAction: null
-            };
-            
-            const config = Object.assign(defaults, options);
-            
-            let html = `
-                <div class="tf-empty-state">
-                    <div class="icon"><i class="${config.icon}"></i></div>
-                    <div class="title">${config.title}</div>
-                    <div class="description">${config.description}</div>
-            `;
-            
-            if (config.buttonText && config.buttonAction) {
-                html += `<button class="btn btn-primary" onclick="${config.buttonAction}">${config.buttonText}</button>`;
-            }
-            
-            html += '</div>';
-            
-            $(container).html(html);
-        },
-
-        // Render stats card
-        renderStatsCard: function(data) {
-            const changeClass = data.change >= 0 ? 'positive' : 'negative';
-            const changeIcon = data.change >= 0 ? 'fa-arrow-up' : 'fa-arrow-down';
-            
-            return `
-                <div class="tf-stats-card">
-                    <div class="title">${data.title}</div>
-                    <div class="value">${TrackFlow.utils.formatNumber(data.value)}</div>
-                    ${data.change !== undefined ? `
-                        <div class="change ${changeClass}">
-                            <i class="fa ${changeIcon}"></i>
-                            <span>${Math.abs(data.change)}%</span>
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        },
-
-        // Render link preview
-        renderLinkPreview: function(link) {
-            const shortUrl = `${window.location.origin}/r/${link.short_code}`;
-            
-            return `
-                <div class="tf-link-preview">
-                    <div class="short-url">
-                        <input type="text" value="${shortUrl}" readonly id="link-${link.name}">
-                        <button class="btn-copy" onclick="TrackFlow.utils.copyToClipboard('${shortUrl}')">
-                            <i class="fa fa-copy"></i> Copy
-                        </button>
-                    </div>
-                    <div class="destination">
-                        <i class="fa fa-external-link"></i> ${link.destination_url}
-                    </div>
-                    ${link.qr_code ? `
-                        <div class="tf-qr-code" id="qr-${link.name}"></div>
-                    ` : ''}
-                </div>
-            `;
-        }
-    };
-
-    // Chart functions
-    TrackFlow.charts = {
-        // Initialize chart defaults
-        init: function() {
-            if (typeof Chart !== 'undefined') {
-                Chart.defaults.global.defaultFontFamily = 'Inter, system-ui, sans-serif';
-                Chart.defaults.global.defaultFontColor = '#5f6368';
-            }
-        },
-
-        // Render line chart
-        renderLineChart: function(container, data, options = {}) {
-            const ctx = $(container)[0].getContext('2d');
-            
-            const defaults = {
-                type: 'line',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }]
-                    },
-                    legend: {
-                        display: true,
-                        position: 'bottom'
-                    }
-                }
-            };
-            
-            const config = $.extend(true, defaults, options);
-            return new Chart(ctx, config);
-        },
-
-        // Render bar chart
-        renderBarChart: function(container, data, options = {}) {
-            const ctx = $(container)[0].getContext('2d');
-            
-            const defaults = {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        yAxes: [{
-                            ticks: {
-                                beginAtZero: true
-                            }
-                        }]
-                    }
-                }
-            };
-            
-            const config = $.extend(true, defaults, options);
-            return new Chart(ctx, config);
-        },
-
-        // Render doughnut chart
-        renderDoughnutChart: function(container, data, options = {}) {
-            const ctx = $(container)[0].getContext('2d');
-            
-            const defaults = {
-                type: 'doughnut',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    legend: {
-                        position: 'right'
-                    }
-                }
-            };
-            
-            const config = $.extend(true, defaults, options);
-            return new Chart(ctx, config);
-        }
-    };
-
-    // UTM Builder
-    TrackFlow.utmBuilder = {
-        // Build UTM URL
-        buildUrl: function(baseUrl, params) {
-            const url = new URL(baseUrl);
-            
-            // Add UTM parameters
-            Object.keys(params).forEach(key => {
-                if (params[key]) {
-                    url.searchParams.set(key, params[key]);
-                }
-            });
-            
-            return url.toString();
-        },
-
-        // Validate UTM parameters
-        validateParams: function(params) {
-            const required = ['utm_source', 'utm_medium', 'utm_campaign'];
-            const missing = [];
-            
-            required.forEach(param => {
-                if (!params[param]) {
-                    missing.push(param);
-                }
-            });
-            
-            return {
-                valid: missing.length === 0,
-                missing: missing
-            };
-        },
-
-        // Generate UTM preview
-        generatePreview: function(baseUrl, params) {
-            const validation = this.validateParams(params);
-            
-            if (!validation.valid) {
-                return {
-                    error: `Missing required parameters: ${validation.missing.join(', ')}`
-                };
-            }
-            
-            return {
-                url: this.buildUrl(baseUrl, params),
-                params: params
-            };
-        }
-    };
-
-    // Real-time updates
-    TrackFlow.realtime = {
-        intervals: {},
-
-        // Start real-time updates
-        start: function(key, callback, interval) {
-            this.stop(key);
-            this.intervals[key] = setInterval(callback, interval || TrackFlow.config.refreshInterval);
-            callback(); // Run immediately
-        },
-
-        // Stop real-time updates
-        stop: function(key) {
-            if (this.intervals[key]) {
-                clearInterval(this.intervals[key]);
-                delete this.intervals[key];
-            }
-        },
-
-        // Stop all intervals
-        stopAll: function() {
-            Object.keys(this.intervals).forEach(key => this.stop(key));
-        }
-    };
-
-    // Initialize
-    $(document).ready(function() {
-        TrackFlow.charts.init();
-        
-        // Stop all intervals when page is hidden
-        document.addEventListener('visibilitychange', function() {
-            if (document.hidden) {
-                TrackFlow.realtime.stopAll();
+                
+                dialog.fields_dict.analytics_html.$wrapper.html(
+                    trackflow.render_analytics(r.message)
+                );
+                
+                dialog.show();
             }
         });
-    });
+    },
+    
+    render_analytics: function(data) {
+        // Render analytics HTML
+        let html = `
+            <div class="trackflow-analytics">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="trackflow-metric">
+                            <div class="trackflow-metric-label">Total Clicks</div>
+                            <div class="trackflow-metric-value">${data.summary.total_clicks}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="trackflow-metric">
+                            <div class="trackflow-metric-label">Unique Visitors</div>
+                            <div class="trackflow-metric-value">${data.summary.unique_visitors}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="trackflow-metric">
+                            <div class="trackflow-metric-label">Conversions</div>
+                            <div class="trackflow-metric-value">${data.summary.total_conversions}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="trackflow-metric">
+                            <div class="trackflow-metric-label">Conversion Rate</div>
+                            <div class="trackflow-metric-value">${data.summary.conversion_rate}%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return html;
+    }
+};
 
-    // Expose to global scope
-    window.TrackFlow = TrackFlow;
-
-})(window.TrackFlow);
+// Initialize when DOM is ready
+$(document).ready(function() {
+    if (frappe.boot && frappe.boot.user) {
+        trackflow.init();
+    }
+});
