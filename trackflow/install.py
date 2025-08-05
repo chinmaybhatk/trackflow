@@ -47,13 +47,25 @@ def after_migrate():
 
 def check_dependencies():
     """Check if required modules are installed"""
-    required_modules = ["CRM", "Selling"]
-    installed_modules = frappe.get_installed_apps()
-    
+    installed_apps = frappe.get_installed_apps()
     missing = []
-    for module in required_modules:
-        if module.lower() not in [app.lower() for app in installed_modules]:
-            missing.append(module)
+    
+    # Check for CRM app
+    if "crm" not in [app.lower() for app in installed_apps]:
+        missing.append("CRM")
+    
+    # Check for ERPNext (which contains the Selling module)
+    if "erpnext" not in [app.lower() for app in installed_apps]:
+        missing.append("ERPNext (for Selling module)")
+    else:
+        # Verify that Selling module exists within ERPNext
+        try:
+            # Check if Selling module exists by checking for a common Selling doctype
+            if not frappe.db.exists("DocType", "Customer") and not frappe.db.exists("Module Def", {"module_name": "Selling"}):
+                missing.append("Selling module in ERPNext")
+        except Exception:
+            # In case of any error, just assume ERPNext has Selling module
+            pass
     
     if missing:
         frappe.throw(_("TrackFlow requires the following modules: {0}").format(", ".join(missing)))
