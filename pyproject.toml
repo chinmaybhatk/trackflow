@@ -1,0 +1,27 @@
+[project]
+name = "trackflow"
+version = "1.0.0"
+description = "Smart link tracking and attribution for Frappe CRM"
+authors = [
+    {name = "Chinmay Bhat", email = "chinmaybhatk@gmail.com"}
+]
+license = {text = "MIT"}
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "frappe>=15.0.0",
+    "qrcode>=7.4.2",
+    "user-agents>=2.2.0",
+    "geoip2>=4.7.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/chinmaybhatk/trackflow"
+Documentation = "https://docs.trackflow.app"
+Repository = "https://github.com/chinmaybhatk/trackflow.git"
+Issues = "https://github.com/chinmaybhatk/trackflow/issues"
+
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
