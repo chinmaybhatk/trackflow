@@ -1,0 +1,217 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:short_code",
+ "creation": "2024-01-15 10:45:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "basic_section",
+  "short_code",
+  "campaign",
+  "custom_identifier",
+  "column_break_4",
+  "status",
+  "expiry_date",
+  "tags",
+  "destination_section",
+  "target_url",
+  "utm_override",
+  "tracking_url_display",
+  "statistics_section",
+  "click_count",
+  "unique_visitors",
+  "column_break_15",
+  "last_clicked",
+  "created_by_user",
+  "metadata_section",
+  "notes",
+  "custom_metadata"
+ ],
+ "fields": [
+  {
+   "fieldname": "basic_section",
+   "fieldtype": "Section Break",
+   "label": "Basic Information"
+  },
+  {
+   "fieldname": "short_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Short Code",
+   "no_copy": 1,
+   "read_only": 1,
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "campaign",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Campaign",
+   "options": "Link Campaign",
+   "reqd": 1
+  },
+  {
+   "fieldname": "custom_identifier",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Custom Identifier",
+   "unique": 1
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Active\nInactive\nExpired"
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Datetime",
+   "label": "Expiry Date"
+  },
+  {
+   "fieldname": "tags",
+   "fieldtype": "Data",
+   "label": "Tags",
+   "description": "Comma-separated tags for categorization"
+  },
+  {
+   "fieldname": "destination_section",
+   "fieldtype": "Section Break",
+   "label": "Destination Configuration"
+  },
+  {
+   "fieldname": "target_url",
+   "fieldtype": "Small Text",
+   "label": "Target URL Override",
+   "description": "Leave blank to use campaign's target URL"
+  },
+  {
+   "fieldname": "utm_override",
+   "fieldtype": "Small Text",
+   "label": "UTM Parameter Override",
+   "description": "JSON format: {\"utm_source\": \"custom\", \"utm_medium\": \"special\"}"
+  },
+  {
+   "fieldname": "tracking_url_display",
+   "fieldtype": "HTML",
+   "label": "Tracking URL"
+  },
+  {
+   "fieldname": "statistics_section",
+   "fieldtype": "Section Break",
+   "label": "Link Statistics"
+  },
+  {
+   "default": 0,
+   "fieldname": "click_count",
+   "fieldtype": "Int",
+   "label": "Total Clicks",
+   "read_only": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "unique_visitors",
+   "fieldtype": "Int",
+   "label": "Unique Visitors",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_clicked",
+   "fieldtype": "Datetime",
+   "label": "Last Clicked",
+   "read_only": 1
+  },
+  {
+   "fieldname": "created_by_user",
+   "fieldtype": "Link",
+   "label": "Created By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "metadata_section",
+   "fieldtype": "Section Break",
+   "label": "Additional Information"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "custom_metadata",
+   "fieldtype": "JSON",
+   "label": "Custom Metadata",
+   "description": "Additional data in JSON format"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Click Event",
+   "link_fieldname": "tracked_link"
+  }
+ ],
+ "modified": "2024-01-15 10:45:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "Tracked Link",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow User",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "short_code,custom_identifier,campaign",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
