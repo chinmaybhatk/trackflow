@@ -1,0 +1,401 @@
+/* TrackFlow Custom Styles */
+
+/* Main color palette */
+:root {
+    --tf-primary: #2490ef;
+    --tf-primary-dark: #1a73e8;
+    --tf-secondary: #5f6368;
+    --tf-success: #00c853;
+    --tf-warning: #ff9800;
+    --tf-danger: #f44336;
+    --tf-info: #2196f3;
+    --tf-light: #f5f5f5;
+    --tf-dark: #202124;
+}
+
+/* Dashboard Styles */
+.trackflow-dashboard {
+    padding: 20px;
+}
+
+.tf-stats-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+    transition: transform 0.2s ease;
+}
+
+.tf-stats-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.tf-stats-card .title {
+    font-size: 14px;
+    color: var(--tf-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.tf-stats-card .value {
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--tf-dark);
+    line-height: 1.2;
+}
+
+.tf-stats-card .change {
+    font-size: 14px;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.tf-stats-card .change.positive {
+    color: var(--tf-success);
+}
+
+.tf-stats-card .change.negative {
+    color: var(--tf-danger);
+}
+
+/* Link Preview Widget */
+.tf-link-preview {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 16px;
+    margin: 16px 0;
+}
+
+.tf-link-preview .short-url {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.tf-link-preview .short-url input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Consolas', monospace;
+    font-size: 14px;
+}
+
+.tf-link-preview .short-url .btn-copy {
+    padding: 8px 16px;
+    background: var(--tf-primary);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.tf-link-preview .short-url .btn-copy:hover {
+    background: var(--tf-primary-dark);
+}
+
+.tf-link-preview .destination {
+    font-size: 13px;
+    color: var(--tf-secondary);
+    word-break: break-all;
+}
+
+/* QR Code Display */
+.tf-qr-code {
+    display: inline-block;
+    padding: 16px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-top: 12px;
+}
+
+.tf-qr-code canvas,
+.tf-qr-code img {
+    display: block;
+    max-width: 200px;
+    height: auto;
+}
+
+/* Charts and Graphs */
+.tf-chart-container {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    margin-bottom: 20px;
+}
+
+.tf-chart-container .chart-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--tf-dark);
+    margin-bottom: 16px;
+}
+
+/* Campaign List */
+.tf-campaign-card {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 12px;
+    transition: all 0.2s ease;
+}
+
+.tf-campaign-card:hover {
+    border-color: var(--tf-primary);
+    box-shadow: 0 2px 8px rgba(36, 144, 239, 0.1);
+}
+
+.tf-campaign-card .campaign-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.tf-campaign-card .campaign-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--tf-dark);
+}
+
+.tf-campaign-card .campaign-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.tf-campaign-card .campaign-status.active {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.tf-campaign-card .campaign-status.paused {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.tf-campaign-card .campaign-status.completed {
+    background: #e3f2fd;
+    color: #1565c0;
+}
+
+/* UTM Builder */
+.tf-utm-builder {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.tf-utm-builder .form-group {
+    margin-bottom: 16px;
+}
+
+.tf-utm-builder label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--tf-dark);
+    margin-bottom: 6px;
+}
+
+.tf-utm-builder input,
+.tf-utm-builder select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.tf-utm-builder input:focus,
+.tf-utm-builder select:focus {
+    outline: none;
+    border-color: var(--tf-primary);
+}
+
+.tf-utm-builder .help-text {
+    font-size: 12px;
+    color: var(--tf-secondary);
+    margin-top: 4px;
+}
+
+/* Click Map Visualization */
+.tf-click-map {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: #f5f5f5;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.tf-click-map .country {
+    fill: #e0e0e0;
+    stroke: #fff;
+    stroke-width: 0.5;
+    transition: fill 0.2s;
+    cursor: pointer;
+}
+
+.tf-click-map .country:hover {
+    fill: var(--tf-primary);
+    fill-opacity: 0.8;
+}
+
+.tf-click-map .country.has-data {
+    fill: var(--tf-primary);
+    fill-opacity: 0.6;
+}
+
+/* Loading States */
+.tf-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.tf-loading .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid var(--tf-primary);
+    border-radius: 50%;
+    animation: tf-spin 1s linear infinite;
+}
+
+@keyframes tf-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty States */
+.tf-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--tf-secondary);
+}
+
+.tf-empty-state .icon {
+    font-size: 64px;
+    color: #e0e0e0;
+    margin-bottom: 16px;
+}
+
+.tf-empty-state .title {
+    font-size: 20px;
+    font-weight: 500;
+    color: var(--tf-dark);
+    margin-bottom: 8px;
+}
+
+.tf-empty-state .description {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* Tooltips */
+.tf-tooltip {
+    position: relative;
+    display: inline-block;
+}
+
+.tf-tooltip .tooltip-text {
+    visibility: hidden;
+    background-color: var(--tf-dark);
+    color: white;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 4px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.tf-tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .tf-stats-card {
+        margin-bottom: 16px;
+    }
+    
+    .tf-campaign-card .campaign-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .tf-utm-builder {
+        padding: 16px;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --tf-light: #303134;
+        --tf-dark: #e8eaed;
+    }
+    
+    .tf-stats-card,
+    .tf-chart-container,
+    .tf-campaign-card {
+        background: #292a2d;
+        color: var(--tf-dark);
+    }
+    
+    .tf-link-preview {
+        background: #303134;
+        border-color: #5f6368;
+    }
+    
+    .tf-utm-builder {
+        background: #303134;
+    }
+    
+    .tf-utm-builder input,
+    .tf-utm-builder select {
+        background: #202124;
+        border-color: #5f6368;
+        color: var(--tf-dark);
+    }
+}
+
+/* Print Styles */
+@media print {
+    .tf-stats-card,
+    .tf-chart-container {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+    
+    .btn-copy,
+    .tf-empty-state .btn {
+        display: none;
+    }
+}
