@@ -1,0 +1,82 @@
+{
+ "charts": [
+  {
+   "chart_name": "Click Trends",
+   "label": "Click Trends"
+  }
+ ],
+ "content": "[{\"id\":\"LNX6VJFQHK\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">TrackFlow</span>\",\"col\":12}},{\"id\":\"kMbPfhQkKs\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Create Link\",\"col\":3}},{\"id\":\"xPsFfBCYET\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Campaigns\",\"col\":3}},{\"id\":\"RiQhHb78s5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Analytics\",\"col\":3}},{\"id\":\"2TtGXbNLaY\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Settings\",\"col\":3}}]",
+ "creation": "2025-01-01 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "graph",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "TrackFlow",
+ "links": [],
+ "modified": "2025-01-01 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "TrackFlow",
+ "number_cards": [
+  {
+   "label": "Total Clicks Today",
+   "number_card_name": "Total Clicks Today"
+  },
+  {
+   "label": "Active Links",
+   "number_card_name": "Active Links"
+  },
+  {
+   "label": "Conversion Rate",
+   "number_card_name": "Conversion Rate"
+  }
+ ],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [
+  {
+   "document_type": "Tracked Link",
+   "label": "Recent Links"
+  },
+  {
+   "document_type": "Click Event",
+   "label": "Recent Clicks"
+  }
+ ],
+ "roles": [],
+ "sequence_id": 25.0,
+ "shortcuts": [
+  {
+   "color": "Blue",
+   "doc_view": "New",
+   "label": "Create Link",
+   "link_to": "Tracked Link",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "doc_view": "List",
+   "label": "Campaigns",
+   "link_to": "Link Campaign",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "label": "Analytics",
+   "link_to": "trackflow-dashboard",
+   "type": "Page"
+  },
+  {
+   "color": "Grey",
+   "label": "Settings",
+   "link_to": "TrackFlow Settings",
+   "type": "DocType"
+  }
+ ],
+ "title": "TrackFlow"
+}
