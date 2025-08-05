@@ -1,0 +1,187 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2024-01-15 10:30:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "model_name",
+  "model_type",
+  "description",
+  "column_break_1",
+  "is_active",
+  "is_default",
+  "section_break_1",
+  "lookback_days",
+  "include_direct_traffic",
+  "column_break_2",
+  "minimum_touchpoints",
+  "conversion_window_hours",
+  "section_break_2",
+  "decay_rate",
+  "custom_weights",
+  "section_break_3",
+  "channel_rules"
+ ],
+ "fields": [
+  {
+   "fieldname": "model_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Model Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "model_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Model Type",
+   "options": "first_touch\nlast_touch\nlinear\ntime_decay\nposition_based\ncustom",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_default",
+   "fieldtype": "Check",
+   "label": "Is Default",
+   "description": "Default model for attribution calculations"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "Attribution Settings"
+  },
+  {
+   "default": "30",
+   "fieldname": "lookback_days",
+   "fieldtype": "Int",
+   "label": "Lookback Window (Days)",
+   "non_negative": 1,
+   "reqd": 1,
+   "description": "Number of days to look back for touchpoints"
+  },
+  {
+   "default": "1",
+   "fieldname": "include_direct_traffic",
+   "fieldtype": "Check",
+   "label": "Include Direct Traffic",
+   "description": "Include direct/none traffic in attribution"
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "minimum_touchpoints",
+   "fieldtype": "Int",
+   "label": "Minimum Touchpoints",
+   "non_negative": 1,
+   "description": "Minimum touchpoints required for attribution"
+  },
+  {
+   "default": "24",
+   "fieldname": "conversion_window_hours",
+   "fieldtype": "Int",
+   "label": "Conversion Window (Hours)",
+   "non_negative": 1,
+   "description": "Hours after last touch to count as conversion"
+  },
+  {
+   "depends_on": "eval:doc.model_type=='time_decay'",
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Time Decay Settings"
+  },
+  {
+   "default": "0.1",
+   "depends_on": "eval:doc.model_type=='time_decay'",
+   "fieldname": "decay_rate",
+   "fieldtype": "Float",
+   "label": "Decay Rate",
+   "precision": "2",
+   "description": "Rate at which credit decays over time (0-1)"
+  },
+  {
+   "depends_on": "eval:doc.model_type=='custom'",
+   "fieldname": "custom_weights",
+   "fieldtype": "JSON",
+   "label": "Custom Weights",
+   "description": "JSON configuration for custom attribution weights"
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Channel Configuration"
+  },
+  {
+   "fieldname": "channel_rules",
+   "fieldtype": "Table",
+   "label": "Channel Rules",
+   "options": "Attribution Channel Rule"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-15 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "Attribution Model",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing User",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}
