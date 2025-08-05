@@ -1,5 +1,4 @@
-# Frappe framework is installed separately
-qrcode==7.4.2
-user-agents==2.2.0
-geoip2==4.7.0
-Pillow>=9.0.0
+# TrackFlow Requirements
+frappe
+qrcode[pil]>=7.3.1
+user-agents>=2.2.0
