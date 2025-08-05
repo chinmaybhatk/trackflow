@@ -5,5 +5,5 @@ import frappe
 from frappe.model.document import Document
 
 
-class APIKeyPermission(Document):
+class DealLinkAssociation(Document):
     pass
