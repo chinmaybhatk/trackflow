@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2024-01-15 11:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "event_type"
+ ],
+ "fields": [
+  {
+   "fieldname": "event_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Event Type",
+   "options": "link_created\nlink_clicked\nconversion_tracked\ncampaign_created\ncampaign_updated\nrate_limit_exceeded",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-15 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "API Key Webhook Event",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

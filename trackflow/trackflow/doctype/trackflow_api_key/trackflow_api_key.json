@@ -1,0 +1,216 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "creation": "2024-01-15 11:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 0,
+ "engine": "InnoDB",
+ "field_order": [
+  "key_name",
+  "description",
+  "column_break_1",
+  "is_active",
+  "expires_on",
+  "section_break_1",
+  "api_key",
+  "api_key_hash",
+  "section_break_2",
+  "permissions",
+  "section_break_3",
+  "rate_limit_per_minute",
+  "rate_limit_per_hour",
+  "rate_limit_per_day",
+  "section_break_4",
+  "ip_whitelist",
+  "section_break_5",
+  "webhook_url",
+  "webhook_events",
+  "section_break_6",
+  "last_used",
+  "total_requests",
+  "created_by_user"
+ ],
+ "fields": [
+  {
+   "fieldname": "key_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Key Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "expires_on",
+   "fieldtype": "Date",
+   "label": "Expires On",
+   "description": "Leave blank for no expiration"
+  },
+  {
+   "fieldname": "section_break_1",
+   "fieldtype": "Section Break",
+   "label": "API Key"
+  },
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Password",
+   "label": "API Key",
+   "permlevel": 2,
+   "read_only": 1,
+   "description": "Generated automatically on creation"
+  },
+  {
+   "fieldname": "api_key_hash",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "API Key Hash",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break",
+   "label": "Permissions"
+  },
+  {
+   "fieldname": "permissions",
+   "fieldtype": "Table",
+   "label": "Permissions",
+   "options": "API Key Permission",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_3",
+   "fieldtype": "Section Break",
+   "label": "Rate Limits"
+  },
+  {
+   "default": "60",
+   "fieldname": "rate_limit_per_minute",
+   "fieldtype": "Int",
+   "label": "Rate Limit Per Minute",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "1000",
+   "fieldname": "rate_limit_per_hour",
+   "fieldtype": "Int",
+   "label": "Rate Limit Per Hour",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "default": "10000",
+   "fieldname": "rate_limit_per_day",
+   "fieldtype": "Int",
+   "label": "Rate Limit Per Day",
+   "non_negative": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "label": "IP Restrictions"
+  },
+  {
+   "fieldname": "ip_whitelist",
+   "fieldtype": "Table",
+   "label": "IP Whitelist",
+   "options": "API Key IP Whitelist",
+   "description": "Leave empty to allow all IPs"
+  },
+  {
+   "fieldname": "section_break_5",
+   "fieldtype": "Section Break",
+   "label": "Webhooks"
+  },
+  {
+   "fieldname": "webhook_url",
+   "fieldtype": "Data",
+   "label": "Webhook URL",
+   "description": "URL to receive webhook notifications"
+  },
+  {
+   "fieldname": "webhook_events",
+   "fieldtype": "Table",
+   "label": "Webhook Events",
+   "options": "API Key Webhook Event"
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break",
+   "label": "Usage Statistics"
+  },
+  {
+   "fieldname": "last_used",
+   "fieldtype": "Datetime",
+   "label": "Last Used",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_requests",
+   "fieldtype": "Int",
+   "label": "Total Requests",
+   "read_only": 1,
+   "default": "0"
+  },
+  {
+   "fieldname": "created_by_user",
+   "fieldtype": "Link",
+   "label": "Created By User",
+   "options": "User",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-15 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "TrackFlow API Key",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Marketing Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "track_changes": 1
+}

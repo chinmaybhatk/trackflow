@@ -1,0 +1,31 @@
+{
+ "actions": [],
+ "creation": "2024-01-15 11:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "permission"
+ ],
+ "fields": [
+  {
+   "fieldname": "permission",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Permission",
+   "options": "read_links\nwrite_links\ndelete_links\nread_campaigns\nwrite_campaigns\ndelete_campaigns\nread_analytics\nread_conversions\nwrite_conversions\nread_all\nwrite_all\nadmin",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2024-01-15 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "API Key Permission",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC"
+}

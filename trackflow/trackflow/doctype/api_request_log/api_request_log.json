@@ -1,0 +1,69 @@
+{
+ "actions": [],
+ "creation": "2024-01-15 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "api_key",
+  "endpoint",
+  "method",
+  "ip_address",
+  "response_code",
+  "timestamp"
+ ],
+ "fields": [
+  {
+   "fieldname": "api_key",
+   "fieldtype": "Link",
+   "label": "API Key",
+   "options": "TrackFlow API Key",
+   "reqd": 1
+  },
+  {
+   "fieldname": "endpoint",
+   "fieldtype": "Data",
+   "label": "Endpoint",
+   "reqd": 1
+  },
+  {
+   "fieldname": "method",
+   "fieldtype": "Select",
+   "label": "Method",
+   "options": "GET\nPOST\nPUT\nDELETE\nPATCH",
+   "reqd": 1
+  },
+  {
+   "fieldname": "ip_address",
+   "fieldtype": "Data",
+   "label": "IP Address"
+  },
+  {
+   "fieldname": "response_code",
+   "fieldtype": "Int",
+   "label": "Response Code"
+  },
+  {
+   "fieldname": "timestamp",
+   "fieldtype": "Datetime",
+   "label": "Timestamp",
+   "reqd": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2024-01-15 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "API Request Log",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "timestamp",
+ "sort_order": "DESC",
+ "track_changes": 0
+}
