@@ -1,0 +1,328 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "TF-CAMP-.#####",
+ "creation": "2024-01-15 10:30:00.000000",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "campaign_details_section",
+  "campaign_name",
+  "campaign_type",
+  "template",
+  "column_break_4",
+  "status",
+  "start_date",
+  "end_date",
+  "target_section",
+  "target_url",
+  "description",
+  "utm_parameters_section",
+  "utm_source",
+  "utm_medium",
+  "column_break_13",
+  "utm_campaign",
+  "utm_term",
+  "utm_content",
+  "advanced_settings_section",
+  "enable_variants",
+  "variants",
+  "enable_pixel_tracking",
+  "pixel_providers",
+  "tracking_options_section",
+  "enable_conversion_tracking",
+  "conversion_window_days",
+  "column_break_22",
+  "enable_attribution",
+  "attribution_model",
+  "statistics_section",
+  "total_links",
+  "total_clicks",
+  "unique_visitors",
+  "column_break_28",
+  "conversion_count",
+  "conversion_rate",
+  "last_click_date"
+ ],
+ "fields": [
+  {
+   "fieldname": "campaign_details_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Details"
+  },
+  {
+   "fieldname": "campaign_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Campaign Name",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "campaign_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Campaign Type",
+   "options": "Email\nSocial Media\nSearch\nDisplay\nAffiliate\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "template",
+   "fieldtype": "Link",
+   "label": "Link Template",
+   "options": "Link Template"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Active",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Draft\nActive\nPaused\nCompleted\nArchived"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "target_section",
+   "fieldtype": "Section Break",
+   "label": "Target Configuration"
+  },
+  {
+   "fieldname": "target_url",
+   "fieldtype": "Small Text",
+   "label": "Target URL",
+   "reqd": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "utm_parameters_section",
+   "fieldtype": "Section Break",
+   "label": "UTM Parameters"
+  },
+  {
+   "fieldname": "utm_source",
+   "fieldtype": "Data",
+   "label": "UTM Source",
+   "reqd": 1
+  },
+  {
+   "fieldname": "utm_medium",
+   "fieldtype": "Data",
+   "label": "UTM Medium",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "utm_campaign",
+   "fieldtype": "Data",
+   "label": "UTM Campaign"
+  },
+  {
+   "fieldname": "utm_term",
+   "fieldtype": "Data",
+   "label": "UTM Term"
+  },
+  {
+   "fieldname": "utm_content",
+   "fieldtype": "Data",
+   "label": "UTM Content"
+  },
+  {
+   "fieldname": "advanced_settings_section",
+   "fieldtype": "Section Break",
+   "label": "Advanced Settings"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_variants",
+   "fieldtype": "Check",
+   "label": "Enable A/B Testing"
+  },
+  {
+   "depends_on": "eval:doc.enable_variants",
+   "fieldname": "variants",
+   "fieldtype": "Table",
+   "label": "Campaign Variants",
+   "options": "Campaign Link Variant"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_pixel_tracking",
+   "fieldtype": "Check",
+   "label": "Enable Pixel Tracking"
+  },
+  {
+   "depends_on": "eval:doc.enable_pixel_tracking",
+   "fieldname": "pixel_providers",
+   "fieldtype": "Small Text",
+   "label": "Pixel Providers",
+   "description": "Comma-separated list of pixel providers (e.g., Facebook, Google Ads)"
+  },
+  {
+   "fieldname": "tracking_options_section",
+   "fieldtype": "Section Break",
+   "label": "Tracking Options"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_conversion_tracking",
+   "fieldtype": "Check",
+   "label": "Enable Conversion Tracking"
+  },
+  {
+   "default": 30,
+   "depends_on": "eval:doc.enable_conversion_tracking",
+   "fieldname": "conversion_window_days",
+   "fieldtype": "Int",
+   "label": "Conversion Window (Days)"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "enable_attribution",
+   "fieldtype": "Check",
+   "label": "Enable Attribution"
+  },
+  {
+   "depends_on": "eval:doc.enable_attribution",
+   "fieldname": "attribution_model",
+   "fieldtype": "Link",
+   "label": "Attribution Model",
+   "options": "Attribution Model"
+  },
+  {
+   "fieldname": "statistics_section",
+   "fieldtype": "Section Break",
+   "label": "Campaign Statistics",
+   "read_only": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "total_links",
+   "fieldtype": "Int",
+   "label": "Total Links",
+   "read_only": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "total_clicks",
+   "fieldtype": "Int",
+   "label": "Total Clicks",
+   "read_only": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "unique_visitors",
+   "fieldtype": "Int",
+   "label": "Unique Visitors",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": 0,
+   "fieldname": "conversion_count",
+   "fieldtype": "Int",
+   "label": "Conversions",
+   "read_only": 1
+  },
+  {
+   "default": 0,
+   "fieldname": "conversion_rate",
+   "fieldtype": "Float",
+   "label": "Conversion Rate (%)",
+   "precision": 2,
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_click_date",
+   "fieldtype": "Datetime",
+   "label": "Last Click",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [
+  {
+   "link_doctype": "Tracked Link",
+   "link_fieldname": "campaign"
+  },
+  {
+   "link_doctype": "Click Event",
+   "link_fieldname": "campaign"
+  }
+ ],
+ "modified": "2024-01-15 10:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "TrackFlow",
+ "name": "Link Campaign",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "TrackFlow User",
+   "share": 1
+  }
+ ],
+ "search_fields": "campaign_name,campaign_type,status",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}
