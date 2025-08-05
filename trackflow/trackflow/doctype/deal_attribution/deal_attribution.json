@@ -1,0 +1,125 @@
+{
+    "actions": [],
+    "creation": "2024-01-15 10:36:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "attribution_model",
+        "deal",
+        "deal_value",
+        "touchpoint_type",
+        "touchpoint_source",
+        "touchpoint_campaign",
+        "touchpoint_medium",
+        "touchpoint_content",
+        "touchpoint_term",
+        "touchpoint_timestamp",
+        "attribution_weight",
+        "attributed_value",
+        "position_in_journey",
+        "days_to_conversion"
+    ],
+    "fields": [
+        {
+            "fieldname": "attribution_model",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Attribution Model",
+            "options": "Attribution Model",
+            "reqd": 1
+        },
+        {
+            "fieldname": "deal",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Deal",
+            "options": "Deal",
+            "reqd": 1
+        },
+        {
+            "fetch_from": "deal.deal_value",
+            "fieldname": "deal_value",
+            "fieldtype": "Currency",
+            "label": "Deal Value",
+            "read_only": 1
+        },
+        {
+            "fieldname": "touchpoint_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Touchpoint Type",
+            "options": "Campaign\nOrganic\nDirect\nReferral\nSocial\nEmail\nPaid Search\nDisplay\nOther",
+            "reqd": 1
+        },
+        {
+            "fieldname": "touchpoint_source",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Touchpoint Source"
+        },
+        {
+            "fieldname": "touchpoint_campaign",
+            "fieldtype": "Data",
+            "label": "Touchpoint Campaign"
+        },
+        {
+            "fieldname": "touchpoint_medium",
+            "fieldtype": "Data",
+            "label": "Touchpoint Medium"
+        },
+        {
+            "fieldname": "touchpoint_content",
+            "fieldtype": "Data",
+            "label": "Touchpoint Content"
+        },
+        {
+            "fieldname": "touchpoint_term",
+            "fieldtype": "Data",
+            "label": "Touchpoint Term"
+        },
+        {
+            "fieldname": "touchpoint_timestamp",
+            "fieldtype": "Datetime",
+            "label": "Touchpoint Timestamp",
+            "reqd": 1
+        },
+        {
+            "fieldname": "attribution_weight",
+            "fieldtype": "Percent",
+            "in_list_view": 1,
+            "label": "Attribution Weight",
+            "reqd": 1
+        },
+        {
+            "fieldname": "attributed_value",
+            "fieldtype": "Currency",
+            "in_list_view": 1,
+            "label": "Attributed Value",
+            "read_only": 1
+        },
+        {
+            "fieldname": "position_in_journey",
+            "fieldtype": "Select",
+            "label": "Position in Journey",
+            "options": "First Touch\nMiddle Touch\nLast Touch\nSingle Touch"
+        },
+        {
+            "fieldname": "days_to_conversion",
+            "fieldtype": "Int",
+            "label": "Days to Conversion"
+        }
+    ],
+    "index_web_pages_for_search": 0,
+    "istable": 1,
+    "links": [],
+    "modified": "2024-01-15 10:36:00.000000",
+    "modified_by": "Administrator",
+    "module": "Trackflow",
+    "name": "Deal Attribution",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "track_changes": 1
+}

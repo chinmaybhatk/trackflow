@@ -1,0 +1,76 @@
+{
+    "actions": [],
+    "creation": "2024-01-15 10:34:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "timestamp",
+        "from_stage",
+        "to_stage",
+        "probability",
+        "changed_by",
+        "reason",
+        "notes"
+    ],
+    "fields": [
+        {
+            "default": "Now",
+            "fieldname": "timestamp",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Timestamp",
+            "reqd": 1
+        },
+        {
+            "fieldname": "from_stage",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "From Stage",
+            "options": "Deal Stage"
+        },
+        {
+            "fieldname": "to_stage",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "To Stage",
+            "options": "Deal Stage",
+            "reqd": 1
+        },
+        {
+            "fieldname": "probability",
+            "fieldtype": "Percent",
+            "in_list_view": 1,
+            "label": "Probability"
+        },
+        {
+            "fieldname": "changed_by",
+            "fieldtype": "Link",
+            "label": "Changed By",
+            "options": "User"
+        },
+        {
+            "fieldname": "reason",
+            "fieldtype": "Select",
+            "label": "Reason",
+            "options": "\nProgression\nRegression\nQualification\nDisqualification\nBudget Approved\nBudget Issues\nDecision Maker Engaged\nCompetitor Won\nOther"
+        },
+        {
+            "fieldname": "notes",
+            "fieldtype": "Small Text",
+            "label": "Notes"
+        }
+    ],
+    "index_web_pages_for_search": 0,
+    "istable": 1,
+    "links": [],
+    "modified": "2024-01-15 10:34:00.000000",
+    "modified_by": "Administrator",
+    "module": "Trackflow",
+    "name": "Deal Stage Change",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "timestamp",
+    "sort_order": "DESC",
+    "track_changes": 0
+}

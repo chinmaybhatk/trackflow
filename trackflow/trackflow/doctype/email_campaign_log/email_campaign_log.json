@@ -1,0 +1,108 @@
+{
+    "actions": [],
+    "creation": "2024-01-15 10:35:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "timestamp",
+        "event_type",
+        "recipient_email",
+        "recipient_type",
+        "recipient_id",
+        "email_subject",
+        "tracking_link",
+        "click_count",
+        "ip_address",
+        "user_agent",
+        "location",
+        "error_message"
+    ],
+    "fields": [
+        {
+            "default": "Now",
+            "fieldname": "timestamp",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Timestamp",
+            "reqd": 1
+        },
+        {
+            "fieldname": "event_type",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Event Type",
+            "options": "Sent\nDelivered\nOpened\nClicked\nBounced\nUnsubscribed\nSpam\nError",
+            "reqd": 1
+        },
+        {
+            "fieldname": "recipient_email",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Recipient Email",
+            "options": "Email",
+            "reqd": 1
+        },
+        {
+            "fieldname": "recipient_type",
+            "fieldtype": "Select",
+            "label": "Recipient Type",
+            "options": "Lead\nContact\nCustomer"
+        },
+        {
+            "fieldname": "recipient_id",
+            "fieldtype": "Dynamic Link",
+            "label": "Recipient",
+            "options": "recipient_type"
+        },
+        {
+            "fieldname": "email_subject",
+            "fieldtype": "Data",
+            "label": "Email Subject"
+        },
+        {
+            "fieldname": "tracking_link",
+            "fieldtype": "Link",
+            "label": "Tracking Link",
+            "options": "Tracking Link"
+        },
+        {
+            "default": "0",
+            "fieldname": "click_count",
+            "fieldtype": "Int",
+            "label": "Click Count"
+        },
+        {
+            "fieldname": "ip_address",
+            "fieldtype": "Data",
+            "label": "IP Address"
+        },
+        {
+            "fieldname": "user_agent",
+            "fieldtype": "Small Text",
+            "label": "User Agent"
+        },
+        {
+            "fieldname": "location",
+            "fieldtype": "Data",
+            "label": "Location"
+        },
+        {
+            "fieldname": "error_message",
+            "fieldtype": "Small Text",
+            "label": "Error Message"
+        }
+    ],
+    "index_web_pages_for_search": 0,
+    "istable": 1,
+    "links": [],
+    "modified": "2024-01-15 10:35:00.000000",
+    "modified_by": "Administrator",
+    "module": "Trackflow",
+    "name": "Email Campaign Log",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "timestamp",
+    "sort_order": "DESC",
+    "track_changes": 0
+}
