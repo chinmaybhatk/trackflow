@@ -27,8 +27,8 @@ notification_config = "trackflow.notifications.get_notification_config"
 # Permissions
 # -----------
 permission_query_conditions = {
-    "Tracked Link": "trackflow.trackflow.doctype.tracked_link.tracked_link.get_permission_query_conditions",
-    "Link Campaign": "trackflow.trackflow.doctype.link_campaign.link_campaign.get_permission_query_conditions",
+    "Tracking Link": "trackflow.trackflow.doctype.tracking_link.tracking_link.get_permission_query_conditions",
+    "Campaign": "trackflow.trackflow.doctype.campaign.campaign.get_permission_query_conditions",
 }
 
 # DocType JavaScript
@@ -44,28 +44,32 @@ doctype_js = {
 # ---------------
 scheduler_events = {
     "hourly": [
-        "trackflow.tasks.process_click_queue"
+        "trackflow.tasks.process_visitor_sessions",
+        "trackflow.tasks.update_campaign_metrics"
     ],
     "daily": [
-        "trackflow.tasks.cleanup_expired_links",
-        "trackflow.tasks.generate_daily_reports"
+        "trackflow.tasks.cleanup_expired_data",
+        "trackflow.tasks.generate_daily_reports",
+        "trackflow.tasks.calculate_attribution"
     ],
     "weekly": [
-        "trackflow.tasks.send_weekly_analytics"
+        "trackflow.tasks.send_weekly_analytics",
+        "trackflow.tasks.cleanup_old_visitors"
     ]
 }
 
 # Website Route Rules
 # --------------------
 website_route_rules = [
-    {"from_route": "/redirect/<path:short_code>", "to_route": "trackflow.www.redirect.handle_redirect"},
-    {"from_route": "/tl/<path:short_code>", "to_route": "trackflow.www.redirect.handle_redirect"},
+    {"from_route": "/r/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"},
+    {"from_route": "/t/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"},
     {"from_route": "/trackflow/dashboard", "to_route": "trackflow.www.dashboard"},
+    {"from_route": "/trackflow/pixel/<path:visitor_id>", "to_route": "trackflow.www.pixel"},
 ]
 
 # Request Handler
 # ---------------
-before_request = ["trackflow.www.redirect.handle_request"]
+before_request = ["trackflow.www.redirect.before_request"]
 
 # Jinja Environment
 # -----------------
@@ -90,14 +94,22 @@ fixtures = [
                 "name",
                 "in",
                 [
+                    "Lead-trackflow_visitor_id",
                     "Lead-trackflow_source",
+                    "Lead-trackflow_medium",
                     "Lead-trackflow_campaign",
-                    "Lead-first_touch_source",
-                    "Lead-last_touch_source",
-                    "Contact-engagement_score",
-                    "Contact-last_campaign_interaction",
-                    "Deal-attribution_source",
-                    "Deal-marketing_influenced"
+                    "Lead-trackflow_first_touch_date",
+                    "Lead-trackflow_last_touch_date",
+                    "Lead-trackflow_touch_count",
+                    "Contact-trackflow_visitor_id",
+                    "Contact-trackflow_engagement_score",
+                    "Contact-trackflow_last_campaign",
+                    "Deal-trackflow_attribution_model",
+                    "Deal-trackflow_first_touch_source",
+                    "Deal-trackflow_last_touch_source",
+                    "Deal-trackflow_marketing_influenced",
+                    "Opportunity-trackflow_campaign",
+                    "Opportunity-trackflow_source"
                 ]
             ]
         ]
@@ -105,7 +117,7 @@ fixtures = [
     {
         "dt": "Property Setter",
         "filters": [
-            ["name", "in", ["Lead-main-track_source"]]
+            ["name", "in", ["Lead-main-track_source", "Deal-main-track_attribution"]]
         ]
     }
 ]
@@ -115,10 +127,23 @@ fixtures = [
 doc_events = {
     "Lead": {
         "after_insert": "trackflow.integrations.lead.after_insert",
-        "on_update": "trackflow.integrations.lead.on_update"
+        "on_update": "trackflow.integrations.lead.on_update",
+        "on_trash": "trackflow.integrations.lead.on_trash"
+    },
+    "Contact": {
+        "after_insert": "trackflow.integrations.contact.after_insert",
+        "on_update": "trackflow.integrations.contact.on_update"
     },
     "Deal": {
-        "on_update": "trackflow.integrations.deal.track_attribution"
+        "after_insert": "trackflow.integrations.deal.after_insert",
+        "on_update": "trackflow.integrations.deal.on_update",
+        "on_submit": "trackflow.integrations.deal.calculate_attribution"
+    },
+    "Opportunity": {
+        "on_update": "trackflow.integrations.opportunity.track_opportunity"
+    },
+    "Web Form": {
+        "on_update": "trackflow.integrations.web_form.setup_tracking"
     }
 }
 
@@ -134,7 +159,7 @@ override_whitelisted_methods = {
 
 # App Icon and Branding
 # ---------------------
-app_icon = "octicon octicon-graph"
+app_icon = "fa fa-link"
 app_color = "#2563eb"
 app_logo_url = "/assets/trackflow/images/trackflow-logo.svg"
 
@@ -142,14 +167,14 @@ app_logo_url = "/assets/trackflow/images/trackflow-logo.svg"
 # ----------------
 user_data_fields = [
     {
-        "doctype": "Tracked Link",
+        "doctype": "Tracking Link",
         "filter_by": "owner",
-        "redact_fields": ["ip_address", "user_agent"],
+        "redact_fields": ["last_accessed_ip"],
         "partial": 1,
     },
     {
-        "doctype": "Click Event",
-        "filter_by": "link_owner",
+        "doctype": "Visitor",
+        "filter_by": "owner",
         "strict": False,
     }
 ]
@@ -157,16 +182,17 @@ user_data_fields = [
 # Monitoring
 # ----------
 monitor_jobs = [
-    "trackflow.tasks.process_click_queue",
-    "trackflow.tasks.update_analytics_cache"
+    "trackflow.tasks.process_visitor_sessions",
+    "trackflow.tasks.calculate_attribution"
 ]
 
 # Global Search
 # -------------
 global_search_doctypes = {
     "Default": [
-        {"doctype": "Tracked Link", "index": 0},
-        {"doctype": "Link Campaign", "index": 1}
+        {"doctype": "Tracking Link", "index": 0},
+        {"doctype": "Campaign", "index": 1},
+        {"doctype": "Visitor", "index": 2}
     ]
 }
 
@@ -180,9 +206,9 @@ website_context = {
 # REST API
 # --------
 rest_api_methods = [
-    "trackflow.api.create_link",
-    "trackflow.api.get_analytics",
-    "trackflow.api.track_conversion"
+    "trackflow.api.analytics.get_analytics",
+    "trackflow.api.campaign.create_campaign",
+    "trackflow.api.tracking.track_event"
 ]
 
 # Branding
@@ -191,3 +217,24 @@ brand_html = """<div style='padding: 10px; text-align: center;'>
     <img src='/assets/trackflow/images/trackflow-logo.svg' style='height: 20px; margin-right: 5px;'>
     <span style='font-size: 12px; color: #6b7280;'>Powered by TrackFlow</span>
 </div>"""
+
+# Additional API endpoints
+# ------------------------
+website_apis = [
+    "trackflow.api.pixel",
+    "trackflow.api.track"
+]
+
+# Custom Workspace
+# ----------------
+workspace = {
+    "TrackFlow": {
+        "category": "Modules",
+        "color": "#2563eb",
+        "icon": "fa fa-link",
+        "type": "module",
+        "label": "TrackFlow",
+        "public": 1,
+        "hidden": 0
+    }
+}
