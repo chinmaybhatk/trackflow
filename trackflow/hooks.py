@@ -58,9 +58,14 @@ scheduler_events = {
 # Website Route Rules
 # --------------------
 website_route_rules = [
+    {"from_route": "/redirect/<path:short_code>", "to_route": "trackflow.www.redirect.handle_redirect"},
     {"from_route": "/tl/<path:short_code>", "to_route": "trackflow.www.redirect.handle_redirect"},
     {"from_route": "/trackflow/dashboard", "to_route": "trackflow.www.dashboard"},
 ]
+
+# Request Handler
+# ---------------
+before_request = ["trackflow.www.redirect.handle_request"]
 
 # Jinja Environment
 # -----------------
