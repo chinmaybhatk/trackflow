@@ -37,7 +37,8 @@ doctype_js = {
     "Lead": "public/js/lead.js",
     "Contact": "public/js/contact.js",
     "Deal": "public/js/deal.js",
-    "Opportunity": "public/js/opportunity.js"
+    "Opportunity": "public/js/opportunity.js",
+    "Web Form": "public/js/web_form.js"
 }
 
 # Scheduled Tasks
@@ -45,16 +46,19 @@ doctype_js = {
 scheduler_events = {
     "hourly": [
         "trackflow.tasks.process_visitor_sessions",
-        "trackflow.tasks.update_campaign_metrics"
+        "trackflow.tasks.update_campaign_metrics",
+        "trackflow.notifications.check_campaign_performance"
     ],
     "daily": [
         "trackflow.tasks.cleanup_expired_data",
         "trackflow.tasks.generate_daily_reports",
-        "trackflow.tasks.calculate_attribution"
+        "trackflow.tasks.calculate_attribution",
+        "trackflow.tasks.update_visitor_profiles"
     ],
     "weekly": [
         "trackflow.tasks.send_weekly_analytics",
-        "trackflow.tasks.cleanup_old_visitors"
+        "trackflow.tasks.cleanup_old_visitors",
+        "trackflow.tasks.generate_attribution_reports"
     ]
 }
 
@@ -70,6 +74,7 @@ website_route_rules = [
 # Request Handler
 # ---------------
 before_request = ["trackflow.www.redirect.before_request"]
+after_request = ["trackflow.tracking.after_request"]
 
 # Jinja Environment
 # -----------------
@@ -109,7 +114,9 @@ fixtures = [
                     "Deal-trackflow_last_touch_source",
                     "Deal-trackflow_marketing_influenced",
                     "Opportunity-trackflow_campaign",
-                    "Opportunity-trackflow_source"
+                    "Opportunity-trackflow_source",
+                    "Web Form-trackflow_tracking_enabled",
+                    "Web Form-trackflow_conversion_goal"
                 ]
             ]
         ]
@@ -126,9 +133,9 @@ fixtures = [
 # ---------------
 doc_events = {
     "Lead": {
-        "after_insert": "trackflow.integrations.lead.after_insert",
-        "on_update": "trackflow.integrations.lead.on_update",
-        "on_trash": "trackflow.integrations.lead.on_trash"
+        "after_insert": "trackflow.integrations.lead.on_lead_create",
+        "on_update": "trackflow.integrations.lead.on_lead_update",
+        "on_trash": "trackflow.integrations.lead.on_lead_trash"
     },
     "Contact": {
         "after_insert": "trackflow.integrations.contact.after_insert",
@@ -140,10 +147,15 @@ doc_events = {
         "on_submit": "trackflow.integrations.deal.calculate_attribution"
     },
     "Opportunity": {
-        "on_update": "trackflow.integrations.opportunity.track_opportunity"
+        "after_insert": "trackflow.integrations.opportunity.on_opportunity_create",
+        "on_update": "trackflow.integrations.opportunity.on_opportunity_update"
     },
     "Web Form": {
-        "on_update": "trackflow.integrations.web_form.setup_tracking"
+        "on_update": "trackflow.integrations.web_form.inject_tracking_script",
+        "validate": "trackflow.integrations.web_form.validate_tracking_settings"
+    },
+    "*": {
+        "after_insert": "trackflow.integrations.web_form.on_web_form_submit"
     }
 }
 
@@ -203,12 +215,16 @@ website_context = {
     "splash_image": "/assets/trackflow/images/splash.png"
 }
 
+update_website_context = "trackflow.integrations.web_form.inject_tracking_script"
+
 # REST API
 # --------
 rest_api_methods = [
     "trackflow.api.analytics.get_analytics",
     "trackflow.api.campaign.create_campaign",
-    "trackflow.api.tracking.track_event"
+    "trackflow.api.tracking.track_event",
+    "trackflow.api.tracking.get_tracking_script",
+    "trackflow.api.visitor.get_visitor_profile"
 ]
 
 # Branding
