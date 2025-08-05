@@ -1,0 +1,32 @@
+{
+    "content": null,
+    "creation": "2024-01-15 10:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Page",
+    "idx": 0,
+    "modified": "2024-01-15 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Trackflow",
+    "name": "trackflow-dashboard",
+    "owner": "Administrator",
+    "page_name": "TrackFlow Dashboard",
+    "roles": [
+        {
+            "role": "System Manager"
+        },
+        {
+            "role": "Sales Manager"
+        },
+        {
+            "role": "Sales User"
+        },
+        {
+            "role": "Marketing Manager"
+        }
+    ],
+    "script": null,
+    "standard": "Yes",
+    "style": null,
+    "system_page": 0,
+    "title": "TrackFlow Dashboard"
+}

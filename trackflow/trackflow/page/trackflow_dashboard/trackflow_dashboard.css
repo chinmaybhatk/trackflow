@@ -1,0 +1,285 @@
+/* TrackFlow Dashboard Styles */
+
+.trackflow-dashboard-page {
+    background-color: #f5f7fa;
+}
+
+.trackflow-dashboard {
+    padding: 20px;
+}
+
+/* Summary Cards */
+.dashboard-summary {
+    margin-bottom: 30px;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.summary-card .card-value {
+    font-size: 28px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.summary-card .card-label {
+    font-size: 14px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-card .card-indicator {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.summary-card .card-indicator.positive {
+    color: #27ae60;
+}
+
+.summary-card .card-indicator.negative {
+    color: #e74c3c;
+}
+
+.summary-card .card-indicator.neutral {
+    color: #95a5a6;
+}
+
+/* Dashboard Cards */
+.dashboard-card {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.dashboard-card h4 {
+    margin: 0 0 20px 0;
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+/* Charts */
+.dashboard-charts-row-1,
+.dashboard-charts-row-2 {
+    margin-bottom: 30px;
+}
+
+/* Funnel Chart */
+.funnel-container {
+    padding: 20px;
+}
+
+.funnel-stage {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.funnel-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+    padding: 12px 15px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 45px;
+    transition: all 0.3s ease;
+}
+
+.funnel-bar:hover {
+    transform: translateX(5px);
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);
+}
+
+.funnel-label {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.funnel-value {
+    font-size: 13px;
+    opacity: 0.9;
+}
+
+/* Tables */
+.dashboard-campaigns table,
+.dashboard-visitors table {
+    margin-bottom: 0;
+}
+
+.dashboard-campaigns table th,
+.dashboard-visitors table th {
+    border-top: none;
+    font-weight: 600;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 12px;
+}
+
+.dashboard-campaigns table td,
+.dashboard-visitors table td {
+    padding: 12px;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+.dashboard-campaigns table tbody tr:hover,
+.dashboard-visitors table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Attribution Analysis */
+.attribution-comparison {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 20px;
+}
+
+.attribution-model {
+    flex: 1;
+    min-width: 250px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+}
+
+.attribution-model h5 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.attribution-model p {
+    margin: 0 0 15px 0;
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+.attribution-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.attribution-stats .stat {
+    flex: 1;
+}
+
+.attribution-stats .stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    color: #5e64ff;
+    margin-bottom: 5px;
+}
+
+.attribution-stats .stat-label {
+    font-size: 12px;
+    color: #7f8c8d;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .summary-card {
+        margin-bottom: 15px;
+    }
+    
+    .summary-card .card-value {
+        font-size: 24px;
+    }
+    
+    .dashboard-card {
+        padding: 15px;
+    }
+    
+    .attribution-comparison {
+        flex-direction: column;
+    }
+    
+    .attribution-model {
+        min-width: 100%;
+    }
+}
+
+/* Loading State */
+.dashboard-loading {
+    text-align: center;
+    padding: 60px;
+    color: #7f8c8d;
+}
+
+.dashboard-loading .spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.dashboard-empty {
+    text-align: center;
+    padding: 60px;
+    color: #7f8c8d;
+}
+
+.dashboard-empty i {
+    font-size: 48px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/* Chart Tooltips */
+.chart-tooltip {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Print Styles */
+@media print {
+    .trackflow-dashboard-page .page-head,
+    .trackflow-dashboard-page .page-actions {
+        display: none;
+    }
+    
+    .dashboard-card {
+        page-break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+}
