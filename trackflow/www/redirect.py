@@ -25,40 +25,53 @@ def handle_redirect():
             
         tracking_id = path_parts[2]
         
-        # Get tracking link
-        if not frappe.db.exists("Tracking Link", tracking_id):
+        # Check if tracking link exists - using "Tracked Link" instead of "Tracking Link"
+        if not frappe.db.exists("Tracked Link", tracking_id):
             frappe.throw("Tracking link not found")
             
-        tracking_link = frappe.get_doc("Tracking Link", tracking_id)
+        tracking_link = frappe.get_doc("Tracked Link", tracking_id)
         
         # Check if link is active
         if tracking_link.status != "Active":
             frappe.throw("This link is no longer active")
             
         # Update click count
-        tracking_link.total_clicks = (tracking_link.total_clicks or 0) + 1
-        tracking_link.last_accessed = frappe.utils.now()
-        tracking_link.last_accessed_ip = frappe.local.request_ip
+        tracking_link.click_count = (tracking_link.click_count or 0) + 1
+        tracking_link.last_clicked = frappe.utils.now()
         tracking_link.save(ignore_permissions=True)
         
         # Track the click event
         track_click_event(tracking_link)
         
-        # Get UTM parameters from tracking link
+        # Get target URL - it's called target_url in the schema
+        destination_url = tracking_link.target_url or ""
+        
+        # If no target URL override, get from campaign
+        if not destination_url and tracking_link.campaign:
+            try:
+                campaign = frappe.get_doc("Link Campaign", tracking_link.campaign)
+                # Assuming campaign has a target_url field
+                destination_url = getattr(campaign, "target_url", "")
+            except:
+                pass
+        
+        if not destination_url:
+            frappe.throw("No destination URL configured")
+        
+        # Apply UTM parameters from override or campaign
         utm_params = []
-        if tracking_link.utm_source:
-            utm_params.append(f"utm_source={tracking_link.utm_source}")
-        if tracking_link.utm_medium:
-            utm_params.append(f"utm_medium={tracking_link.utm_medium}")
-        if tracking_link.utm_campaign:
-            utm_params.append(f"utm_campaign={tracking_link.campaign}")
-        if tracking_link.utm_term:
-            utm_params.append(f"utm_term={tracking_link.utm_term}")
-        if tracking_link.utm_content:
-            utm_params.append(f"utm_content={tracking_link.utm_content}")
-            
-        # Build destination URL
-        destination_url = tracking_link.destination_url
+        
+        # Try to parse UTM override
+        if tracking_link.utm_override:
+            try:
+                utm_data = json.loads(tracking_link.utm_override)
+                for key, value in utm_data.items():
+                    if key.startswith("utm_") and value:
+                        utm_params.append(f"{key}={value}")
+            except:
+                pass
+        
+        # Build destination URL with UTM params
         if utm_params:
             separator = "&" if "?" in destination_url else "?"
             destination_url = f"{destination_url}{separator}{'&'.join(utm_params)}"
@@ -75,27 +88,19 @@ def handle_redirect():
 def track_click_event(tracking_link):
     """Track the click event"""
     try:
-        from trackflow.utils import get_visitor_from_request
+        # For now, we'll use Click Event DocType which exists
+        event = frappe.new_doc("Click Event")
         
-        # Get or create visitor
-        visitor = get_visitor_from_request()
-        if not visitor:
-            return
-            
-        # Create click event
-        event = frappe.new_doc("Visitor Event")
-        event.visitor = visitor.name
-        event.event_type = "campaign_click"
-        event.event_category = "campaign"
-        event.url = tracking_link.destination_url
-        event.event_data = json.dumps({
-            "tracking_link": tracking_link.name,
-            "campaign": tracking_link.campaign,
-            "source": tracking_link.utm_source,
-            "medium": tracking_link.utm_medium,
-            "destination": tracking_link.destination_url
-        })
-        event.timestamp = frappe.utils.now()
+        # Map fields based on what Click Event might have
+        event.tracked_link = tracking_link.name
+        event.click_time = frappe.utils.now()
+        
+        # Try to get visitor info from cookies (even though Visitor DocType doesn't exist)
+        visitor_id = frappe.request.cookies.get('trackflow_visitor')
+        if visitor_id:
+            event.visitor_id = visitor_id
+        
+        # Save click event
         event.insert(ignore_permissions=True)
         
     except Exception as e:
