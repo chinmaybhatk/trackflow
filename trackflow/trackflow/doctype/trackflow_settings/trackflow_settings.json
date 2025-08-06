@@ -1,282 +1,194 @@
 {
- "actions": [],
- "allow_rename": 1,
- "creation": "2024-01-01 10:00:00.000000",
- "doctype": "DocType",
- "editable_grid": 1,
- "engine": "InnoDB",
- "field_order": [
-  "general_section",
-  "enable_trackflow",
-  "default_redirect_delay",
-  "link_expiry_days",
-  "cookie_duration",
-  "column_break_1",
-  "enable_link_preview",
-  "preview_cache_duration",
-  "max_preview_size",
-  "tracking_section",
-  "track_anonymous_clicks",
-  "enable_geolocation",
-  "enable_bot_detection",
-  "column_break_2",
-  "auto_create_contacts",
-  "auto_create_leads",
-  "lead_source_field",
-  "bot_detection_section",
-  "bot_user_agents",
-  "notification_section",
-  "enable_email_notifications",
-  "notification_recipients",
-  "click_notification_threshold",
-  "api_section",
-  "api_rate_limit",
-  "api_keys_expiry_days",
-  "enable_webhook_notifications",
-  "webhook_url",
-  "privacy_section",
-  "anonymize_ip",
-  "data_retention_days",
-  "gdpr_compliant_mode"
- ],
- "fields": [
-  {
-   "fieldname": "general_section",
-   "fieldtype": "Section Break",
-   "label": "General Settings"
-  },
-  {
-   "default": "1",
-   "fieldname": "enable_trackflow",
-   "fieldtype": "Check",
-   "label": "Enable TrackFlow"
-  },
-  {
-   "default": "0",
-   "description": "Delay in seconds before redirecting (0 for instant)",
-   "fieldname": "default_redirect_delay",
-   "fieldtype": "Int",
-   "label": "Default Redirect Delay (seconds)"
-  },
-  {
-   "default": "365",
-   "description": "Number of days after which links expire (0 for no expiry)",
-   "fieldname": "link_expiry_days",
-   "fieldtype": "Int",
-   "label": "Link Expiry Days"
-  },
-  {
-   "default": "30",
-   "description": "Duration in days for tracking cookies",
-   "fieldname": "cookie_duration",
-   "fieldtype": "Int",
-   "label": "Cookie Duration (days)",
-   "reqd": 1
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "1",
-   "description": "Generate link previews for social media",
-   "fieldname": "enable_link_preview",
-   "fieldtype": "Check",
-   "label": "Enable Link Preview"
-  },
-  {
-   "default": "3600",
-   "depends_on": "eval:doc.enable_link_preview",
-   "description": "Cache duration for link previews in seconds",
-   "fieldname": "preview_cache_duration",
-   "fieldtype": "Int",
-   "label": "Preview Cache Duration (seconds)"
-  },
-  {
-   "default": "1048576",
-   "depends_on": "eval:doc.enable_link_preview",
-   "description": "Maximum size for preview images in bytes",
-   "fieldname": "max_preview_size",
-   "fieldtype": "Int",
-   "label": "Max Preview Size (bytes)"
-  },
-  {
-   "fieldname": "tracking_section",
-   "fieldtype": "Section Break",
-   "label": "Tracking Configuration"
-  },
-  {
-   "default": "1",
-   "description": "Track clicks from users not in the system",
-   "fieldname": "track_anonymous_clicks",
-   "fieldtype": "Check",
-   "label": "Track Anonymous Clicks"
-  },
-  {
-   "default": "1",
-   "description": "Collect geolocation data from IP addresses",
-   "fieldname": "enable_geolocation",
-   "fieldtype": "Check",
-   "label": "Enable Geolocation"
-  },
-  {
-   "default": "1",
-   "description": "Detect and filter bot traffic",
-   "fieldname": "enable_bot_detection",
-   "fieldtype": "Check",
-   "label": "Enable Bot Detection"
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "0",
-   "description": "Automatically create contacts from new visitors",
-   "fieldname": "auto_create_contacts",
-   "fieldtype": "Check",
-   "label": "Auto Create Contacts"
-  },
-  {
-   "default": "0",
-   "description": "Automatically create leads from tracked links",
-   "fieldname": "auto_create_leads",
-   "fieldtype": "Check",
-   "label": "Auto Create Leads"
-  },
-  {
-   "default": "TrackFlow",
-   "depends_on": "eval:doc.auto_create_leads",
-   "fieldname": "lead_source_field",
-   "fieldtype": "Data",
-   "label": "Lead Source Field Value"
-  },
-  {
-   "depends_on": "eval:doc.enable_bot_detection",
-   "fieldname": "bot_detection_section",
-   "fieldtype": "Section Break",
-   "label": "Bot Detection"
-  },
-  {
-   "default": "bot\ncrawler\nspider\nscraper\nfacebookexternalhit\nWhatsApp\nTelegramBot\nTwitterbot\nLinkedInBot\nSlackbot\nDiscordbot\nPinterestbot\nredditbot\ntumblr\nvkShare\nOutbrainbot\nYandexBot\nbingbot\nGooglebot\nBaiduspider\nSeznamBot\nDuckDuckBot\nfacebookcatalog\nSemrushBot\nAhrefsBot\nMJ12bot\nDotBot\nRogerbot\nScreamingFrog\nDeepCrawl\ngtmetrix\npingdom\nuptimerobot",
-   "description": "User agents to identify as bots (one per line)",
-   "fieldname": "bot_user_agents",
-   "fieldtype": "Small Text",
-   "label": "Bot User Agents"
-  },
-  {
-   "fieldname": "notification_section",
-   "fieldtype": "Section Break",
-   "label": "Notifications"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_email_notifications",
-   "fieldtype": "Check",
-   "label": "Enable Email Notifications"
-  },
-  {
-   "depends_on": "eval:doc.enable_email_notifications",
-   "description": "Email addresses to receive notifications (comma separated)",
-   "fieldname": "notification_recipients",
-   "fieldtype": "Data",
-   "label": "Notification Recipients"
-  },
-  {
-   "default": "100",
-   "depends_on": "eval:doc.enable_email_notifications",
-   "description": "Send notification after this many clicks",
-   "fieldname": "click_notification_threshold",
-   "fieldtype": "Int",
-   "label": "Click Notification Threshold"
-  },
-  {
-   "fieldname": "api_section",
-   "fieldtype": "Section Break",
-   "label": "API Configuration"
-  },
-  {
-   "default": "1000",
-   "description": "API calls per hour per key",
-   "fieldname": "api_rate_limit",
-   "fieldtype": "Int",
-   "label": "API Rate Limit"
-  },
-  {
-   "default": "90",
-   "description": "Days after which API keys expire (0 for no expiry)",
-   "fieldname": "api_keys_expiry_days",
-   "fieldtype": "Int",
-   "label": "API Keys Expiry Days"
-  },
-  {
-   "default": "0",
-   "fieldname": "enable_webhook_notifications",
-   "fieldtype": "Check",
-   "label": "Enable Webhook Notifications"
-  },
-  {
-   "depends_on": "eval:doc.enable_webhook_notifications",
-   "fieldname": "webhook_url",
-   "fieldtype": "Data",
-   "label": "Webhook URL"
-  },
-  {
-   "fieldname": "privacy_section",
-   "fieldtype": "Section Break",
-   "label": "Privacy & Compliance"
-  },
-  {
-   "default": "0",
-   "description": "Anonymize last octet of IP addresses",
-   "fieldname": "anonymize_ip",
-   "fieldtype": "Check",
-   "label": "Anonymize IP Addresses"
-  },
-  {
-   "default": "90",
-   "description": "Days to retain click data (0 for unlimited)",
-   "fieldname": "data_retention_days",
-   "fieldtype": "Int",
-   "label": "Data Retention Days"
-  },
-  {
-   "default": "0",
-   "description": "Enable GDPR compliant mode (requires consent)",
-   "fieldname": "gdpr_compliant_mode",
-   "fieldtype": "Check",
-   "label": "GDPR Compliant Mode"
-  }
- ],
- "index_web_pages_for_search": 0,
- "issingle": 1,
- "links": [],
- "modified": "2024-01-01 10:00:00.000000",
- "modified_by": "Administrator",
- "module": "TrackFlow",
- "name": "TrackFlow Settings",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "print": 1,
-   "read": 1,
-   "role": "TrackFlow Manager",
-   "share": 1,
-   "write": 1
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "track_changes": 1
+    "actions": [],
+    "creation": "2025-08-06 12:00:00.000000",
+    "default_view": "List",
+    "doctype": "DocType",
+    "document_type": "Setup",
+    "editable_grid": 0,
+    "engine": "InnoDB",
+    "field_order": [
+        "general_section",
+        "enable_tracking",
+        "default_attribution_model",
+        "cookie_expiry_days",
+        "column_break_1",
+        "tracking_domain",
+        "exclude_internal_traffic",
+        "internal_ip_ranges",
+        "attribution_section",
+        "attribution_window_days",
+        "conversion_goals",
+        "notification_section",
+        "enable_notifications",
+        "notification_recipients",
+        "alert_threshold_visits",
+        "alert_threshold_conversion_rate",
+        "advanced_section",
+        "enable_cross_domain_tracking",
+        "allowed_domains",
+        "enable_enhanced_ecommerce",
+        "custom_dimensions"
+    ],
+    "fields": [
+        {
+            "fieldname": "general_section",
+            "fieldtype": "Section Break",
+            "label": "General Settings"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_tracking",
+            "fieldtype": "Check",
+            "label": "Enable Tracking"
+        },
+        {
+            "default": "Last Touch",
+            "fieldname": "default_attribution_model",
+            "fieldtype": "Select",
+            "label": "Default Attribution Model",
+            "options": "Last Touch\nFirst Touch\nLinear\nTime Decay\nPosition Based\nData Driven"
+        },
+        {
+            "default": "30",
+            "fieldname": "cookie_expiry_days",
+            "fieldtype": "Int",
+            "label": "Cookie Expiry Days"
+        },
+        {
+            "fieldname": "column_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "tracking_domain",
+            "fieldtype": "Data",
+            "label": "Tracking Domain",
+            "description": "Leave empty to use current domain"
+        },
+        {
+            "default": "0",
+            "fieldname": "exclude_internal_traffic",
+            "fieldtype": "Check",
+            "label": "Exclude Internal Traffic"
+        },
+        {
+            "depends_on": "exclude_internal_traffic",
+            "fieldname": "internal_ip_ranges",
+            "fieldtype": "Table",
+            "label": "Internal IP Ranges",
+            "options": "TrackFlow IP Range"
+        },
+        {
+            "fieldname": "attribution_section",
+            "fieldtype": "Section Break",
+            "label": "Attribution Settings"
+        },
+        {
+            "default": "90",
+            "fieldname": "attribution_window_days",
+            "fieldtype": "Int",
+            "label": "Attribution Window (Days)",
+            "description": "How many days to look back for attribution"
+        },
+        {
+            "fieldname": "conversion_goals",
+            "fieldtype": "Table",
+            "label": "Conversion Goals",
+            "options": "TrackFlow Conversion Goal"
+        },
+        {
+            "fieldname": "notification_section",
+            "fieldtype": "Section Break",
+            "label": "Notifications"
+        },
+        {
+            "default": "1",
+            "fieldname": "enable_notifications",
+            "fieldtype": "Check",
+            "label": "Enable Notifications"
+        },
+        {
+            "depends_on": "enable_notifications",
+            "fieldname": "notification_recipients",
+            "fieldtype": "Table",
+            "label": "Notification Recipients",
+            "options": "TrackFlow Notification Recipient"
+        },
+        {
+            "default": "1000",
+            "depends_on": "enable_notifications",
+            "fieldname": "alert_threshold_visits",
+            "fieldtype": "Int",
+            "label": "Alert Threshold - Visits"
+        },
+        {
+            "default": "5",
+            "depends_on": "enable_notifications",
+            "fieldname": "alert_threshold_conversion_rate",
+            "fieldtype": "Float",
+            "label": "Alert Threshold - Conversion Rate (%)"
+        },
+        {
+            "fieldname": "advanced_section",
+            "fieldtype": "Section Break",
+            "label": "Advanced Settings"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_cross_domain_tracking",
+            "fieldtype": "Check",
+            "label": "Enable Cross-Domain Tracking"
+        },
+        {
+            "depends_on": "enable_cross_domain_tracking",
+            "fieldname": "allowed_domains",
+            "fieldtype": "Small Text",
+            "label": "Allowed Domains",
+            "description": "One domain per line"
+        },
+        {
+            "default": "0",
+            "fieldname": "enable_enhanced_ecommerce",
+            "fieldtype": "Check",
+            "label": "Enable Enhanced E-commerce Tracking"
+        },
+        {
+            "fieldname": "custom_dimensions",
+            "fieldtype": "Table",
+            "label": "Custom Dimensions",
+            "options": "TrackFlow Custom Dimension"
+        }
+    ],
+    "issingle": 1,
+    "links": [],
+    "modified": "2025-08-06 12:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "TrackFlow",
+    "name": "TrackFlow Settings",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "TrackFlow Manager",
+            "share": 1,
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }
