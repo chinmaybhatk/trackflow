@@ -81,3 +81,77 @@ def record_page_view_event(visitor, session, url):
         event.insert(ignore_permissions=True)
     except Exception as e:
         frappe.log_error(f"Error recording page view: {str(e)}")
+
+
+def track_event(visitor_id, event_type, event_data=None):
+    """Track a custom event"""
+    try:
+        if not frappe.db.exists("Visitor", visitor_id):
+            frappe.log_error(f"Visitor {visitor_id} not found")
+            return None
+            
+        event = frappe.new_doc("Visitor Event")
+        event.visitor = visitor_id
+        event.event_type = event_type
+        event.event_category = event_data.get("category", "custom") if event_data else "custom"
+        event.event_action = event_data.get("action") if event_data else None
+        event.event_label = event_data.get("label") if event_data else None
+        event.event_value = event_data.get("value") if event_data else None
+        event.url = event_data.get("url", frappe.request.url if frappe.request else None) if event_data else None
+        event.timestamp = frappe.utils.now()
+        
+        # Store additional data as JSON
+        if event_data:
+            event.event_data = frappe.as_json(event_data)
+            
+        event.insert(ignore_permissions=True)
+        return event
+        
+    except Exception as e:
+        frappe.log_error(f"Error tracking event: {str(e)}")
+        return None
+
+
+def track_conversion(visitor_id, conversion_type, conversion_value=None, metadata=None):
+    """Track a conversion event"""
+    try:
+        if not frappe.db.exists("Visitor", visitor_id):
+            frappe.log_error(f"Visitor {visitor_id} not found")
+            return None
+            
+        # Create conversion record
+        conversion = frappe.new_doc("Conversion")
+        conversion.visitor = visitor_id
+        conversion.conversion_type = conversion_type
+        conversion.conversion_value = conversion_value
+        conversion.conversion_date = frappe.utils.now()
+        
+        # Add metadata
+        if metadata:
+            conversion.source = metadata.get("source")
+            conversion.medium = metadata.get("medium")
+            conversion.campaign = metadata.get("campaign")
+            conversion.metadata = frappe.as_json(metadata)
+            
+        conversion.insert(ignore_permissions=True)
+        
+        # Also track as an event
+        track_event(visitor_id, "conversion", {
+            "category": "conversion",
+            "action": conversion_type,
+            "value": conversion_value,
+            "metadata": metadata
+        })
+        
+        # Update visitor conversion status
+        visitor = frappe.get_doc("Visitor", visitor_id)
+        visitor.has_converted = 1
+        visitor.conversion_count = (visitor.conversion_count or 0) + 1
+        visitor.last_conversion_date = frappe.utils.now()
+        visitor.save(ignore_permissions=True)
+        
+        return conversion
+        
+    except Exception as e:
+        frappe.log_error(f"Error tracking conversion: {str(e)}")
+        return None
