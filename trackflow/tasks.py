@@ -1,149 +1,269 @@
 """
-TrackFlow Scheduled Tasks
+Scheduled tasks for TrackFlow
 """
 
 import frappe
-from frappe.utils import now_datetime, add_days
+from frappe import _
 from datetime import datetime, timedelta
 
-def process_click_queue():
-    """
-    Process queued click events for better performance
-    """
-    # Get pending click events from queue
-    pending_clicks = frappe.get_all(
-        "Click Queue",
-        filters={"status": "Pending"},
-        limit=100,
-        order_by="creation asc"
-    )
+def process_visitor_sessions():
+    """Process visitor sessions and update metrics"""
+    # Get active sessions that haven't been updated in 30 minutes
+    stale_time = frappe.utils.add_to_date(frappe.utils.now(), minutes=-30)
     
-    for click in pending_clicks:
-        try:
-            process_single_click(click.name)
-            frappe.db.commit()
-        except Exception as e:
-            frappe.log_error(f"Error processing click {click.name}: {str(e)}")
-            frappe.db.rollback()
-
-def cleanup_expired_links():
-    """
-    Mark expired links as inactive
-    """
-    expired_links = frappe.get_all(
-        "Tracked Link",
+    sessions = frappe.get_all(
+        "Visitor Session",
         filters={
-            "expiry_date": ["<", now_datetime()],
-            "status": "Active"
+            "end_time": None,
+            "last_activity": ["<", stale_time]
         },
-        pluck="name"
+        fields=["name", "visitor", "start_time", "last_activity"]
     )
     
-    for link_name in expired_links:
-        link = frappe.get_doc("Tracked Link", link_name)
-        link.status = "Expired"
-        link.save(ignore_permissions=True)
-    
-    frappe.db.commit()
-    
-    return f"Marked {len(expired_links)} links as expired"
+    for session in sessions:
+        # Mark session as ended
+        doc = frappe.get_doc("Visitor Session", session.name)
+        doc.end_time = session.last_activity
+        doc.duration = calculate_duration(session.start_time, session.last_activity)
+        doc.save(ignore_permissions=True)
 
-def generate_daily_reports():
-    """
-    Generate daily analytics reports
-    """
-    yesterday = add_days(now_datetime(), -1)
-    
-    # Get all active campaigns
+def update_campaign_metrics():
+    """Update campaign metrics from tracking data"""
     campaigns = frappe.get_all(
-        "Link Campaign",
+        "Campaign",
         filters={"status": "Active"},
-        pluck="name"
+        fields=["name"]
     )
     
     for campaign in campaigns:
-        generate_campaign_report(campaign, yesterday)
-    
-    # Send summary email to admins
-    send_daily_summary(yesterday)
+        update_single_campaign_metrics(campaign.name)
 
-def send_weekly_analytics():
-    """
-    Send weekly analytics digest to users
-    """
-    # Get users who opted in for weekly reports
-    users = frappe.get_all(
-        "User",
-        filters={"trackflow_weekly_digest": 1},
-        pluck="name"
+def update_single_campaign_metrics(campaign_name):
+    """Update metrics for a single campaign"""
+    # Get all tracking links for this campaign
+    links = frappe.get_all(
+        "Tracking Link",
+        filters={"campaign": campaign_name},
+        fields=["name", "total_clicks"]
     )
     
-    for user in users:
-        send_user_analytics_digest(user)
+    total_clicks = sum(link.total_clicks or 0 for link in links)
+    
+    # Get conversions
+    conversions = frappe.db.count(
+        "CRM Lead",
+        filters={"trackflow_campaign": campaign_name}
+    )
+    
+    # Update campaign
+    campaign = frappe.get_doc("Campaign", campaign_name)
+    campaign.total_clicks = total_clicks
+    campaign.conversions = conversions
+    
+    if total_clicks > 0:
+        campaign.conversion_rate = (conversions / total_clicks) * 100
+    else:
+        campaign.conversion_rate = 0
+        
+    campaign.save(ignore_permissions=True)
 
-def process_single_click(queue_name):
-    """
-    Process a single click from queue
-    """
-    queue_doc = frappe.get_doc("Click Queue", queue_name)
+def cleanup_expired_data():
+    """Clean up expired tracking data"""
+    settings = frappe.get_single("TrackFlow Settings")
     
-    # Create click event
-    click_event = frappe.get_doc({
-        "doctype": "Click Event",
-        "tracked_link": queue_doc.tracked_link,
-        "timestamp": queue_doc.timestamp,
-        "ip_address": queue_doc.ip_address,
-        "user_agent": queue_doc.user_agent,
-        "referrer": queue_doc.referrer,
-        "country": queue_doc.country,
-        "city": queue_doc.city
-    })
+    # Calculate cutoff date
+    cutoff_date = frappe.utils.add_to_date(
+        frappe.utils.today(),
+        days=-(settings.data_retention_days or 90)
+    )
     
-    click_event.insert(ignore_permissions=True)
+    # Delete old visitor events
+    frappe.db.delete(
+        "Visitor Event",
+        {"timestamp": ["<", cutoff_date]}
+    )
     
-    # Update link statistics
-    update_link_stats(queue_doc.tracked_link)
-    
-    # Mark queue item as processed
-    queue_doc.status = "Processed"
-    queue_doc.save(ignore_permissions=True)
+    # Delete old sessions
+    frappe.db.delete(
+        "Visitor Session",
+        {"start_time": ["<", cutoff_date]}
+    )
 
-def update_link_stats(link_name):
-    """
-    Update link click statistics
-    """
-    link = frappe.get_doc("Tracked Link", link_name)
+def generate_daily_reports():
+    """Generate daily analytics reports"""
+    # Get yesterday's date range
+    yesterday = frappe.utils.add_to_date(frappe.utils.today(), days=-1)
+    start_date = frappe.utils.get_datetime_str(yesterday + " 00:00:00")
+    end_date = frappe.utils.get_datetime_str(yesterday + " 23:59:59")
     
-    # Update click count
-    link.total_clicks = frappe.db.count("Click Event", {"tracked_link": link_name})
+    # Generate report data
+    report_data = {
+        "date": yesterday,
+        "visitors": get_visitor_count(start_date, end_date),
+        "page_views": get_page_view_count(start_date, end_date),
+        "conversions": get_conversion_count(start_date, end_date),
+        "top_pages": get_top_pages(start_date, end_date),
+        "top_sources": get_top_sources(start_date, end_date)
+    }
     
-    # Update unique visitors
-    unique_ips = frappe.db.sql("""
-        SELECT COUNT(DISTINCT ip_address) 
-        FROM `tabClick Event` 
-        WHERE tracked_link = %s
-    """, link_name)[0][0]
-    
-    link.unique_visitors = unique_ips
-    link.save(ignore_permissions=True)
+    # Store report
+    report = frappe.new_doc("TrackFlow Daily Report")
+    report.report_date = yesterday
+    report.report_data = frappe.as_json(report_data)
+    report.insert(ignore_permissions=True)
 
-def generate_campaign_report(campaign_name, date):
-    """
-    Generate report for a specific campaign
-    """
-    # Implementation for campaign report generation
+def calculate_attribution():
+    """Calculate attribution for recent conversions"""
+    # Get deals that need attribution calculation
+    deals = frappe.get_all(
+        "CRM Deal",
+        filters={
+            "stage": "Won",
+            "trackflow_attribution_data": None,
+            "trackflow_marketing_influenced": 1
+        },
+        fields=["name"]
+    )
+    
+    for deal in deals:
+        try:
+            from trackflow.integrations.crm_deal import calculate_attribution as calc_deal_attr
+            deal_doc = frappe.get_doc("CRM Deal", deal.name)
+            calc_deal_attr(deal_doc, None)
+        except Exception as e:
+            frappe.log_error(f"Attribution calculation error for {deal.name}: {str(e)}")
+
+def update_visitor_profiles():
+    """Update visitor profiles with aggregated data"""
+    # Get visitors that need profile updates
+    visitors = frappe.get_all(
+        "Visitor",
+        filters={
+            "profile_updated": None
+        },
+        fields=["name"],
+        limit=100
+    )
+    
+    for visitor in visitors:
+        update_single_visitor_profile(visitor.name)
+
+def update_single_visitor_profile(visitor_name):
+    """Update profile for a single visitor"""
+    visitor = frappe.get_doc("Visitor", visitor_name)
+    
+    # Calculate engagement score
+    engagement_score = 0
+    
+    # Page views
+    page_views = frappe.db.count(
+        "Visitor Event",
+        filters={
+            "visitor": visitor_name,
+            "event_type": "page_view"
+        }
+    )
+    engagement_score += page_views * 1
+    
+    # Form submissions
+    form_submissions = frappe.db.count(
+        "Visitor Event",
+        filters={
+            "visitor": visitor_name,
+            "event_type": "form_submission"
+        }
+    )
+    engagement_score += form_submissions * 10
+    
+    # Update visitor
+    visitor.engagement_score = engagement_score
+    visitor.profile_updated = frappe.utils.now()
+    visitor.save(ignore_permissions=True)
+
+def send_weekly_analytics():
+    """Send weekly analytics email"""
+    from trackflow.notifications import send_weekly_report
+    send_weekly_report()
+
+def cleanup_old_visitors():
+    """Clean up old visitor data"""
+    # Remove visitors with no activity in 180 days
+    cutoff_date = frappe.utils.add_to_date(frappe.utils.today(), days=-180)
+    
+    old_visitors = frappe.get_all(
+        "Visitor",
+        filters={
+            "last_seen": ["<", cutoff_date],
+            "lead": None,
+            "organization": None
+        },
+        fields=["name"]
+    )
+    
+    for visitor in old_visitors:
+        frappe.delete_doc("Visitor", visitor.name, ignore_permissions=True)
+
+def generate_attribution_reports():
+    """Generate weekly attribution reports"""
+    # This is a placeholder for attribution report generation
     pass
 
-def send_daily_summary(date):
-    """
-    Send daily summary email
-    """
-    # Implementation for daily summary
-    pass
+# Helper functions
+def calculate_duration(start_time, end_time):
+    """Calculate duration in seconds"""
+    if not start_time or not end_time:
+        return 0
+    start = frappe.utils.get_datetime(start_time)
+    end = frappe.utils.get_datetime(end_time)
+    return int((end - start).total_seconds())
 
-def send_user_analytics_digest(user):
-    """
-    Send weekly digest to user
-    """
-    # Implementation for user digest
-    pass
+def get_visitor_count(start_date, end_date):
+    """Get unique visitor count for date range"""
+    return frappe.db.sql("""
+        SELECT COUNT(DISTINCT visitor) 
+        FROM `tabVisitor Event`
+        WHERE timestamp BETWEEN %s AND %s
+    """, (start_date, end_date))[0][0]
+
+def get_page_view_count(start_date, end_date):
+    """Get page view count for date range"""
+    return frappe.db.count(
+        "Visitor Event",
+        filters={
+            "event_type": "page_view",
+            "timestamp": ["between", [start_date, end_date]]
+        }
+    )
+
+def get_conversion_count(start_date, end_date):
+    """Get conversion count for date range"""
+    return frappe.db.count(
+        "CRM Lead",
+        filters={
+            "creation": ["between", [start_date, end_date]],
+            "trackflow_visitor_id": ["!=", None]
+        }
+    )
+
+def get_top_pages(start_date, end_date, limit=10):
+    """Get top pages by views"""
+    return frappe.db.sql("""
+        SELECT url, COUNT(*) as views
+        FROM `tabVisitor Event`
+        WHERE event_type = 'page_view'
+        AND timestamp BETWEEN %s AND %s
+        GROUP BY url
+        ORDER BY views DESC
+        LIMIT %s
+    """, (start_date, end_date, limit), as_dict=True)
+
+def get_top_sources(start_date, end_date, limit=10):
+    """Get top traffic sources"""
+    return frappe.db.sql("""
+        SELECT source, COUNT(DISTINCT visitor) as visitors
+        FROM `tabVisitor`
+        WHERE first_seen BETWEEN %s AND %s
+        GROUP BY source
+        ORDER BY visitors DESC
+        LIMIT %s
+    """, (start_date, end_date, limit), as_dict=True)
