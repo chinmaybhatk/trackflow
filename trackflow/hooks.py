@@ -15,7 +15,7 @@ modules = {
         "color": "#2563eb",
         "icon": "fa fa-link",
         "type": "module",
-        "label": _("TrackFlow"),
+        "label": "TrackFlow",
         "category": "Modules"
     }
 }
@@ -260,5 +260,5 @@ workspaces = {
 
 # Menu items that appear in the portal
 standard_portal_menu_items = [
-    {"title": _("TrackFlow Dashboard"), "route": "/trackflow", "reference_doctype": "TrackFlow Settings", "role": "TrackFlow User"}
+    {"title": "TrackFlow Dashboard", "route": "/trackflow", "reference_doctype": "TrackFlow Settings", "role": "TrackFlow User"}
 ]
