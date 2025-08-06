@@ -232,31 +232,37 @@ def create_fcrm_property_setters():
     """Create property setters for FCRM DocTypes"""
     property_setters = [
         {
-            "doctype": "CRM Lead",
+            "doc_type": "CRM Lead",
             "doctype_or_field": "DocType",
             "property": "track_changes",
-            "value": "1"
+            "value": "1",
+            "property_type": "Check"
         },
         {
-            "doctype": "CRM Deal",
+            "doc_type": "CRM Deal",
             "doctype_or_field": "DocType",
             "property": "track_changes",
-            "value": "1"
+            "value": "1",
+            "property_type": "Check"
         },
         {
-            "doctype": "CRM Organization",
+            "doc_type": "CRM Organization",
             "doctype_or_field": "DocType",
             "property": "track_changes",
-            "value": "1"
+            "value": "1",
+            "property_type": "Check"
         }
     ]
     
     for ps in property_setters:
-        ps_name = f"{ps['doctype']}-{ps['property']}"
+        ps_name = f"{ps['doc_type']}-main-{ps['property']}"
         if not frappe.db.exists("Property Setter", ps_name):
             prop_setter = frappe.new_doc("Property Setter")
-            prop_setter.update(ps)
-            prop_setter.name = ps_name
+            prop_setter.doc_type = ps['doc_type']
+            prop_setter.doctype_or_field = ps['doctype_or_field']
+            prop_setter.property = ps['property']
+            prop_setter.value = ps['value']
+            prop_setter.property_type = ps['property_type']
             prop_setter.insert()
             print(f"Created property setter: {ps_name}")
 
