@@ -6,6 +6,20 @@ app_email = "support@trackflow.app"
 app_license = "MIT"
 app_version = "1.0.0"
 
+# Required for sidebar visibility
+has_permission = {"TrackFlow": "trackflow.permissions.has_app_permission"}
+
+# Module Configuration
+modules = {
+    "TrackFlow": {
+        "color": "#2563eb",
+        "icon": "fa fa-link",
+        "type": "module",
+        "label": _("TrackFlow"),
+        "category": "Modules"
+    }
+}
+
 # Include files
 # ------------------
 
@@ -91,6 +105,10 @@ after_migrate = "trackflow.install.after_migrate"
 # Fixtures
 # --------
 fixtures = [
+    {
+        "dt": "Workspace",
+        "filters": [["name", "=", "TrackFlow"]]
+    },
     {
         "dt": "Custom Field",
         "filters": [
@@ -234,16 +252,13 @@ website_apis = [
     "trackflow.api.track"
 ]
 
-# Custom Workspace
+# Workspace config
 # ----------------
-workspace = {
-    "TrackFlow": {
-        "category": "Modules",
-        "color": "#2563eb",
-        "icon": "fa fa-link",
-        "type": "module",
-        "label": "TrackFlow",
-        "public": 1,
-        "hidden": 0
-    }
+workspaces = {
+    "TrackFlow": "trackflow/trackflow/workspace/trackflow/trackflow.json"
 }
+
+# Menu items that appear in the portal
+standard_portal_menu_items = [
+    {"title": _("TrackFlow Dashboard"), "route": "/trackflow", "reference_doctype": "TrackFlow Settings", "role": "TrackFlow User"}
+]
