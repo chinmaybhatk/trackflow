@@ -235,7 +235,10 @@ rest_api_methods = [
     "trackflow.api.campaign.create_campaign",
     "trackflow.api.tracking.track_event",
     "trackflow.api.tracking.get_tracking_script",
-    "trackflow.api.visitor.get_visitor_profile"
+    "trackflow.api.visitor.get_visitor_profile",
+    # Debug endpoints
+    "trackflow.api.debug.test",
+    "trackflow.api.debug.debug"
 ]
 
 # Branding
