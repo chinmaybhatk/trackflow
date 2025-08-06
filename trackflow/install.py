@@ -16,11 +16,11 @@ def after_install():
     """Tasks to run after installing TrackFlow"""
     print("Setting up TrackFlow...")
     
-    # Create custom fields
-    create_custom_fields()
+    # Create custom fields for FCRM
+    create_fcrm_custom_fields()
     
     # Create property setters
-    create_property_setters()
+    create_fcrm_property_setters()
     
     # Create default data
     create_default_data()
@@ -40,7 +40,7 @@ def after_install():
 def after_migrate():
     """Tasks to run after migration"""
     # Update custom fields if needed
-    create_custom_fields()
+    create_fcrm_custom_fields()
     
     # Update workspace
     update_workspace()
@@ -50,25 +50,18 @@ def check_dependencies():
     installed_apps = frappe.get_installed_apps()
     missing = []
     
-    # Check for CRM app
+    # Check for Frappe CRM app
     if "crm" not in [app.lower() for app in installed_apps]:
-        missing.append("CRM")
-    
-    # Check for ERPNext (which contains the Selling module)
-    if "erpnext" not in [app.lower() for app in installed_apps]:
-        missing.append("ERPNext (for Selling module)")
+        missing.append("Frappe CRM")
     else:
-        # Verify that Selling module exists within ERPNext
-        try:
-            # Check if Selling module exists by checking for a common Selling doctype
-            if not frappe.db.exists("DocType", "Customer") and not frappe.db.exists("Module Def", {"module_name": "Selling"}):
-                missing.append("Selling module in ERPNext")
-        except Exception:
-            # In case of any error, just assume ERPNext has Selling module
-            pass
+        # Verify FCRM DocTypes exist
+        required_doctypes = ["CRM Lead", "CRM Deal", "CRM Organization"]
+        for doctype in required_doctypes:
+            if not frappe.db.exists("DocType", doctype):
+                missing.append(f"FCRM DocType: {doctype}")
     
     if missing:
-        frappe.throw(_("TrackFlow requires the following modules: {0}").format(", ".join(missing)))
+        frappe.throw(_("TrackFlow requires the following: {0}").format(", ".join(missing)))
 
 def create_roles():
     """Create roles required for TrackFlow"""
@@ -107,6 +100,165 @@ def create_roles():
             role.update(role_data)
             role.insert()
             print(f"Created role: {role_data['role_name']}")
+
+def create_fcrm_custom_fields():
+    """Create custom fields for FCRM DocTypes"""
+    custom_fields = {
+        "CRM Lead": [
+            {
+                "fieldname": "trackflow_visitor_id",
+                "label": "TrackFlow Visitor ID",
+                "fieldtype": "Data",
+                "insert_after": "email",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_source",
+                "label": "Source",
+                "fieldtype": "Data",
+                "insert_after": "trackflow_visitor_id"
+            },
+            {
+                "fieldname": "trackflow_medium",
+                "label": "Medium",
+                "fieldtype": "Data",
+                "insert_after": "trackflow_source"
+            },
+            {
+                "fieldname": "trackflow_campaign",
+                "label": "Campaign",
+                "fieldtype": "Link",
+                "options": "Campaign",
+                "insert_after": "trackflow_medium"
+            },
+            {
+                "fieldname": "trackflow_first_touch_date",
+                "label": "First Touch Date",
+                "fieldtype": "Datetime",
+                "insert_after": "trackflow_campaign",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_last_touch_date",
+                "label": "Last Touch Date",
+                "fieldtype": "Datetime",
+                "insert_after": "trackflow_first_touch_date",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_touch_count",
+                "label": "Touch Count",
+                "fieldtype": "Int",
+                "insert_after": "trackflow_last_touch_date",
+                "read_only": 1
+            }
+        ],
+        "CRM Organization": [
+            {
+                "fieldname": "trackflow_visitor_id",
+                "label": "TrackFlow Visitor ID",
+                "fieldtype": "Data",
+                "insert_after": "website",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_engagement_score",
+                "label": "Engagement Score",
+                "fieldtype": "Int",
+                "insert_after": "trackflow_visitor_id",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_last_campaign",
+                "label": "Last Campaign",
+                "fieldtype": "Link",
+                "options": "Campaign",
+                "insert_after": "trackflow_engagement_score"
+            }
+        ],
+        "CRM Deal": [
+            {
+                "fieldname": "trackflow_attribution_model",
+                "label": "Attribution Model",
+                "fieldtype": "Select",
+                "options": "Last Touch\nFirst Touch\nLinear\nTime Decay\nPosition Based",
+                "insert_after": "annual_revenue",
+                "default": "Last Touch"
+            },
+            {
+                "fieldname": "trackflow_first_touch_source",
+                "label": "First Touch Source",
+                "fieldtype": "Data",
+                "insert_after": "trackflow_attribution_model",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_last_touch_source",
+                "label": "Last Touch Source",
+                "fieldtype": "Data",
+                "insert_after": "trackflow_first_touch_source",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_marketing_influenced",
+                "label": "Marketing Influenced",
+                "fieldtype": "Check",
+                "insert_after": "trackflow_last_touch_source",
+                "read_only": 1
+            },
+            {
+                "fieldname": "trackflow_attribution_data",
+                "label": "Attribution Data",
+                "fieldtype": "Long Text",
+                "insert_after": "trackflow_marketing_influenced",
+                "read_only": 1,
+                "hidden": 1
+            }
+        ]
+    }
+    
+    for doctype, fields in custom_fields.items():
+        if frappe.db.exists("DocType", doctype):
+            for field in fields:
+                field_name = f"{doctype}-{field['fieldname']}"
+                if not frappe.db.exists("Custom Field", field_name):
+                    cf = frappe.new_doc("Custom Field")
+                    cf.dt = doctype
+                    cf.update(field)
+                    cf.insert()
+                    print(f"Created custom field: {field_name}")
+
+def create_fcrm_property_setters():
+    """Create property setters for FCRM DocTypes"""
+    property_setters = [
+        {
+            "doctype": "CRM Lead",
+            "doctype_or_field": "DocType",
+            "property": "track_changes",
+            "value": "1"
+        },
+        {
+            "doctype": "CRM Deal",
+            "doctype_or_field": "DocType",
+            "property": "track_changes",
+            "value": "1"
+        },
+        {
+            "doctype": "CRM Organization",
+            "doctype_or_field": "DocType",
+            "property": "track_changes",
+            "value": "1"
+        }
+    ]
+    
+    for ps in property_setters:
+        ps_name = f"{ps['doctype']}-{ps['property']}"
+        if not frappe.db.exists("Property Setter", ps_name):
+            prop_setter = frappe.new_doc("Property Setter")
+            prop_setter.update(ps)
+            prop_setter.name = ps_name
+            prop_setter.insert()
+            print(f"Created property setter: {ps_name}")
 
 def create_default_data():
     """Create default data for TrackFlow"""
@@ -156,7 +308,7 @@ def create_default_data():
 def setup_permissions():
     """Set up permissions for TrackFlow doctypes"""
     permissions = {
-        "TrackFlow Campaign": [
+        "Campaign": [
             {"role": "TrackFlow Manager", "read": 1, "write": 1, "create": 1, "delete": 1, "submit": 1, "cancel": 1},
             {"role": "TrackFlow User", "read": 1, "write": 1, "create": 1, "delete": 0, "submit": 0, "cancel": 0},
             {"role": "Sales User", "read": 1, "write": 0, "create": 0, "delete": 0}
@@ -166,12 +318,12 @@ def setup_permissions():
             {"role": "TrackFlow User", "read": 1, "write": 1, "create": 1, "delete": 0},
             {"role": "Sales User", "read": 1, "write": 0, "create": 0, "delete": 0}
         ],
-        "Visitor Session": [
+        "Visitor": [
             {"role": "TrackFlow Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
             {"role": "TrackFlow User", "read": 1, "write": 0, "create": 0, "delete": 0},
             {"role": "Sales User", "read": 1, "write": 0, "create": 0, "delete": 0}
         ],
-        "TrackFlow Conversion": [
+        "Visitor Event": [
             {"role": "TrackFlow Manager", "read": 1, "write": 1, "create": 1, "delete": 1},
             {"role": "TrackFlow User", "read": 1, "write": 0, "create": 0, "delete": 0},
             {"role": "Sales User", "read": 1, "write": 0, "create": 0, "delete": 0}
@@ -179,15 +331,16 @@ def setup_permissions():
     }
     
     for doctype, perms in permissions.items():
-        for perm in perms:
-            if not frappe.db.exists("DocPerm", {"parent": doctype, "role": perm["role"]}):
-                doc_perm = frappe.new_doc("DocPerm")
-                doc_perm.parent = doctype
-                doc_perm.parenttype = "DocType"
-                doc_perm.parentfield = "permissions"
-                doc_perm.update(perm)
-                doc_perm.insert()
-                print(f"Created permission for {perm['role']} in {doctype}")
+        if frappe.db.exists("DocType", doctype):
+            for perm in perms:
+                if not frappe.db.exists("DocPerm", {"parent": doctype, "role": perm["role"]}):
+                    doc_perm = frappe.new_doc("DocPerm")
+                    doc_perm.parent = doctype
+                    doc_perm.parenttype = "DocType"
+                    doc_perm.parentfield = "permissions"
+                    doc_perm.update(perm)
+                    doc_perm.insert()
+                    print(f"Created permission for {perm['role']} in {doctype}")
 
 def create_workspace():
     """Create TrackFlow workspace"""
