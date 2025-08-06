@@ -8,6 +8,7 @@ import json
 import hashlib
 from datetime import datetime, timedelta
 import re
+from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 
 def get_visitor_from_request():
@@ -232,8 +233,6 @@ def sanitize_url(url):
     # Remove sensitive query parameters
     sensitive_params = ['password', 'token', 'key', 'secret']
     
-    from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
-    
     parsed = urlparse(url)
     params = parse_qs(parsed.query)
     
@@ -290,3 +289,36 @@ def get_referrer_source(referrer_url):
             
     # Otherwise, use the domain as source
     return referrer_domain.replace('www.', '')
+
+
+def update_visitor_profile(visitor_id, data):
+    """Update visitor profile with new data"""
+    try:
+        if frappe.db.exists("Visitor", visitor_id):
+            visitor = frappe.get_doc("Visitor", visitor_id)
+            for key, value in data.items():
+                if hasattr(visitor, key):
+                    setattr(visitor, key, value)
+            visitor.save(ignore_permissions=True)
+            return visitor
+    except Exception as e:
+        frappe.log_error(f"Error updating visitor profile: {str(e)}")
+        return None
+
+
+# Jinja methods for templates
+def jinja_methods():
+    """Methods available in Jinja templates"""
+    return {
+        "get_tracking_script": get_tracking_script,
+        "format_duration": format_duration,
+        "get_visitor_from_request": get_visitor_from_request
+    }
+
+
+def jinja_filters():
+    """Filters available in Jinja templates"""
+    return {
+        "format_duration": format_duration,
+        "sanitize_url": sanitize_url
+    }
