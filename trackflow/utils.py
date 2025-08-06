@@ -13,40 +13,44 @@ from urllib.parse import urlparse, parse_qs, urlencode, urlunparse
 
 def get_visitor_from_request():
     """Get or create visitor from current request"""
-    try:
-        # Get visitor ID from cookie
-        visitor_id = frappe.request.cookies.get('trackflow_visitor')
-        
-        if visitor_id:
-            # Try to get existing visitor
-            if frappe.db.exists("Visitor", visitor_id):
-                return frappe.get_doc("Visitor", visitor_id)
-        
-        # Create new visitor
-        visitor = frappe.new_doc("Visitor")
-        visitor.visitor_id = generate_visitor_id()
-        visitor.first_seen = frappe.utils.now()
-        visitor.last_seen = frappe.utils.now()
-        visitor.ip_address = frappe.local.request_ip
-        visitor.user_agent = frappe.request.headers.get('User-Agent', '')
-        
-        # Get UTM parameters
-        visitor.source = frappe.form_dict.get('utm_source', 'direct')
-        visitor.medium = frappe.form_dict.get('utm_medium', 'none')
-        visitor.campaign = frappe.form_dict.get('utm_campaign')
-        visitor.term = frappe.form_dict.get('utm_term')
-        visitor.content = frappe.form_dict.get('utm_content')
-        
-        visitor.insert(ignore_permissions=True)
-        
-        # Set cookie
-        frappe.local.cookie_manager.set_cookie('trackflow_visitor', visitor.visitor_id)
-        
-        return visitor
-        
-    except Exception as e:
-        frappe.log_error(f"Error creating visitor: {str(e)}")
-        return None
+    # Temporarily return None until Visitor DocType is created
+    return None
+    
+    # Original implementation commented out:
+    # try:
+    #     # Get visitor ID from cookie
+    #     visitor_id = frappe.request.cookies.get('trackflow_visitor')
+    #     
+    #     if visitor_id:
+    #         # Try to get existing visitor
+    #         if frappe.db.exists("Visitor", visitor_id):
+    #             return frappe.get_doc("Visitor", visitor_id)
+    #     
+    #     # Create new visitor
+    #     visitor = frappe.new_doc("Visitor")
+    #     visitor.visitor_id = generate_visitor_id()
+    #     visitor.first_seen = frappe.utils.now()
+    #     visitor.last_seen = frappe.utils.now()
+    #     visitor.ip_address = frappe.local.request_ip
+    #     visitor.user_agent = frappe.request.headers.get('User-Agent', '')
+    #     
+    #     # Get UTM parameters
+    #     visitor.source = frappe.form_dict.get('utm_source', 'direct')
+    #     visitor.medium = frappe.form_dict.get('utm_medium', 'none')
+    #     visitor.campaign = frappe.form_dict.get('utm_campaign')
+    #     visitor.term = frappe.form_dict.get('utm_term')
+    #     visitor.content = frappe.form_dict.get('utm_content')
+    #     
+    #     visitor.insert(ignore_permissions=True)
+    #     
+    #     # Set cookie
+    #     frappe.local.cookie_manager.set_cookie('trackflow_visitor', visitor.visitor_id)
+    #     
+    #     return visitor
+    #     
+    # except Exception as e:
+    #     frappe.log_error(f"Error creating visitor: {str(e)}")
+    #     return None
 
 
 def generate_visitor_id():
@@ -58,23 +62,27 @@ def generate_visitor_id():
 
 def create_visitor_session(visitor, page_url=None):
     """Create a new visitor session"""
-    try:
-        session = frappe.new_doc("Visitor Session")
-        session.visitor = visitor.name
-        session.session_id = generate_session_id()
-        session.start_time = frappe.utils.now()
-        session.ip_address = frappe.local.request_ip
-        session.user_agent = frappe.request.headers.get('User-Agent', '')
-        
-        if page_url:
-            session.landing_page = page_url
-            
-        session.insert(ignore_permissions=True)
-        return session
-        
-    except Exception as e:
-        frappe.log_error(f"Error creating visitor session: {str(e)}")
-        return None
+    # Temporarily return None until Visitor Session DocType is created
+    return None
+    
+    # Original implementation commented out:
+    # try:
+    #     session = frappe.new_doc("Visitor Session")
+    #     session.visitor = visitor.name
+    #     session.session_id = generate_session_id()
+    #     session.start_time = frappe.utils.now()
+    #     session.ip_address = frappe.local.request_ip
+    #     session.user_agent = frappe.request.headers.get('User-Agent', '')
+    #     
+    #     if page_url:
+    #         session.landing_page = page_url
+    #         
+    #     session.insert(ignore_permissions=True)
+    #     return session
+    #     
+    # except Exception as e:
+    #     frappe.log_error(f"Error creating visitor session: {str(e)}")
+    #     return None
 
 
 def generate_session_id():
@@ -186,37 +194,44 @@ def format_duration(seconds):
 
 def get_bounce_rate(visitor):
     """Calculate bounce rate for a visitor"""
-    if not visitor:
-        return 0
-        
-    sessions = frappe.get_all(
-        "Visitor Session",
-        filters={"visitor": visitor.name},
-        fields=["page_views"]
-    )
+    # Temporarily return 0 until Visitor Session DocType exists
+    return 0
     
-    if not sessions:
-        return 0
-        
-    single_page_sessions = sum(1 for s in sessions if (s.page_views or 0) <= 1)
-    bounce_rate = (single_page_sessions / len(sessions)) * 100
-    
-    return round(bounce_rate, 2)
+    # Original implementation commented out:
+    # if not visitor:
+    #     return 0
+    #     
+    # sessions = frappe.get_all(
+    #     "Visitor Session",
+    #     filters={"visitor": visitor.name},
+    #     fields=["page_views"]
+    # )
+    # 
+    # if not sessions:
+    #     return 0
+    #     
+    # single_page_sessions = sum(1 for s in sessions if (s.page_views or 0) <= 1)
+    # bounce_rate = (single_page_sessions / len(sessions)) * 100
+    # 
+    # return round(bounce_rate, 2)
 
 
 def is_internal_traffic(ip_address):
     """Check if IP address is internal traffic"""
-    settings = frappe.get_single("TrackFlow Settings")
-    
-    if not settings.exclude_internal_traffic:
-        return False
+    try:
+        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
         
-    # Check against internal IP ranges
-    for ip_range in settings.internal_ip_ranges:
-        if is_ip_in_range(ip_address, ip_range.ip_range):
-            return True
+        if not settings.exclude_internal_traffic:
+            return False
             
-    return False
+        # Check against internal IP ranges
+        for ip_range in settings.internal_ip_ranges:
+            if is_ip_in_range(ip_address, ip_range.ip_range):
+                return True
+                
+        return False
+    except:
+        return False
 
 
 def is_ip_in_range(ip, ip_range):
@@ -293,17 +308,21 @@ def get_referrer_source(referrer_url):
 
 def update_visitor_profile(visitor_id, data):
     """Update visitor profile with new data"""
-    try:
-        if frappe.db.exists("Visitor", visitor_id):
-            visitor = frappe.get_doc("Visitor", visitor_id)
-            for key, value in data.items():
-                if hasattr(visitor, key):
-                    setattr(visitor, key, value)
-            visitor.save(ignore_permissions=True)
-            return visitor
-    except Exception as e:
-        frappe.log_error(f"Error updating visitor profile: {str(e)}")
-        return None
+    # Temporarily return None until Visitor DocType exists
+    return None
+    
+    # Original implementation commented out:
+    # try:
+    #     if frappe.db.exists("Visitor", visitor_id):
+    #         visitor = frappe.get_doc("Visitor", visitor_id)
+    #         for key, value in data.items():
+    #             if hasattr(visitor, key):
+    #                 setattr(visitor, key, value)
+    #         visitor.save(ignore_permissions=True)
+    #         return visitor
+    # except Exception as e:
+    #     frappe.log_error(f"Error updating visitor profile: {str(e)}")
+    #     return None
 
 
 # Jinja methods for templates
