@@ -1,16 +1,8 @@
 {
-    "charts": [
-        {
-            "chart_name": "Visitor Trend",
-            "label": "Visitor Trend"
-        },
-        {
-            "chart_name": "Conversion Rate",
-            "label": "Conversion Rate"
-        }
-    ],
-    "content": "[{\"id\":\"NFJI0b9vQG\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">TrackFlow</span>\",\"col\":12}},{\"id\":\"7W5cAj_dPx\",\"type\":\"card\",\"data\":{\"card_name\":\"Analytics Dashboard\",\"col\":4}},{\"id\":\"bD3MqMkQxZ\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"Zx7kNmPqRs\",\"type\":\"card\",\"data\":{\"card_name\":\"Tracking Links\",\"col\":4}},{\"id\":\"mK9xYnLpQw\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Visitor Trend\",\"col\":6}},{\"id\":\"pQ8vZmNxKl\",\"type\":\"chart\",\"data\":{\"chart_name\":\"Conversion Rate\",\"col\":6}},{\"id\":\"xL3mKnPvQz\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"qW4nXmLpKv\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h5\\\">Quick Links</span>\",\"col\":12}},{\"id\":\"mN8vKxLpQw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Create Campaign\",\"col\":3}},{\"id\":\"pL9mXnKvQz\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Tracking Link\",\"col\":3}},{\"id\":\"qK8nLmXvPw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Attribution Models\",\"col\":3}},{\"id\":\"xM7pKnLvQw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"API Keys\",\"col\":3}}]",
-    "creation": "2024-01-15 12:00:00.000000",
+    "category": "Modules",
+    "charts": [],
+    "content": "[{\"id\":\"xZWE1f0rAJ\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">TrackFlow Analytics</span>\",\"col\":12}},{\"id\":\"7JAzrPYqXG\",\"type\":\"card\",\"data\":{\"card_name\":\"Dashboard\",\"col\":4}},{\"id\":\"mK9L2nRvWE\",\"type\":\"card\",\"data\":{\"card_name\":\"Campaigns\",\"col\":4}},{\"id\":\"pQ8X3tYvZA\",\"type\":\"card\",\"data\":{\"card_name\":\"Tracking Links\",\"col\":4}},{\"id\":\"wR5T6uCvBD\",\"type\":\"card\",\"data\":{\"card_name\":\"Visitors\",\"col\":4}},{\"id\":\"xS7U8vDwCE\",\"type\":\"card\",\"data\":{\"card_name\":\"Analytics Reports\",\"col\":4}},{\"id\":\"yT9V0wExDF\",\"type\":\"card\",\"data\":{\"card_name\":\"Settings\",\"col\":4}}]",
+    "creation": "2025-08-06 12:00:00.000000",
     "custom_blocks": [],
     "docstatus": 0,
     "doctype": "Workspace",
@@ -24,7 +16,7 @@
         {
             "hidden": 0,
             "is_query_report": 0,
-            "label": "Analytics Dashboard",
+            "label": "Dashboard",
             "link_count": 0,
             "link_to": "trackflow-dashboard",
             "link_type": "Page",
@@ -64,9 +56,9 @@
         {
             "hidden": 0,
             "is_query_report": 0,
-            "label": "Conversions",
+            "label": "Visitor Events",
             "link_count": 0,
-            "link_to": "Conversion",
+            "link_to": "Visitor Event",
             "link_type": "DocType",
             "onboard": 0,
             "type": "Link"
@@ -74,46 +66,16 @@
         {
             "hidden": 0,
             "is_query_report": 0,
-            "label": "Email Campaigns",
+            "label": "Attribution Report",
             "link_count": 0,
-            "link_to": "Email Campaign",
-            "link_type": "DocType",
+            "link_to": "Attribution Report",
+            "link_type": "Report",
             "onboard": 0,
             "type": "Link"
         },
         {
             "hidden": 0,
             "is_query_report": 0,
-            "label": "Attribution Models",
-            "link_count": 0,
-            "link_to": "Attribution Model",
-            "link_type": "DocType",
-            "onboard": 0,
-            "type": "Link"
-        },
-        {
-            "hidden": 0,
-            "is_query_report": 0,
-            "label": "API Keys",
-            "link_count": 0,
-            "link_to": "TrackFlow API Key",
-            "link_type": "DocType",
-            "onboard": 0,
-            "type": "Link"
-        },
-        {
-            "hidden": 0,
-            "is_query_report": 0,
-            "label": "Domain Configuration",
-            "link_count": 0,
-            "link_to": "Domain Configuration",
-            "link_type": "DocType",
-            "onboard": 0,
-            "type": "Link"
-        },
-        {
-            "hidden": 0,
-            "is_query_report": 1,
             "label": "Campaign Performance",
             "link_count": 0,
             "link_to": "Campaign Performance Report",
@@ -123,65 +85,57 @@
         },
         {
             "hidden": 0,
-            "is_query_report": 1,
-            "label": "Visitor Analytics",
+            "is_query_report": 0,
+            "label": "Visitor Journey Report",
             "link_count": 0,
-            "link_to": "Visitor Analytics Report",
+            "link_to": "Visitor Journey Report",
             "link_type": "Report",
             "onboard": 0,
             "type": "Link"
         },
         {
             "hidden": 0,
-            "is_query_report": 1,
-            "label": "Conversion Funnel",
+            "is_query_report": 0,
+            "label": "TrackFlow Settings",
             "link_count": 0,
-            "link_to": "Conversion Funnel Report",
-            "link_type": "Report",
+            "link_to": "TrackFlow Settings",
+            "link_type": "DocType",
             "onboard": 0,
             "type": "Link"
         }
     ],
-    "modified": "2024-01-15 12:00:00.000000",
+    "modified": "2025-08-06 12:00:00.000000",
     "modified_by": "Administrator",
-    "module": "Trackflow",
+    "module": "TrackFlow",
     "name": "TrackFlow",
     "number_cards": [],
     "owner": "Administrator",
     "parent_page": "",
     "public": 1,
     "quick_lists": [],
-    "restrict_to_domain": "",
     "roles": [],
     "sequence_id": 25.0,
     "shortcuts": [
         {
             "color": "Green",
-            "doc_view": "New",
-            "label": "Create Campaign",
+            "doc_view": "List",
+            "label": "New Campaign",
             "link_to": "Campaign",
             "type": "DocType"
         },
         {
             "color": "Blue",
-            "doc_view": "New",
-            "label": "New Tracking Link",
+            "doc_view": "List",
+            "label": "Create Tracking Link",
             "link_to": "Tracking Link",
             "type": "DocType"
         },
         {
             "color": "Orange",
-            "doc_view": "List",
-            "label": "Attribution Models",
-            "link_to": "Attribution Model",
-            "type": "DocType"
-        },
-        {
-            "color": "Grey",
-            "doc_view": "List",
-            "label": "API Keys",
-            "link_to": "TrackFlow API Key",
-            "type": "DocType"
+            "doc_view": "Dashboard",
+            "label": "Analytics Dashboard",
+            "link_to": "trackflow-dashboard",
+            "type": "Page"
         }
     ],
     "title": "TrackFlow"
