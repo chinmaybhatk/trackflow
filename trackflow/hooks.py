@@ -34,10 +34,9 @@ permission_query_conditions = {
 # DocType JavaScript
 # ------------------
 doctype_js = {
-    "Lead": "public/js/lead.js",
-    "Contact": "public/js/contact.js",
-    "Deal": "public/js/deal.js",
-    "Opportunity": "public/js/opportunity.js",
+    "CRM Lead": "public/js/crm_lead.js",
+    "CRM Organization": "public/js/crm_organization.js",
+    "CRM Deal": "public/js/crm_deal.js",
     "Web Form": "public/js/web_form.js"
 }
 
@@ -99,22 +98,20 @@ fixtures = [
                 "name",
                 "in",
                 [
-                    "Lead-trackflow_visitor_id",
-                    "Lead-trackflow_source",
-                    "Lead-trackflow_medium",
-                    "Lead-trackflow_campaign",
-                    "Lead-trackflow_first_touch_date",
-                    "Lead-trackflow_last_touch_date",
-                    "Lead-trackflow_touch_count",
-                    "Contact-trackflow_visitor_id",
-                    "Contact-trackflow_engagement_score",
-                    "Contact-trackflow_last_campaign",
-                    "Deal-trackflow_attribution_model",
-                    "Deal-trackflow_first_touch_source",
-                    "Deal-trackflow_last_touch_source",
-                    "Deal-trackflow_marketing_influenced",
-                    "Opportunity-trackflow_campaign",
-                    "Opportunity-trackflow_source",
+                    "CRM Lead-trackflow_visitor_id",
+                    "CRM Lead-trackflow_source",
+                    "CRM Lead-trackflow_medium",
+                    "CRM Lead-trackflow_campaign",
+                    "CRM Lead-trackflow_first_touch_date",
+                    "CRM Lead-trackflow_last_touch_date",
+                    "CRM Lead-trackflow_touch_count",
+                    "CRM Organization-trackflow_visitor_id",
+                    "CRM Organization-trackflow_engagement_score",
+                    "CRM Organization-trackflow_last_campaign",
+                    "CRM Deal-trackflow_attribution_model",
+                    "CRM Deal-trackflow_first_touch_source",
+                    "CRM Deal-trackflow_last_touch_source",
+                    "CRM Deal-trackflow_marketing_influenced",
                     "Web Form-trackflow_tracking_enabled",
                     "Web Form-trackflow_conversion_goal"
                 ]
@@ -124,7 +121,7 @@ fixtures = [
     {
         "dt": "Property Setter",
         "filters": [
-            ["name", "in", ["Lead-main-track_source", "Deal-main-track_attribution"]]
+            ["name", "in", ["CRM Lead-main-track_source", "CRM Deal-main-track_attribution"]]
         ]
     }
 ]
@@ -132,23 +129,19 @@ fixtures = [
 # Document Events
 # ---------------
 doc_events = {
-    "Lead": {
-        "after_insert": "trackflow.integrations.lead.on_lead_create",
-        "on_update": "trackflow.integrations.lead.on_lead_update",
-        "on_trash": "trackflow.integrations.lead.on_lead_trash"
+    "CRM Lead": {
+        "after_insert": "trackflow.integrations.crm_lead.on_lead_create",
+        "on_update": "trackflow.integrations.crm_lead.on_lead_update",
+        "on_trash": "trackflow.integrations.crm_lead.on_lead_trash"
     },
-    "Contact": {
-        "after_insert": "trackflow.integrations.contact.after_insert",
-        "on_update": "trackflow.integrations.contact.on_update"
+    "CRM Organization": {
+        "after_insert": "trackflow.integrations.crm_organization.after_insert",
+        "on_update": "trackflow.integrations.crm_organization.on_update"
     },
-    "Deal": {
-        "after_insert": "trackflow.integrations.deal.after_insert",
-        "on_update": "trackflow.integrations.deal.on_update",
-        "on_submit": "trackflow.integrations.deal.calculate_attribution"
-    },
-    "Opportunity": {
-        "after_insert": "trackflow.integrations.opportunity.on_opportunity_create",
-        "on_update": "trackflow.integrations.opportunity.on_opportunity_update"
+    "CRM Deal": {
+        "after_insert": "trackflow.integrations.crm_deal.after_insert",
+        "on_update": "trackflow.integrations.crm_deal.on_update",
+        "on_submit": "trackflow.integrations.crm_deal.calculate_attribution"
     },
     "Web Form": {
         "on_update": "trackflow.integrations.web_form.inject_tracking_script",
