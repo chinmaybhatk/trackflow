@@ -22,17 +22,22 @@ def has_app_permission(doc=None, ptype=None, user=None):
         return True
     
     # Check if user has access to any TrackFlow DocTypes
+    # Use the actual DocType names that exist
     trackflow_doctypes = [
-        "Campaign",
-        "Tracking Link",
-        "Visitor",
-        "Visitor Event",
-        "TrackFlow Settings"
+        "Link Campaign",
+        "Tracked Link",
+        "Click Event",
+        "TrackFlow Settings",
+        "TrackFlow API Key"
     ]
     
     for doctype in trackflow_doctypes:
-        if frappe.has_permission(doctype, user=user):
-            return True
+        try:
+            if frappe.has_permission(doctype, user=user):
+                return True
+        except:
+            # Skip if DocType doesn't exist
+            pass
     
     return False
 
@@ -47,7 +52,7 @@ def get_permission_query_conditions(user):
     
     if "TrackFlow User" in frappe.get_roles(user):
         # Users can only see their own data
-        return f"(`tabTracking Link`.owner = {frappe.db.escape(user)})"
+        return f"(`tabTracked Link`.owner = {frappe.db.escape(user)})"
     
     # No access
     return "1=0"
@@ -63,10 +68,10 @@ def has_permission(doc, ptype=None, user=None):
     
     # TrackFlow Users can access their own documents
     if "TrackFlow User" in frappe.get_roles(user):
-        if doc.doctype in ["Tracking Link", "Campaign"]:
+        if doc.doctype in ["Tracked Link", "Link Campaign"]:
             return doc.owner == user
-        elif doc.doctype in ["Visitor", "Visitor Event"]:
-            # Read-only access to visitor data
+        elif doc.doctype in ["Click Event"]:
+            # Read-only access to click data
             return ptype == "read"
     
     return False
