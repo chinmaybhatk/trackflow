@@ -1,88 +1,128 @@
+"""
+Web Form Integration for TrackFlow
+"""
+
 import frappe
 from frappe import _
 
+
 def inject_tracking_script(doc, method):
-    """
-    Inject TrackFlow tracking script into web forms
-    """
-    if not doc.trackflow_tracking_enabled:
+    """Inject tracking script into web forms"""
+    # Skip if tracking is not enabled for this form
+    if not doc.get("trackflow_tracking_enabled"):
         return
         
-    # Get tracking script
-    tracking_script = get_tracking_script()
-    
-    # Add to web form scripts
+    # Add tracking script to form
+    tracking_script = get_web_form_tracking_script(doc)
     if tracking_script:
-        if not doc.client_script:
-            doc.client_script = ""
-        
-        # Check if script already exists
-        if "trackflow" not in doc.client_script:
-            doc.client_script += f"\n\n{tracking_script}"
-    
+        doc.web_form_script = (doc.web_form_script or "") + "\n\n" + tracking_script
+
+
 def validate_tracking_settings(doc, method):
-    """
-    Validate tracking settings for web form
-    """
-    if doc.trackflow_tracking_enabled and not doc.trackflow_conversion_goal:
+    """Validate tracking settings for web form"""
+    if doc.get("trackflow_tracking_enabled") and not doc.get("trackflow_conversion_goal"):
         frappe.throw(_("Please set a conversion goal for tracking"))
 
+
 def on_web_form_submit(doc, method):
-    """
-    Track web form submissions
-    """
-    # Check if this is a web form submission
-    if not frappe.local.request or not frappe.local.request.url:
+    """Track web form submissions"""
+    # Skip if this is not a web form submission or if we're in a migration context
+    if doc.doctype != "Web Form":
+        return
+    
+    # Check if we're in a web context (not during migration or background job)
+    if not hasattr(frappe.local, 'request') or not frappe.local.request:
         return
         
     # Check if tracking is enabled
-    web_form_name = frappe.local.form_dict.get("web_form")
-    if not web_form_name:
+    try:
+        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
+        if not settings.enable_tracking:
+            return
+    except:
         return
         
+    # Get the web form
     try:
+        web_form_name = doc.get("web_form")
+        if not web_form_name:
+            return
+            
         web_form = frappe.get_doc("Web Form", web_form_name)
-        if not web_form.trackflow_tracking_enabled:
+        
+        # Check if tracking is enabled for this form
+        if not web_form.get("trackflow_tracking_enabled"):
             return
             
-        # Get visitor ID from cookies
-        visitor_id = frappe.local.request.cookies.get("trackflow_visitor_id")
-        if not visitor_id:
-            return
-            
-        # Track conversion
+        # Track the conversion
         from trackflow.tracking import track_conversion
-        track_conversion(
-            visitor_id=visitor_id,
-            conversion_type="web_form",
-            conversion_value=web_form.trackflow_conversion_goal,
-            metadata={
-                "web_form": web_form_name,
-                "doctype": doc.doctype,
-                "doc_name": doc.name
-            }
-        )
         
-        # Update visitor profile
-        from trackflow.utils import update_visitor_profile
-        update_visitor_profile(visitor_id, {
-            "last_conversion": frappe.utils.now(),
-            "conversion_count": frappe.db.sql("""
-                SELECT COUNT(*) FROM `tabConversion`
-                WHERE visitor_id = %s
-            """, visitor_id)[0][0]
-        })
-        
+        visitor_id = frappe.request.cookies.get('trackflow_visitor')
+        if visitor_id:
+            conversion_type = web_form.get("trackflow_conversion_goal") or "form_submission"
+            
+            track_conversion(
+                visitor_id=visitor_id,
+                conversion_type=conversion_type,
+                metadata={
+                    "form_name": web_form_name,
+                    "doctype": doc.doctype,
+                    "doc_name": doc.name,
+                    "source": frappe.form_dict.get("utm_source"),
+                    "medium": frappe.form_dict.get("utm_medium"),
+                    "campaign": frappe.form_dict.get("utm_campaign")
+                }
+            )
+            
     except Exception as e:
-        frappe.log_error(f"TrackFlow web form tracking error: {str(e)}")
+        frappe.log_error(f"Error tracking web form submission: {str(e)}")
+
+
+def get_web_form_tracking_script(web_form):
+    """Get tracking script for web form"""
+    return """
+    // TrackFlow Web Form Tracking
+    (function() {
+        var form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                if (window.trackflow && window.trackflow.push) {
+                    window.trackflow.push('track', 'form_start', {
+                        form_name: '""" + web_form.name + """',
+                        form_title: '""" + web_form.title + """'
+                    });
+                }
+            });
+        }
+    })();
+    """
+
+
+def update_web_form_context(context):
+    """Update web form context with tracking data"""
+    # Skip if not in web context
+    if not hasattr(frappe.local, 'request'):
+        return context
+        
+    # Add tracking script if enabled
+    try:
+        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
+        if settings.enable_tracking:
+            from trackflow.utils import get_tracking_script
+            context.trackflow_script = get_tracking_script()
+    except:
+        pass
+        
+    return context
+
 
 def get_tracking_script():
     """
     Get the tracking script to inject into web forms
     """
     try:
-        settings = frappe.get_single("TrackFlow Settings")
-        if not settings.enabled:
+        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
+        if not settings.enable_tracking:
             return ""
             
         site_url = frappe.utils.get_url()
