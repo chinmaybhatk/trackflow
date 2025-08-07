@@ -9,21 +9,26 @@ def after_request(response):
     """Process tracking after request"""
     try:
         # Skip if it's an API call or static file
-        if frappe.request.path.startswith(("/api/", "/files/", "/private/files/", "/assets/")):
-            return response
-            
+        if frappe.request and frappe.request.path:
+            if frappe.request.path.startswith(("/api/", "/files/", "/private/files/", "/assets/")):
+                return response
+                
         # Skip if user is logged in (internal users)
-        if frappe.session.user != "Guest":
+        if frappe.session and frappe.session.user != "Guest":
             return response
             
         # Check if tracking is enabled
-        # Fix: TrackFlow Settings is not a Single DocType, so we need to get the document differently
+        # Use a more robust way to check settings
         try:
-            settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
-            if not settings.enable_tracking:
-                return response
-        except:
+            if frappe.db.exists("TrackFlow Settings", "TrackFlow Settings"):
+                settings = frappe.get_cached_doc("TrackFlow Settings", "TrackFlow Settings")
+                if not settings.enable_tracking:
+                    return response
+        except Exception as settings_error:
             # If settings don't exist or can't be accessed, skip tracking
+            # Log the error but don't let it break the response
+            if frappe.local.conf.developer_mode:
+                frappe.log_error(f"TrackFlow settings error: {str(settings_error)}", "TrackFlow Settings Access")
             return response
             
         # For now, skip tracking until Visitor DocType is created
@@ -32,7 +37,9 @@ def after_request(response):
         
     except Exception as e:
         # Don't break the response for tracking errors
-        frappe.log_error(f"TrackFlow tracking error: {str(e)}")
+        # Only log errors in developer mode to avoid flooding logs
+        if frappe.local.conf.developer_mode:
+            frappe.log_error(f"TrackFlow tracking error: {str(e)}", "TrackFlow After Request")
         
     return response
 
@@ -98,7 +105,8 @@ def record_page_view_event(visitor, session, url):
 def track_event(visitor_id, event_type, event_data=None):
     """Track a custom event"""
     # For now, just log the event since Visitor DocType doesn't exist
-    frappe.log_error(f"TrackFlow: Would track event {event_type} for visitor {visitor_id}")
+    if frappe.local.conf.developer_mode:
+        frappe.log_error(f"TrackFlow: Would track event {event_type} for visitor {visitor_id}", "TrackFlow Event")
     return None
     
     # Original implementation commented out:
@@ -132,7 +140,8 @@ def track_event(visitor_id, event_type, event_data=None):
 def track_conversion(visitor_id, conversion_type, conversion_value=None, metadata=None):
     """Track a conversion event"""
     # For now, just log the conversion since Conversion DocType doesn't exist
-    frappe.log_error(f"TrackFlow: Would track conversion {conversion_type} for visitor {visitor_id}")
+    if frappe.local.conf.developer_mode:
+        frappe.log_error(f"TrackFlow: Would track conversion {conversion_type} for visitor {visitor_id}", "TrackFlow Conversion")
     return None
     
     # Original implementation commented out:
