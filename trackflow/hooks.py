@@ -87,7 +87,8 @@ website_route_rules = [
 # Request Handler
 # ---------------
 before_request = ["trackflow.www.redirect.before_request"]
-after_request = ["trackflow.tracking.after_request"]
+# TEMPORARILY DISABLED: after_request hook to debug Internal Server Error
+# after_request = ["trackflow.tracking.after_request"]
 
 # Jinja Environment
 # -----------------
@@ -238,7 +239,8 @@ rest_api_methods = [
     "trackflow.api.visitor.get_visitor_profile",
     # Debug endpoints
     "trackflow.api.debug.test",
-    "trackflow.api.debug.debug"
+    "trackflow.api.debug.debug",
+    "trackflow.api.debug.diagnose_error"
 ]
 
 # Branding
