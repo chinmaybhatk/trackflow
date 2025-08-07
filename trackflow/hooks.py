@@ -92,10 +92,11 @@ after_request = ["trackflow.tracking.after_request"]
 
 # Jinja Environment
 # -----------------
-jinja = {
-    "methods": "trackflow.utils.jinja_methods",
-    "filters": "trackflow.utils.jinja_filters"
-}
+# Temporarily disabled jinja hooks to isolate error
+# jinja = {
+#     "methods": "trackflow.utils.jinja_methods",
+#     "filters": "trackflow.utils.jinja_filters"
+# }
 
 # Installation
 # ------------
