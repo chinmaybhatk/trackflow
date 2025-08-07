@@ -87,8 +87,8 @@ website_route_rules = [
 # Request Handler
 # ---------------
 before_request = ["trackflow.www.redirect.before_request"]
-# TEMPORARILY DISABLED: after_request hook to debug Internal Server Error
-# after_request = ["trackflow.tracking.after_request"]
+# Re-enabled after fixing error handling
+after_request = ["trackflow.tracking.after_request"]
 
 # Jinja Environment
 # -----------------
