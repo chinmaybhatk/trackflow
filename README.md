@@ -240,7 +240,7 @@ MIT License - see LICENSE file for details
 
 For issues, questions, or contributions:
 - GitHub Issues: https://github.com/chinmaybhatk/trackflow/issues
-- Email: support@trackflow.biz
+- Email: chinmaybhatk@gmail.com
 
 ## Credits
 
