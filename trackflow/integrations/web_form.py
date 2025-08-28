@@ -1,235 +1,126 @@
-"""
-Web Form Integration for TrackFlow
-"""
-
 import frappe
 from frappe import _
-
+import json
 
 def inject_tracking_script(doc, method):
-    """Inject tracking script into web forms"""
-    # Skip if tracking is not enabled for this form
-    if not doc.get("trackflow_tracking_enabled"):
+    """Auto-inject TrackFlow tracking into web forms"""
+    if not hasattr(doc, 'custom_trackflow_tracking_enabled'):
         return
         
-    # Add tracking script to form
-    tracking_script = get_web_form_tracking_script(doc)
-    if tracking_script:
-        doc.web_form_script = (doc.web_form_script or "") + "\n\n" + tracking_script
-
-
-def validate_tracking_settings(doc, method):
-    """Validate tracking settings for web form"""
-    if doc.get("trackflow_tracking_enabled") and not doc.get("trackflow_conversion_goal"):
-        frappe.throw(_("Please set a conversion goal for tracking"))
-
-
-def on_web_form_submit(doc, method):
-    """Track web form submissions"""
-    # Skip if this is not a web form submission or if we're in a migration context
-    if doc.doctype != "Web Form":
-        return
+    if doc.custom_trackflow_tracking_enabled:
+        tracking_script = """
+// TrackFlow Web Form Tracking
+(function() {
+    if (typeof trackflow === 'undefined') {
+        window.trackflow = window.trackflow || [];
+    }
     
-    # Check if we're in a web context (not during migration or background job)
-    if not hasattr(frappe.local, 'request') or not frappe.local.request:
-        return
-        
-    # Check if tracking is enabled
-    try:
-        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
-        if not settings.enable_tracking:
-            return
-    except:
-        return
-        
-    # Get the web form
-    try:
-        web_form_name = doc.get("web_form")
-        if not web_form_name:
-            return
-            
-        web_form = frappe.get_doc("Web Form", web_form_name)
-        
-        # Check if tracking is enabled for this form
-        if not web_form.get("trackflow_tracking_enabled"):
-            return
-            
-        # Track the conversion
-        from trackflow.tracking import track_conversion
-        
-        visitor_id = frappe.request.cookies.get('trackflow_visitor')
-        if visitor_id:
-            conversion_type = web_form.get("trackflow_conversion_goal") or "form_submission"
-            
-            track_conversion(
-                visitor_id=visitor_id,
-                conversion_type=conversion_type,
-                metadata={
-                    "form_name": web_form_name,
-                    "doctype": doc.doctype,
-                    "doc_name": doc.name,
-                    "source": frappe.form_dict.get("utm_source"),
-                    "medium": frappe.form_dict.get("utm_medium"),
-                    "campaign": frappe.form_dict.get("utm_campaign")
-                }
-            )
-            
-    except Exception as e:
-        frappe.log_error(f"Error tracking web form submission: {str(e)}")
-
-
-def get_web_form_tracking_script(web_form):
-    """Get tracking script for web form"""
-    return """
-    // TrackFlow Web Form Tracking
-    (function() {
-        var form = document.querySelector('form');
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (window.trackflow && window.trackflow.push) {
-                    window.trackflow.push('track', 'form_start', {
-                        form_name: '""" + web_form.name + """',
-                        form_title: '""" + web_form.title + """'
-                    });
-                }
+    // Track form view
+    trackflow.track('form_view', {
+        form_name: '""" + doc.name + """',
+        form_title: '""" + doc.title + """'
+    });
+    
+    // Track form field interactions
+    frappe.ready(function() {
+        // Track field focus
+        $('input, select, textarea').on('focus', function() {
+            trackflow.track('form_field_focus', {
+                form: '""" + doc.name + """',
+                field: $(this).attr('name')
             });
-        }
-    })();
-    """
-
-
-def update_web_form_context(context):
-    """Update web form context with tracking data"""
-    # Skip if not in web context
-    if not hasattr(frappe.local, 'request'):
-        return context
+        });
         
-    # Add tracking script if enabled
+        // Track form submission attempt
+        $('form').on('submit', function() {
+            trackflow.track('form_submit_attempt', {
+                form: '""" + doc.name + """'
+            });
+        });
+    });
+})();
+"""
+        
+        doc.client_script = (doc.client_script or "") + "\n\n" + tracking_script
+        
+def validate_tracking_settings(doc, method):
+    """Validate web form tracking settings"""
+    if hasattr(doc, 'custom_trackflow_conversion_goal') and doc.custom_trackflow_conversion_goal:
+        # Ensure tracking is enabled if conversion goal is set
+        if not doc.custom_trackflow_tracking_enabled:
+            doc.custom_trackflow_tracking_enabled = 1
+            
+def on_web_form_submit(doc, method):
+    """Track web form submissions as conversions"""
     try:
-        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
-        if settings.enable_tracking:
-            from trackflow.utils import get_tracking_script
-            context.trackflow_script = get_tracking_script()
-    except:
-        pass
+        # Check if this is a web form submission
+        if not frappe.request or not frappe.request.path:
+            return
+            
+        # Get web form details
+        web_form = None
+        if "/web-form/" in frappe.request.path:
+            form_route = frappe.request.path.split("/web-form/")[1].split("/")[0]
+            web_form = frappe.db.get_value("Web Form", 
+                                          {"route": form_route}, 
+                                          ["name", "custom_trackflow_tracking_enabled", 
+                                           "custom_trackflow_conversion_goal"])
+            
+        if not web_form or not web_form[1]:  # Not tracking enabled
+            return
+            
+        # Get visitor ID from cookie
+        visitor_id = frappe.request.cookies.get("tf_visitor_id")
         
-    return context
-
-
-def get_tracking_script():
-    """
-    Get the tracking script to inject into web forms
-    """
-    try:
-        settings = frappe.get_doc("TrackFlow Settings", "TrackFlow Settings")
-        if not settings.enable_tracking:
-            return ""
-            
-        site_url = frappe.utils.get_url()
+        # Create conversion record
+        conversion = frappe.new_doc("Link Conversion")
+        conversion.doctype_name = doc.doctype
+        conversion.document_name = doc.name
+        conversion.conversion_type = "web_form_submission"
+        conversion.conversion_goal = web_form[2] if len(web_form) > 2 else None
+        conversion.visitor_id = visitor_id
         
-        script = f"""
-        <!-- TrackFlow Tracking Script -->
-        <script>
-        (function() {{
-            // Initialize TrackFlow
-            window.TrackFlow = window.TrackFlow || [];
+        # Get UTM parameters from session
+        if frappe.session:
+            conversion.source = frappe.session.get("utm_source")
+            conversion.medium = frappe.session.get("utm_medium")
+            conversion.campaign = frappe.session.get("utm_campaign")
             
-            // Get or create visitor ID
-            function getVisitorId() {{
-                var visitorId = getCookie('trackflow_visitor_id');
-                if (!visitorId) {{
-                    visitorId = generateVisitorId();
-                    setCookie('trackflow_visitor_id', visitorId, 365);
-                }}
-                return visitorId;
-            }}
+        conversion.insert(ignore_permissions=True)
+        
+        # Update visitor if exists
+        if visitor_id and frappe.db.exists("Visitor", visitor_id):
+            visitor = frappe.get_doc("Visitor", visitor_id)
+            visitor.last_seen = frappe.utils.now()
             
-            // Generate unique visitor ID
-            function generateVisitorId() {{
-                return 'tf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            }}
-            
-            // Cookie helpers
-            function getCookie(name) {{
-                var value = "; " + document.cookie;
-                var parts = value.split("; " + name + "=");
-                if (parts.length == 2) return parts.pop().split(";").shift();
-            }}
-            
-            function setCookie(name, value, days) {{
-                var expires = "";
-                if (days) {{
-                    var date = new Date();
-                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-                    expires = "; expires=" + date.toUTCString();
-                }}
-                document.cookie = name + "=" + (value || "") + expires + "; path=/";
-            }}
-            
-            // Track page view
-            function trackPageView() {{
-                var data = {{
-                    visitor_id: getVisitorId(),
-                    url: window.location.href,
-                    referrer: document.referrer,
-                    timestamp: new Date().toISOString(),
-                    source: getQueryParam('utm_source'),
-                    medium: getQueryParam('utm_medium'),
-                    campaign: getQueryParam('utm_campaign'),
-                    user_agent: navigator.userAgent
-                }};
+            # Link to lead if created
+            if doc.doctype == "CRM Lead":
+                visitor.lead = doc.name
+                visitor.lead_created_date = frappe.utils.now()
                 
-                // Send tracking data
-                fetch('{site_url}/api/method/trackflow.api.tracking.track_event', {{
-                    method: 'POST',
-                    headers: {{
-                        'Content-Type': 'application/json',
-                        'X-Frappe-CSRF-Token': frappe.csrf_token
-                    }},
-                    body: JSON.stringify({{
-                        event_type: 'page_view',
-                        data: data
-                    }})
-                }});
-            }}
+            visitor.save(ignore_permissions=True)
             
-            // Get query parameter
-            function getQueryParam(param) {{
-                var urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get(param);
-            }}
-            
-            // Track form submission
-            if (window.frappe && window.frappe.web_form) {{
-                frappe.web_form.events.on('after_save', function() {{
-                    var data = {{
-                        visitor_id: getVisitorId(),
-                        form_name: frappe.web_form.web_form_name,
-                        timestamp: new Date().toISOString()
-                    }};
-                    
-                    fetch('{site_url}/api/method/trackflow.api.tracking.track_event', {{
-                        method: 'POST',
-                        headers: {{
-                            'Content-Type': 'application/json',
-                            'X-Frappe-CSRF-Token': frappe.csrf_token
-                        }},
-                        body: JSON.stringify({{
-                            event_type: 'form_submission',
-                            data: data
-                        }})
-                    }});
-                }});
-            }}
-            
-            // Initialize tracking
-            trackPageView();
-        }})();
-        </script>
-        """
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Web Form Submission Error")
+
+@frappe.whitelist(allow_guest=True)
+def track_form_event(form_name, event_type, field_name=None):
+    """API to track form events"""
+    try:
+        visitor_id = frappe.request.cookies.get("tf_visitor_id")
         
-        return script
+        event = frappe.new_doc("Click Event")
+        event.visitor_id = visitor_id
+        event.event_type = f"form_{event_type}"
+        event.page_url = frappe.request.url
+        event.event_data = json.dumps({
+            "form": form_name,
+            "field": field_name
+        })
+        event.insert(ignore_permissions=True)
+        
+        return {"status": "success"}
         
     except Exception as e:
-        frappe.log_error(f"Error generating tracking script: {str(e)}")
-        return ""
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Form Event Error")
+        return {"status": "error"}
