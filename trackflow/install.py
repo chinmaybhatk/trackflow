@@ -27,9 +27,6 @@ def after_install():
     # Set up permissions
     setup_permissions()
     
-    # Create workspace
-    create_workspace()
-    
     # Enable tracking
     enable_tracking()
     
@@ -40,8 +37,6 @@ def after_migrate():
     """Tasks to run after migration"""
     # Update custom fields if needed
     create_fcrm_custom_fields()
-    
-    # Skip workspace update as it causes validation errors
 
 def check_dependencies():
     """Check if required modules are installed"""
@@ -104,10 +99,16 @@ def create_fcrm_custom_fields():
     custom_fields = {
         "CRM Lead": [
             {
+                "fieldname": "trackflow_tab",
+                "label": "TrackFlow",
+                "fieldtype": "Tab Break",
+                "insert_after": "notes_tab"
+            },
+            {
                 "fieldname": "trackflow_visitor_id",
                 "label": "TrackFlow Visitor ID",
                 "fieldtype": "Data",
-                "insert_after": "email",
+                "insert_after": "trackflow_tab",
                 "read_only": 1
             },
             {
@@ -153,10 +154,16 @@ def create_fcrm_custom_fields():
         ],
         "CRM Organization": [
             {
+                "fieldname": "trackflow_tab",
+                "label": "TrackFlow",
+                "fieldtype": "Tab Break",
+                "insert_after": "notes"
+            },
+            {
                 "fieldname": "trackflow_visitor_id",
                 "label": "TrackFlow Visitor ID",
                 "fieldtype": "Data",
-                "insert_after": "website",
+                "insert_after": "trackflow_tab",
                 "read_only": 1
             },
             {
@@ -176,11 +183,17 @@ def create_fcrm_custom_fields():
         ],
         "CRM Deal": [
             {
+                "fieldname": "trackflow_tab",
+                "label": "TrackFlow Attribution",
+                "fieldtype": "Tab Break",
+                "insert_after": "contact_tab"
+            },
+            {
                 "fieldname": "trackflow_attribution_model",
                 "label": "Attribution Model",
                 "fieldtype": "Select",
                 "options": "Last Touch\nFirst Touch\nLinear\nTime Decay\nPosition Based",
-                "insert_after": "annual_revenue",
+                "insert_after": "trackflow_tab",
                 "default": "Last Touch"
             },
             {
@@ -211,6 +224,28 @@ def create_fcrm_custom_fields():
                 "insert_after": "trackflow_marketing_influenced",
                 "read_only": 1,
                 "hidden": 1
+            }
+        ],
+        "Web Form": [
+            {
+                "fieldname": "trackflow_section",
+                "label": "TrackFlow Settings",
+                "fieldtype": "Section Break",
+                "insert_after": "custom_css"
+            },
+            {
+                "fieldname": "trackflow_tracking_enabled",
+                "label": "Enable TrackFlow Tracking",
+                "fieldtype": "Check",
+                "insert_after": "trackflow_section"
+            },
+            {
+                "fieldname": "trackflow_conversion_goal",
+                "label": "Conversion Goal",
+                "fieldtype": "Link",
+                "options": "Campaign Goal",
+                "insert_after": "trackflow_tracking_enabled",
+                "depends_on": "trackflow_tracking_enabled"
             }
         ]
     }
@@ -285,28 +320,6 @@ def create_default_data():
         {"name": "Partner Marketing", "description": "Partner and affiliate campaigns"}
     ]
     
-    # Create sample UTM sources
-    utm_sources = [
-        {"source": "google", "description": "Google search and ads"},
-        {"source": "facebook", "description": "Facebook ads and posts"},
-        {"source": "linkedin", "description": "LinkedIn ads and posts"},
-        {"source": "twitter", "description": "Twitter ads and posts"},
-        {"source": "email", "description": "Email campaigns"},
-        {"source": "newsletter", "description": "Newsletter campaigns"},
-        {"source": "partner", "description": "Partner referrals"}
-    ]
-    
-    # Create sample UTM mediums
-    utm_mediums = [
-        {"medium": "cpc", "description": "Cost per click"},
-        {"medium": "organic", "description": "Organic search"},
-        {"medium": "social", "description": "Social media"},
-        {"medium": "email", "description": "Email"},
-        {"medium": "referral", "description": "Referral"},
-        {"medium": "banner", "description": "Display advertising"},
-        {"medium": "affiliate", "description": "Affiliate marketing"}
-    ]
-    
     print("Default data created successfully")
 
 def setup_permissions():
@@ -317,7 +330,7 @@ def setup_permissions():
     # Check which TrackFlow DocTypes exist
     possible_doctypes = [
         "Link Campaign", "Tracked Link", "Click Event", "Attribution Model",
-        "TrackFlow Settings", "Campaign", "Tracking Link", "Visitor", "Visitor Event"
+        "TrackFlow Settings", "Campaign Goal", "Visitor", "Visitor Event"
     ]
     
     for dt in possible_doctypes:
@@ -346,18 +359,6 @@ def setup_permissions():
         doc_perm.cancel = 1 if frappe.get_meta(doctype).is_submittable else 0
         doc_perm.insert()
         print(f"Created permission for TrackFlow Manager in {doctype}")
-
-def create_workspace():
-    """Create TrackFlow workspace"""
-    if not frappe.db.exists("Workspace", "TrackFlow"):
-        # Workspace already exists, skip creation
-        return
-
-def update_workspace():
-    """Update workspace if it exists"""
-    # Skip workspace update to avoid validation errors
-    # The workspace is already configured properly through fixtures
-    pass
 
 def enable_tracking():
     """Enable tracking for the site"""
