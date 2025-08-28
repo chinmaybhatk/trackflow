@@ -2,7 +2,6 @@ import frappe
 from frappe import _
 import json
 from urllib.parse import urlparse, parse_qs
-from trackflow.tracking import track_click
 
 no_cache = 1
 
