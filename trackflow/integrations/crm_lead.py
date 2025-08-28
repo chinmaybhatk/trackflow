@@ -1,210 +1,108 @@
-"""
-TrackFlow integration for CRM Lead DocType
-"""
-
 import frappe
 from frappe import _
-from trackflow.utils import get_visitor_from_request, create_visitor_session
-from trackflow.attribution import AttributionCalculator
-import json
-
 
 def on_lead_create(doc, method):
-    """
-    Handle CRM Lead creation - Track source and attribution
-    """
+    """Track lead creation with TrackFlow"""
     try:
-        # Check if this lead is being created from a web form or tracked source
-        if frappe.local.request and hasattr(frappe.local, 'request_ip'):
-            visitor = get_visitor_from_request()
+        # Check if lead has tracking information
+        if hasattr(doc, 'custom_trackflow_visitor_id') and doc.custom_trackflow_visitor_id:
+            # Link lead to visitor
+            visitor_id = doc.custom_trackflow_visitor_id
             
-            if visitor:
-                # Update lead with tracking information
-                doc.trackflow_visitor_id = visitor.name
-                doc.trackflow_source = visitor.source
-                doc.trackflow_medium = visitor.medium
-                doc.trackflow_campaign = visitor.campaign
-                doc.trackflow_first_touch_date = visitor.first_seen
-                doc.trackflow_last_touch_date = visitor.last_seen
-                doc.trackflow_touch_count = visitor.page_views
-                
-                # Save without triggering hooks again
-                doc.db_update()
-                
-                # Link visitor to lead
+            # Update visitor profile
+            if frappe.db.exists("Visitor", visitor_id):
+                visitor = frappe.get_doc("Visitor", visitor_id)
                 visitor.lead = doc.name
+                visitor.lead_created_date = frappe.utils.now()
                 visitor.save(ignore_permissions=True)
-                
-                # Create conversion event
-                create_conversion_event(doc, visitor, "lead_created")
+            
+            # Track conversion if from campaign
+            if doc.custom_trackflow_campaign:
+                track_conversion(doc, "lead_created")
                 
     except Exception as e:
-        frappe.log_error(f"TrackFlow: Error in on_lead_create: {str(e)}")
-
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Lead Create Error")
 
 def on_lead_update(doc, method):
-    """
-    Handle CRM Lead updates - Track status changes and engagement
-    """
+    """Track lead status changes"""
     try:
         # Check if status changed
         if doc.has_value_changed("status"):
-            old_status = doc.get_doc_before_save().status if doc.get_doc_before_save() else None
+            # Create status change record
+            status_change = frappe.new_doc("Lead Status Change")
+            status_change.lead = doc.name
+            status_change.from_status = doc.get_doc_before_save().status if doc.get_doc_before_save() else None
+            status_change.to_status = doc.status
+            status_change.changed_by = frappe.session.user
             
-            # Track status change event
-            if doc.trackflow_visitor_id:
-                visitor = frappe.get_doc("Visitor", doc.trackflow_visitor_id)
+            # Link to campaign if exists
+            if hasattr(doc, 'custom_trackflow_campaign'):
+                status_change.campaign = doc.custom_trackflow_campaign
                 
-                event_data = {
-                    "event_type": "lead_status_change",
-                    "old_status": old_status,
-                    "new_status": doc.status,
-                    "lead": doc.name
-                }
-                
-                create_tracking_event(visitor, event_data)
-                
-                # Update engagement score based on status
-                update_engagement_score(doc, visitor)
+            status_change.insert(ignore_permissions=True)
+            
+            # Track conversion for qualified leads
+            if doc.status in ["Qualified", "Converted"]:
+                track_conversion(doc, "lead_qualified")
                 
     except Exception as e:
-        frappe.log_error(f"TrackFlow: Error in on_lead_update: {str(e)}")
-
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Lead Update Error")
 
 def on_lead_trash(doc, method):
-    """
-    Handle CRM Lead deletion - Clean up tracking data
-    """
+    """Clean up tracking data when lead is deleted"""
     try:
-        if doc.trackflow_visitor_id:
-            # Unlink visitor from lead
-            visitor = frappe.get_doc("Visitor", doc.trackflow_visitor_id)
-            visitor.lead = None
-            visitor.save(ignore_permissions=True)
+        # Remove visitor association
+        if hasattr(doc, 'custom_trackflow_visitor_id') and doc.custom_trackflow_visitor_id:
+            frappe.db.set_value("Visitor", doc.custom_trackflow_visitor_id, 
+                              "lead", None, update_modified=False)
             
     except Exception as e:
-        frappe.log_error(f"TrackFlow: Error in on_lead_trash: {str(e)}")
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Lead Trash Error")
 
-
-def create_conversion_event(lead, visitor, event_type):
-    """
-    Create a conversion event for tracking
-    """
-    event = frappe.new_doc("Visitor Event")
-    event.visitor = visitor.name
-    event.event_type = event_type
-    event.event_category = "conversion"
-    event.event_data = json.dumps({
-        "lead": lead.name,
-        "lead_name": lead.lead_name,
-        "email": lead.email,
-        "source": lead.trackflow_source,
-        "campaign": lead.trackflow_campaign
-    })
-    event.timestamp = frappe.utils.now()
-    event.insert(ignore_permissions=True)
-    
-    # Update campaign metrics if applicable
-    if lead.trackflow_campaign:
-        update_campaign_conversion(lead.trackflow_campaign, "lead")
-
-
-def create_tracking_event(visitor, event_data):
-    """
-    Create a general tracking event
-    """
-    event = frappe.new_doc("Visitor Event")
-    event.visitor = visitor.name
-    event.event_type = event_data.get("event_type")
-    event.event_category = "engagement"
-    event.event_data = json.dumps(event_data)
-    event.timestamp = frappe.utils.now()
-    event.insert(ignore_permissions=True)
-
-
-def update_engagement_score(lead, visitor):
-    """
-    Update engagement score based on lead status
-    """
-    # Define score weights for different statuses
-    status_scores = {
-        "Open": 10,
-        "Replied": 20,
-        "Interested": 50,
-        "Converted": 100,
-        "Do Not Contact": -50
-    }
-    
-    current_score = visitor.engagement_score or 0
-    status_score = status_scores.get(lead.status, 0)
-    
-    # Update visitor engagement score
-    visitor.engagement_score = current_score + status_score
-    visitor.last_activity = frappe.utils.now()
-    visitor.save(ignore_permissions=True)
-
-
-def update_campaign_conversion(campaign_name, conversion_type):
-    """
-    Update campaign conversion metrics
-    """
+def track_conversion(doc, conversion_type):
+    """Track conversion event"""
     try:
-        campaign = frappe.get_doc("Campaign", campaign_name)
-        
-        if conversion_type == "lead":
-            campaign.leads_generated = (campaign.leads_generated or 0) + 1
-            
-        # Calculate conversion rate
-        if campaign.total_clicks > 0:
-            campaign.conversion_rate = (campaign.leads_generated / campaign.total_clicks) * 100
-            
-        campaign.save(ignore_permissions=True)
+        conversion = frappe.new_doc("Link Conversion")
+        conversion.doctype_name = "CRM Lead"
+        conversion.document_name = doc.name
+        conversion.conversion_type = conversion_type
+        conversion.campaign = doc.custom_trackflow_campaign if hasattr(doc, 'custom_trackflow_campaign') else None
+        conversion.source = doc.custom_trackflow_source if hasattr(doc, 'custom_trackflow_source') else None
+        conversion.medium = doc.custom_trackflow_medium if hasattr(doc, 'custom_trackflow_medium') else None
+        conversion.visitor_id = doc.custom_trackflow_visitor_id if hasattr(doc, 'custom_trackflow_visitor_id') else None
+        conversion.insert(ignore_permissions=True)
         
     except Exception as e:
-        frappe.log_error(f"TrackFlow: Error updating campaign conversion: {str(e)}")
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Conversion Tracking Error")
 
-
-def get_lead_source_data(lead_name):
-    """
-    Get tracking source data for a lead
-    """
-    lead = frappe.get_doc("CRM Lead", lead_name)
-    
-    data = {
-        "source": lead.trackflow_source,
-        "medium": lead.trackflow_medium,
-        "campaign": lead.trackflow_campaign,
-        "first_touch": lead.trackflow_first_touch_date,
-        "last_touch": lead.trackflow_last_touch_date,
-        "touch_count": lead.trackflow_touch_count,
-        "visitor_id": lead.trackflow_visitor_id
-    }
-    
-    # Get visitor journey if available
-    if lead.trackflow_visitor_id:
-        visitor = frappe.get_doc("Visitor", lead.trackflow_visitor_id)
-        data["visitor_journey"] = get_visitor_journey(visitor)
+@frappe.whitelist()
+def get_lead_tracking_data(lead):
+    """Get tracking data for a lead"""
+    try:
+        lead_doc = frappe.get_doc("CRM Lead", lead)
         
-    return data
-
-
-def get_visitor_journey(visitor):
-    """
-    Get the complete journey of a visitor
-    """
-    events = frappe.get_all(
-        "Visitor Event",
-        filters={"visitor": visitor.name},
-        fields=["event_type", "event_data", "timestamp"],
-        order_by="timestamp asc"
-    )
-    
-    journey = []
-    for event in events:
-        journey.append({
-            "timestamp": event.timestamp,
-            "type": event.event_type,
-            "data": json.loads(event.event_data) if event.event_data else {}
-        })
+        data = {
+            "visitor_id": lead_doc.custom_trackflow_visitor_id if hasattr(lead_doc, 'custom_trackflow_visitor_id') else None,
+            "source": lead_doc.custom_trackflow_source if hasattr(lead_doc, 'custom_trackflow_source') else None,
+            "medium": lead_doc.custom_trackflow_medium if hasattr(lead_doc, 'custom_trackflow_medium') else None,
+            "campaign": lead_doc.custom_trackflow_campaign if hasattr(lead_doc, 'custom_trackflow_campaign') else None,
+            "first_touch_date": lead_doc.custom_trackflow_first_touch_date if hasattr(lead_doc, 'custom_trackflow_first_touch_date') else None,
+            "last_touch_date": lead_doc.custom_trackflow_last_touch_date if hasattr(lead_doc, 'custom_trackflow_last_touch_date') else None,
+            "touch_count": lead_doc.custom_trackflow_touch_count if hasattr(lead_doc, 'custom_trackflow_touch_count') else 0
+        }
         
-    return journey
+        # Get click events
+        clicks = frappe.get_all("Click Event", 
+            filters={"visitor_id": data["visitor_id"]},
+            fields=["name", "tracked_link", "creation", "utm_source", "utm_medium", "utm_campaign"],
+            order_by="creation desc",
+            limit=10
+        )
+        
+        data["click_history"] = clicks
+        
+        return data
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "TrackFlow Get Lead Data Error")
+        return {}
