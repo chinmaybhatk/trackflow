@@ -4,8 +4,13 @@ from frappe.utils import getdate, add_days, nowdate
 import json
 
 @frappe.whitelist()
-def get_campaign_stats(campaign_name):
+def get_campaign_stats(campaign=None, campaign_name=None):
     """Get campaign statistics"""
+    # Handle both parameter names for backward compatibility
+    campaign_name = campaign or campaign_name
+    if not campaign_name:
+        frappe.throw(_("Campaign name is required"))
+        
     try:
         # Get campaign details
         campaign = frappe.get_doc("Link Campaign", campaign_name)
