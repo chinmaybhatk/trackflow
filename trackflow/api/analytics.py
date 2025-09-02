@@ -4,6 +4,66 @@ from frappe.utils import getdate, add_days, nowdate
 import json
 
 @frappe.whitelist()
+def get_campaign_stats(campaign_name):
+    """Get campaign statistics"""
+    try:
+        # Get campaign details
+        campaign = frappe.get_doc("Link Campaign", campaign_name)
+        
+        # Get click statistics
+        clicks = frappe.db.sql("""
+            SELECT 
+                COUNT(*) as total_clicks,
+                COUNT(DISTINCT visitor_id) as unique_visitors,
+                COUNT(DISTINCT DATE(click_timestamp)) as active_days
+            FROM `tabClick Event`
+            WHERE campaign = %s
+        """, campaign_name, as_dict=True)[0]
+        
+        # Get tracked links for this campaign
+        tracked_links = frappe.db.sql("""
+            SELECT 
+                tl.name,
+                tl.short_code,
+                tl.custom_identifier,
+                tl.click_count,
+                tl.unique_visitors,
+                tl.status
+            FROM `tabTracked Link` tl
+            WHERE tl.campaign = %s
+            ORDER BY tl.click_count DESC
+        """, campaign_name, as_dict=True)
+        
+        # Get conversions
+        conversions = frappe.db.sql("""
+            SELECT COUNT(*) as count
+            FROM `tabClick Event`
+            WHERE campaign = %s AND led_to_conversion = 1
+        """, campaign_name)[0][0] or 0
+        
+        # Calculate conversion rate
+        conversion_rate = 0
+        if clicks["unique_visitors"] > 0:
+            conversion_rate = (conversions / clicks["unique_visitors"]) * 100
+        
+        return {
+            "campaign": campaign.as_dict(),
+            "stats": {
+                "total_clicks": clicks["total_clicks"] or 0,
+                "unique_visitors": clicks["unique_visitors"] or 0,
+                "active_days": clicks["active_days"] or 0,
+                "conversions": conversions,
+                "conversion_rate": round(conversion_rate, 2),
+                "tracked_links_count": len(tracked_links)
+            },
+            "tracked_links": tracked_links
+        }
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Get Campaign Stats Error")
+        return {"status": "error", "message": str(e)}
+
+@frappe.whitelist()
 def get_analytics(period="7days", metrics=None):
     """Get analytics dashboard data"""
     try:
