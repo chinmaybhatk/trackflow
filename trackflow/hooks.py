@@ -100,7 +100,7 @@ permission_query_conditions = {
     "Link Campaign": "trackflow.trackflow.doctype.link_campaign.link_campaign.get_permission_query_conditions"
 }
 
-# Fixtures - Only export custom fields and property setters
+# Fixtures - Include custom fields and roles
 fixtures = [
     {
         "dt": "Custom Field",
@@ -116,6 +116,7 @@ fixtures = [
                     "CRM Lead-trackflow_first_touch_date",
                     "CRM Lead-trackflow_last_touch_date",
                     "CRM Lead-trackflow_touch_count",
+                    "CRM Lead-trackflow_tab",
                     "CRM Organization-trackflow_visitor_id",
                     "CRM Organization-trackflow_engagement_score",
                     "CRM Organization-trackflow_last_campaign",
@@ -128,7 +129,8 @@ fixtures = [
                 ]
             ]
         ]
-    }
+    },
+    "trackflow/fixtures/roles.json"
 ]
 
 # App Icon
