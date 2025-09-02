@@ -1,1 +1,1 @@
-# TrackFlow Configuration Module
+# Config initialization
