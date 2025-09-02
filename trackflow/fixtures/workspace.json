@@ -1,0 +1,73 @@
+{
+    "category": "Modules",
+    "charts": [],
+    "creation": "2025-01-01 00:00:00.000000",
+    "docstatus": 0,
+    "doctype": "Workspace",
+    "for_user": "",
+    "hide_custom": 0,
+    "icon": "fa fa-bullhorn",
+    "idx": 0,
+    "label": "Campaign Manager",
+    "links": [
+        {
+            "type": "doctype",
+            "label": "Link Campaign",
+            "name": "Link Campaign",
+            "link_type": "DocType",
+            "link_to": "Link Campaign",
+            "onboard": 1
+        },
+        {
+            "type": "doctype",
+            "label": "Tracked Link",
+            "name": "Tracked Link",
+            "link_type": "DocType",
+            "link_to": "Tracked Link",
+            "onboard": 1
+        },
+        {
+            "type": "doctype",
+            "label": "Click Analytics",
+            "name": "Click Event",
+            "link_type": "DocType",
+            "link_to": "Click Event",
+            "onboard": 0
+        },
+        {
+            "type": "report",
+            "label": "Campaign Performance",
+            "name": "Campaign Performance",
+            "link_type": "Report",
+            "link_to": "Campaign Performance",
+            "is_query_report": 1,
+            "onboard": 0
+        }
+    ],
+    "modified": "2025-01-01 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "TrackFlow",
+    "name": "Campaign Manager",
+    "owner": "Administrator",
+    "parent_page": "",
+    "public": 1,
+    "restrict_to_domain": "",
+    "roles": [
+        {
+            "role": "Campaign Manager"
+        }
+    ],
+    "shortcuts": [
+        {
+            "label": "New Campaign",
+            "link_to": "Link Campaign",
+            "type": "DocType"
+        },
+        {
+            "label": "Analytics Dashboard",
+            "link_to": "trackflow-analytics",
+            "type": "Page"
+        }
+    ],
+    "title": "Campaign Manager"
+}
