@@ -19,3 +19,12 @@ class TrackedLink(Document):
             code = ''.join(random.choice(chars) for _ in range(length))
             if not frappe.db.exists("Tracked Link", {"short_code": code}):
                 return code
+
+
+def get_permission_query_conditions(user):
+    """Return permission query conditions for Tracked Link doctype"""
+    if not user:
+        user = frappe.session.user
+    
+    # Everyone can see tracked links
+    return None
