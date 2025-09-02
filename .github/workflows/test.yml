@@ -1,0 +1,64 @@
+name: TrackFlow Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      mariadb:
+        image: mariadb:10.6
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+          
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install Frappe Bench
+      run: |
+        pip install frappe-bench
+        bench init frappe-bench --skip-redis-config-generation --python python3
+        cd frappe-bench
+        
+    - name: Setup test site
+      run: |
+        cd frappe-bench
+        bench new-site test_site --admin-password admin --db-root-password root
+        bench get-app erpnext --branch version-15
+        bench get-app crm
+        bench get-app $GITHUB_WORKSPACE
+        bench --site test_site install-app erpnext crm trackflow
+        
+    - name: Run Python tests
+      run: |
+        cd frappe-bench
+        bench --site test_site run-tests --app trackflow
+        
+    - name: Install Playwright
+      run: |
+        pip install pytest-playwright
+        playwright install chromium
+        
+    - name: Run UI tests
+      env:
+        FRAPPE_URL: http://localhost:8000
+        TEST_USER: Administrator
+        TEST_PASSWORD: admin
+      run: |
+        cd frappe-bench
+        bench start &
+        sleep 30
+        pytest apps/trackflow/trackflow/tests/test_ui.py -v
