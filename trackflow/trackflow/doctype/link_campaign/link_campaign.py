@@ -10,3 +10,12 @@ class LinkCampaign(Document):
         if self.start_date and self.end_date:
             if self.end_date < self.start_date:
                 frappe.throw("End Date cannot be before Start Date")
+
+
+def get_permission_query_conditions(user):
+    """Return permission query conditions for Link Campaign doctype"""
+    if not user:
+        user = frappe.session.user
+    
+    # Everyone can see link campaigns
+    return None
