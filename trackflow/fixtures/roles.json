@@ -1,0 +1,40 @@
+[
+    {
+        "doctype": "Role",
+        "role_name": "Campaign Manager",
+        "desk_access": 1
+    },
+    {
+        "doctype": "Custom DocPerm",
+        "parent": "Link Campaign",
+        "role": "Campaign Manager",
+        "permlevel": 0,
+        "read": 1,
+        "write": 1,
+        "create": 1,
+        "delete": 1,
+        "submit": 0,
+        "cancel": 0,
+        "amend": 0
+    },
+    {
+        "doctype": "Custom DocPerm",
+        "parent": "Tracked Link",
+        "role": "Campaign Manager",
+        "permlevel": 0,
+        "read": 1,
+        "write": 1,
+        "create": 1,
+        "delete": 1
+    },
+    {
+        "doctype": "Custom DocPerm",
+        "parent": "Click Event",
+        "role": "Campaign Manager",
+        "permlevel": 0,
+        "read": 1,
+        "write": 0,
+        "create": 0,
+        "delete": 0
+    }
+]
