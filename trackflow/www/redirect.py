@@ -1,6 +1,6 @@
 import frappe
 from frappe import _
-from trackflow.utils import create_click_event, generate_visitor_id
+from trackflow.trackflow.utils import create_click_event, generate_visitor_id
 
 no_cache = 1
 
@@ -38,7 +38,7 @@ def get_context(context):
     
     # Track the click
     try:
-        # Get visitor ID from cookie or create new
+        # Get visitor ID from cookie or create new (using consistent cookie name)
         visitor_id = frappe.request.cookies.get("trackflow_visitor")
         
         if not visitor_id:
@@ -46,7 +46,7 @@ def get_context(context):
             
             # Set visitor cookie
             cookie_options = {
-                'expires': (frappe.utils.datetime.datetime.now() + frappe.utils.datetime.timedelta(days=365)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
+                'max_age': 31536000,  # 1 year
                 'path': '/',
                 'secure': frappe.request.is_secure,
                 'httponly': True,
@@ -61,7 +61,7 @@ def get_context(context):
         
         # Gather request data
         request_data = {
-            "ip": frappe.local.request_ip,
+            "ip": frappe.local.request_ip or frappe.request.environ.get('REMOTE_ADDR'),
             "user_agent": frappe.request.headers.get("User-Agent", ""),
             "referrer": frappe.request.headers.get("Referer", "")
         }
