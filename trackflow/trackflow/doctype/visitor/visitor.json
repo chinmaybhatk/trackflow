@@ -1,219 +1,198 @@
 {
- "actions": [],
- "allow_rename": 1,
- "autoname": "field:visitor_id",
- "creation": "2024-01-01 10:00:00",
- "default_view": "List",
- "doctype": "DocType",
- "editable_grid": 1,
- "engine": "InnoDB",
- "field_order": [
-  "visitor_id",
-  "first_seen",
-  "last_seen",
-  "column_break_1",
-  "lead",
-  "organization",
-  "deal",
-  "section_break_1",
-  "total_clicks",
-  "total_sessions",
-  "total_page_views",
-  "column_break_2",
-  "engagement_score",
-  "last_campaign",
-  "section_break_2",
-  "browser",
-  "device_type",
-  "operating_system",
-  "column_break_3",
-  "country",
-  "city",
-  "ip_address",
-  "section_break_3",
-  "lead_created_date",
-  "organization_created_date",
-  "deal_created_date"
- ],
- "fields": [
-  {
-   "fieldname": "visitor_id",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Visitor ID",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "first_seen",
-   "fieldtype": "Datetime",
-   "label": "First Seen"
-  },
-  {
-   "fieldname": "last_seen",
-   "fieldtype": "Datetime",
-   "in_list_view": 1,
-   "label": "Last Seen"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "lead",
-   "fieldtype": "Link",
-   "label": "Lead",
-   "options": "CRM Lead"
-  },
-  {
-   "fieldname": "organization",
-   "fieldtype": "Link",
-   "label": "Organization",
-   "options": "CRM Organization"
-  },
-  {
-   "fieldname": "deal",
-   "fieldtype": "Link",
-   "label": "Deal",
-   "options": "CRM Deal"
-  },
-  {
-   "fieldname": "section_break_1",
-   "fieldtype": "Section Break",
-   "label": "Metrics"
-  },
-  {
-   "fieldname": "total_clicks",
-   "fieldtype": "Int",
-   "label": "Total Clicks",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_sessions",
-   "fieldtype": "Int",
-   "label": "Total Sessions",
-   "read_only": 1
-  },
-  {
-   "fieldname": "total_page_views",
-   "fieldtype": "Int",
-   "label": "Total Page Views",
-   "read_only": 1
-  },
-  {
-   "fieldname": "column_break_2",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "engagement_score",
-   "fieldtype": "Int",
-   "label": "Engagement Score",
-   "read_only": 1
-  },
-  {
-   "fieldname": "last_campaign",
-   "fieldtype": "Data",
-   "label": "Last Campaign"
-  },
-  {
-   "fieldname": "section_break_2",
-   "fieldtype": "Section Break",
-   "label": "Device Info"
-  },
-  {
-   "fieldname": "browser",
-   "fieldtype": "Data",
-   "label": "Browser"
-  },
-  {
-   "fieldname": "device_type",
-   "fieldtype": "Select",
-   "label": "Device Type",
-   "options": "Desktop\nMobile\nTablet"
-  },
-  {
-   "fieldname": "operating_system",
-   "fieldtype": "Data",
-   "label": "Operating System"
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
-  },
-  {
-   "fieldname": "country",
-   "fieldtype": "Data",
-   "label": "Country"
-  },
-  {
-   "fieldname": "city",
-   "fieldtype": "Data",
-   "label": "City"
-  },
-  {
-   "fieldname": "ip_address",
-   "fieldtype": "Data",
-   "label": "IP Address"
-  },
-  {
-   "fieldname": "section_break_3",
-   "fieldtype": "Section Break",
-   "label": "Conversion Dates"
-  },
-  {
-   "fieldname": "lead_created_date",
-   "fieldtype": "Datetime",
-   "label": "Lead Created Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "organization_created_date",
-   "fieldtype": "Datetime",
-   "label": "Organization Created Date",
-   "read_only": 1
-  },
-  {
-   "fieldname": "deal_created_date",
-   "fieldtype": "Datetime",
-   "label": "Deal Created Date",
-   "read_only": 1
-  }
- ],
- "links": [],
- "modified": "2024-01-01 10:00:00",
- "modified_by": "Administrator",
- "module": "TrackFlow",
- "name": "Visitor",
- "naming_rule": "By fieldname",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "TrackFlow User",
-   "share": 1,
-   "write": 1
-  }
- ],
- "sort_field": "last_seen",
- "sort_order": "DESC",
- "track_changes": 1
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "field:visitor_id",
+    "creation": "2025-09-04 14:30:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "visitor_id",
+        "first_seen",
+        "last_seen",
+        "page_views",
+        "column_break_5",
+        "ip_address",
+        "user_agent",
+        "section_break_8",
+        "source",
+        "medium",
+        "campaign",
+        "term",
+        "content",
+        "referrer",
+        "section_break_15",
+        "has_converted",
+        "conversion_count",
+        "last_conversion_date",
+        "engagement_section",
+        "engagement_score",
+        "last_activity"
+    ],
+    "fields": [
+        {
+            "fieldname": "visitor_id",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Visitor ID",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "first_seen",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "First Seen",
+            "reqd": 1
+        },
+        {
+            "fieldname": "last_seen",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Last Seen"
+        },
+        {
+            "default": "0",
+            "fieldname": "page_views",
+            "fieldtype": "Int",
+            "label": "Page Views"
+        },
+        {
+            "fieldname": "column_break_5",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "ip_address",
+            "fieldtype": "Data",
+            "label": "IP Address"
+        },
+        {
+            "fieldname": "user_agent",
+            "fieldtype": "Small Text",
+            "label": "User Agent"
+        },
+        {
+            "fieldname": "section_break_8",
+            "fieldtype": "Section Break",
+            "label": "Attribution"
+        },
+        {
+            "default": "direct",
+            "fieldname": "source",
+            "fieldtype": "Data",
+            "label": "Source"
+        },
+        {
+            "default": "none",
+            "fieldname": "medium",
+            "fieldtype": "Data",
+            "label": "Medium"
+        },
+        {
+            "fieldname": "campaign",
+            "fieldtype": "Data",
+            "label": "Campaign"
+        },
+        {
+            "fieldname": "term",
+            "fieldtype": "Data",
+            "label": "Term"
+        },
+        {
+            "fieldname": "content",
+            "fieldtype": "Data",
+            "label": "Content"
+        },
+        {
+            "fieldname": "referrer",
+            "fieldtype": "Data",
+            "label": "Referrer URL"
+        },
+        {
+            "fieldname": "section_break_15",
+            "fieldtype": "Section Break",
+            "label": "Conversion"
+        },
+        {
+            "default": "0",
+            "fieldname": "has_converted",
+            "fieldtype": "Check",
+            "label": "Has Converted"
+        },
+        {
+            "default": "0",
+            "fieldname": "conversion_count",
+            "fieldtype": "Int",
+            "label": "Conversion Count"
+        },
+        {
+            "fieldname": "last_conversion_date",
+            "fieldtype": "Datetime",
+            "label": "Last Conversion Date"
+        },
+        {
+            "fieldname": "engagement_section",
+            "fieldtype": "Section Break",
+            "label": "Engagement"
+        },
+        {
+            "default": "0",
+            "fieldname": "engagement_score",
+            "fieldtype": "Float",
+            "label": "Engagement Score"
+        },
+        {
+            "fieldname": "last_activity",
+            "fieldtype": "Datetime",
+            "label": "Last Activity"
+        }
+    ],
+    "links": [],
+    "modified": "2025-09-04 14:30:00",
+    "modified_by": "Administrator",
+    "module": "TrackFlow",
+    "name": "Visitor",
+    "naming_rule": "By fieldname",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "TrackFlow Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "TrackFlow User",
+            "share": 0,
+            "write": 0
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }
