@@ -1,0 +1,38 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "creation": "2025-09-04 16:30:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "ip_range",
+        "description"
+    ],
+    "fields": [
+        {
+            "fieldname": "ip_range",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "IP Range",
+            "reqd": 1
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Description"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "istable": 1,
+    "links": [],
+    "modified": "2025-09-04 16:30:00",
+    "modified_by": "Administrator",
+    "module": "TrackFlow",
+    "name": "Internal IP Range",
+    "owner": "Administrator",
+    "permissions": [],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": []
+}
