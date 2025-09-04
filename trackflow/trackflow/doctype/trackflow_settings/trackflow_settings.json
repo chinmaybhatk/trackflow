@@ -1,37 +1,35 @@
 {
     "actions": [],
-    "creation": "2025-08-06 12:00:00.000000",
-    "default_view": "List",
+    "allow_rename": 0,
+    "creation": "2025-09-04 16:15:00",
     "doctype": "DocType",
-    "document_type": "Setup",
-    "editable_grid": 0,
     "engine": "InnoDB",
     "field_order": [
-        "general_section",
+        "general_settings_section",
         "enable_tracking",
-        "default_attribution_model",
-        "cookie_expiry_days",
-        "column_break_1",
-        "tracking_domain",
+        "auto_generate_short_codes",
+        "short_code_length",
+        "default_shortlink_domain",
+        "column_break_6",
         "exclude_internal_traffic",
-        "internal_ip_ranges",
+        "gdpr_compliance_enabled",
+        "cookie_expires_days",
         "attribution_section",
+        "default_attribution_model",
         "attribution_window_days",
-        "conversion_goals",
-        "notification_section",
-        "enable_notifications",
-        "notification_recipients",
-        "alert_threshold_visits",
-        "alert_threshold_conversion_rate",
-        "advanced_section",
-        "enable_cross_domain_tracking",
-        "allowed_domains",
-        "enable_enhanced_ecommerce",
-        "custom_dimensions"
+        "custom_attribution_settings",
+        "privacy_section",
+        "cookie_consent_required",
+        "cookie_consent_text",
+        "privacy_policy_link",
+        "cookie_policy_link",
+        "anonymize_ip_addresses",
+        "internal_traffic_section",
+        "internal_ip_ranges"
     ],
     "fields": [
         {
-            "fieldname": "general_section",
+            "fieldname": "general_settings_section",
             "fieldtype": "Section Break",
             "label": "General Settings"
         },
@@ -42,27 +40,27 @@
             "label": "Enable Tracking"
         },
         {
-            "default": "Last Touch",
-            "fieldname": "default_attribution_model",
-            "fieldtype": "Select",
-            "label": "Default Attribution Model",
-            "options": "Last Touch\nFirst Touch\nLinear\nTime Decay\nPosition Based\nData Driven"
+            "default": "1",
+            "fieldname": "auto_generate_short_codes",
+            "fieldtype": "Check",
+            "label": "Auto-Generate Short Codes"
         },
         {
-            "default": "30",
-            "fieldname": "cookie_expiry_days",
+            "default": "6",
+            "fieldname": "short_code_length",
             "fieldtype": "Int",
-            "label": "Cookie Expiry Days"
+            "label": "Short Code Length",
+            "reqd": 1
         },
         {
-            "fieldname": "column_break_1",
-            "fieldtype": "Column Break"
-        },
-        {
-            "fieldname": "tracking_domain",
+            "description": "If empty, the site URL will be used",
+            "fieldname": "default_shortlink_domain",
             "fieldtype": "Data",
-            "label": "Tracking Domain",
-            "description": "Leave empty to use current domain"
+            "label": "Default Shortlink Domain"
+        },
+        {
+            "fieldname": "column_break_6",
+            "fieldtype": "Column Break"
         },
         {
             "default": "0",
@@ -71,11 +69,17 @@
             "label": "Exclude Internal Traffic"
         },
         {
-            "depends_on": "exclude_internal_traffic",
-            "fieldname": "internal_ip_ranges",
-            "fieldtype": "Table",
-            "label": "Internal IP Ranges",
-            "options": "TrackFlow IP Range"
+            "default": "1",
+            "fieldname": "gdpr_compliance_enabled",
+            "fieldtype": "Check",
+            "label": "GDPR Compliance Enabled"
+        },
+        {
+            "default": "365",
+            "fieldname": "cookie_expires_days",
+            "fieldtype": "Int",
+            "label": "Cookie Expiration (Days)",
+            "reqd": 1
         },
         {
             "fieldname": "attribution_section",
@@ -83,84 +87,73 @@
             "label": "Attribution Settings"
         },
         {
-            "default": "90",
+            "default": "Last Touch",
+            "fieldname": "default_attribution_model",
+            "fieldtype": "Select",
+            "label": "Default Attribution Model",
+            "options": "Last Touch\nFirst Touch\nLinear\nTime Decay\nPosition Based",
+            "reqd": 1
+        },
+        {
+            "default": "30",
             "fieldname": "attribution_window_days",
             "fieldtype": "Int",
             "label": "Attribution Window (Days)",
-            "description": "How many days to look back for attribution"
+            "reqd": 1
         },
         {
-            "fieldname": "conversion_goals",
-            "fieldtype": "Table",
-            "label": "Conversion Goals",
-            "options": "TrackFlow Conversion Goal"
+            "fieldname": "custom_attribution_settings",
+            "fieldtype": "JSON",
+            "label": "Custom Attribution Settings"
         },
         {
-            "fieldname": "notification_section",
+            "fieldname": "privacy_section",
             "fieldtype": "Section Break",
-            "label": "Notifications"
+            "label": "Privacy Settings"
         },
         {
             "default": "1",
-            "fieldname": "enable_notifications",
+            "fieldname": "cookie_consent_required",
             "fieldtype": "Check",
-            "label": "Enable Notifications"
+            "label": "Cookie Consent Required"
         },
         {
-            "depends_on": "enable_notifications",
-            "fieldname": "notification_recipients",
-            "fieldtype": "Table",
-            "label": "Notification Recipients",
-            "options": "TrackFlow Notification Recipient"
+            "default": "This site uses cookies for analytics and personalization. By continuing to browse, you agree to our use of cookies.",
+            "fieldname": "cookie_consent_text",
+            "fieldtype": "Text",
+            "label": "Cookie Consent Text"
         },
         {
-            "default": "1000",
-            "depends_on": "enable_notifications",
-            "fieldname": "alert_threshold_visits",
-            "fieldtype": "Int",
-            "label": "Alert Threshold - Visits"
+            "fieldname": "privacy_policy_link",
+            "fieldtype": "Data",
+            "label": "Privacy Policy Link"
         },
         {
-            "default": "5",
-            "depends_on": "enable_notifications",
-            "fieldname": "alert_threshold_conversion_rate",
-            "fieldtype": "Float",
-            "label": "Alert Threshold - Conversion Rate (%)"
+            "fieldname": "cookie_policy_link",
+            "fieldtype": "Data",
+            "label": "Cookie Policy Link"
         },
         {
-            "fieldname": "advanced_section",
+            "default": "0",
+            "fieldname": "anonymize_ip_addresses",
+            "fieldtype": "Check",
+            "label": "Anonymize IP Addresses"
+        },
+        {
+            "fieldname": "internal_traffic_section",
             "fieldtype": "Section Break",
-            "label": "Advanced Settings"
+            "label": "Internal Traffic"
         },
         {
-            "default": "0",
-            "fieldname": "enable_cross_domain_tracking",
-            "fieldtype": "Check",
-            "label": "Enable Cross-Domain Tracking"
-        },
-        {
-            "depends_on": "enable_cross_domain_tracking",
-            "fieldname": "allowed_domains",
-            "fieldtype": "Small Text",
-            "label": "Allowed Domains",
-            "description": "One domain per line"
-        },
-        {
-            "default": "0",
-            "fieldname": "enable_enhanced_ecommerce",
-            "fieldtype": "Check",
-            "label": "Enable Enhanced E-commerce Tracking"
-        },
-        {
-            "fieldname": "custom_dimensions",
+            "fieldname": "internal_ip_ranges",
             "fieldtype": "Table",
-            "label": "Custom Dimensions",
-            "options": "TrackFlow Custom Dimension"
+            "label": "Internal IP Ranges",
+            "options": "Internal IP Range"
         }
     ],
-    "issingle": 1,
+    "is_single": 1,
     "links": [],
-    "modified": "2025-08-06 12:00:00.000000",
+    "modified": "2025-09-04 16:15:00",
     "modified_by": "Administrator",
     "module": "TrackFlow",
     "name": "TrackFlow Settings",
@@ -178,7 +171,7 @@
         },
         {
             "create": 1,
-            "delete": 1,
+            "delete": 0,
             "email": 1,
             "print": 1,
             "read": 1,
