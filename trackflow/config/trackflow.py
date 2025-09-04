@@ -1,96 +1,57 @@
 from frappe import _
 
 def get_data():
+    """Returns configuration for TrackFlow module in CRM sidebar"""
     return [
         {
-            "label": _("Links"),
+            "label": _("TrackFlow"),
+            "icon": "fa fa-link",
             "items": [
-                {
-                    "type": "doctype",
-                    "name": "Tracked Link",
-                    "description": _("Create and manage tracked links"),
-                    "onboard": 1,
-                },
                 {
                     "type": "doctype",
                     "name": "Link Campaign",
-                    "description": _("Organize links into campaigns"),
+                    "label": _("Campaigns"),
+                    "description": _("Manage link tracking campaigns"),
                     "onboard": 1,
                 },
                 {
                     "type": "doctype",
-                    "name": "Link Template",
-                    "description": _("Reusable UTM templates"),
-                }
-            ]
-        },
-        {
-            "label": _("Analytics"),
-            "items": [
+                    "name": "Tracked Link",
+                    "label": _("Tracked Links"),
+                    "description": _("View and manage tracked links"),
+                    "onboard": 1,
+                },
+                {
+                    "type": "doctype",
+                    "name": "Visitor Session",
+                    "label": _("Visitor Sessions"),
+                    "description": _("Track visitor behavior"),
+                },
                 {
                     "type": "doctype",
                     "name": "Click Event",
-                    "description": _("Track link clicks and events"),
+                    "label": _("Click Events"),
+                    "description": _("View all click events"),
                 },
                 {
                     "type": "report",
-                    "name": "Link Performance",
-                    "doctype": "Tracked Link",
+                    "name": "Campaign Performance",
+                    "label": _("Campaign Analytics"),
                     "is_query_report": True,
+                    "reference_doctype": "Link Campaign",
                 },
                 {
                     "type": "report",
-                    "name": "Campaign Analytics",
-                    "doctype": "Link Campaign",
+                    "name": "Attribution Analysis",
+                    "label": _("Attribution Report"),
                     "is_query_report": True,
+                    "reference_doctype": "CRM Deal",
                 },
                 {
                     "type": "page",
                     "name": "trackflow-dashboard",
                     "label": _("TrackFlow Dashboard"),
-                    "description": _("Real-time analytics dashboard"),
-                }
-            ]
-        },
-        {
-            "label": _("Attribution"),
-            "items": [
-                {
-                    "type": "report",
-                    "name": "Lead Attribution",
-                    "doctype": "Lead",
-                    "is_query_report": True,
-                },
-                {
-                    "type": "report",
-                    "name": "Deal Attribution",
-                    "doctype": "Deal",
-                    "is_query_report": True,
-                },
-                {
-                    "type": "doctype",
-                    "name": "Attribution Model",
-                    "description": _("Configure attribution models"),
-                }
-            ]
-        },
-        {
-            "label": _("Settings"),
-            "items": [
-                {
-                    "type": "doctype",
-                    "name": "TrackFlow Settings",
-                    "description": _("Configure TrackFlow"),
-                },
-                {
-                    "type": "doctype",
-                    "name": "Domain Configuration",
-                    "description": _("Manage tracking domains"),
-                },
-                {
-                    "type": "doctype",
-                    "name": "Integration Settings",
-                    "description": _("Third-party integrations"),
+                    "icon": "fa fa-dashboard",
                 }
             ]
         }
