@@ -6,8 +6,14 @@ app_email = "support@trackflow.app"
 app_license = "MIT"
 app_version = "1.0.0"
 
-# Remove module configuration - integrates directly into CRM
-# modules = {}
+# Add module configuration for CRM integration
+modules = {
+    "TrackFlow": {
+        "label": "TrackFlow",
+        "icon": "fa fa-link",
+        "color": "#2563eb"
+    }
+}
 
 # Include files for CRM integration
 app_include_css = "/assets/trackflow/css/trackflow.css"
@@ -136,3 +142,6 @@ fixtures = [
 # App Icon
 app_icon = "fa fa-link"
 app_color = "#2563eb"
+
+# For Frappe CRM Integration
+has_web_view = 1
