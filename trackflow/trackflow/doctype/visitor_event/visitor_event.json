@@ -1,0 +1,159 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "hash",
+    "creation": "2025-09-04 15:00:00",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "field_order": [
+        "visitor",
+        "session",
+        "event_type",
+        "event_category",
+        "column_break_5",
+        "timestamp",
+        "url",
+        "section_break_8",
+        "event_action",
+        "event_label",
+        "event_value",
+        "column_break_12",
+        "event_data",
+        "tracked_link",
+        "short_code"
+    ],
+    "fields": [
+        {
+            "fieldname": "visitor",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Visitor",
+            "options": "Visitor",
+            "reqd": 1
+        },
+        {
+            "fieldname": "session",
+            "fieldtype": "Link",
+            "label": "Session",
+            "options": "Visitor Session"
+        },
+        {
+            "fieldname": "event_type",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Event Type",
+            "reqd": 1
+        },
+        {
+            "fieldname": "event_category",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Event Category"
+        },
+        {
+            "fieldname": "column_break_5",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "timestamp",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Timestamp",
+            "reqd": 1
+        },
+        {
+            "fieldname": "url",
+            "fieldtype": "Data",
+            "label": "URL"
+        },
+        {
+            "fieldname": "section_break_8",
+            "fieldtype": "Section Break",
+            "label": "Event Details"
+        },
+        {
+            "fieldname": "event_action",
+            "fieldtype": "Data",
+            "label": "Event Action"
+        },
+        {
+            "fieldname": "event_label",
+            "fieldtype": "Data",
+            "label": "Event Label"
+        },
+        {
+            "fieldname": "event_value",
+            "fieldtype": "Float",
+            "label": "Event Value"
+        },
+        {
+            "fieldname": "column_break_12",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "event_data",
+            "fieldtype": "JSON",
+            "label": "Event Data"
+        },
+        {
+            "fieldname": "tracked_link",
+            "fieldtype": "Link",
+            "label": "Tracked Link",
+            "options": "Tracked Link"
+        },
+        {
+            "fieldname": "short_code",
+            "fieldtype": "Data",
+            "label": "Short Code"
+        }
+    ],
+    "links": [],
+    "modified": "2025-09-04 15:00:00",
+    "modified_by": "Administrator",
+    "module": "TrackFlow",
+    "name": "Visitor Event",
+    "naming_rule": "Random",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "TrackFlow Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 0,
+            "delete": 0,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "TrackFlow User",
+            "share": 0,
+            "write": 0
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
+}
