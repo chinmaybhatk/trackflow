@@ -19,8 +19,8 @@ def get_visitor_from_request():
     visitor_id = None
     
     if frappe.request:
-        # Check cookies
-        visitor_id = frappe.request.cookies.get('tf_visitor_id')
+        # Check cookies - using consistent cookie name
+        visitor_id = frappe.request.cookies.get('trackflow_visitor')
         
         # Check headers (for API requests)
         if not visitor_id:
@@ -32,7 +32,7 @@ def set_visitor_cookie(visitor_id):
     """Set visitor ID cookie"""
     if frappe.request:
         frappe.local.cookie_manager.set_cookie(
-            'tf_visitor_id',
+            'trackflow_visitor',
             visitor_id,
             max_age=31536000,  # 1 year
             httponly=True,
@@ -115,6 +115,72 @@ def parse_user_agent(user_agent):
         info['device_type'] = 'Tablet'
     
     return info
+
+def create_click_event(tracked_link, visitor_id, request_data=None):
+    """Create a click event record for a tracked link"""
+    try:
+        # Get or create visitor
+        visitor = None
+        if frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
+            visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+        else:
+            # Create new visitor
+            visitor_doc = frappe.new_doc("Visitor")
+            visitor_doc.visitor_id = visitor_id
+            visitor_doc.first_seen = frappe.utils.now()
+            visitor_doc.last_seen = frappe.utils.now()
+            
+            if request_data:
+                visitor_doc.ip_address = request_data.get("ip")
+                visitor_doc.user_agent = request_data.get("user_agent")
+                
+                # Parse user agent
+                if request_data.get("user_agent"):
+                    ua_info = parse_user_agent(request_data.get("user_agent"))
+                    visitor_doc.browser = ua_info.get("browser")
+                    visitor_doc.operating_system = ua_info.get("operating_system")
+                    visitor_doc.device_type = ua_info.get("device_type")
+            
+            visitor_doc.insert(ignore_permissions=True)
+            visitor = visitor_doc.name
+        
+        # Create click event
+        click_event = frappe.new_doc("Click Event")
+        click_event.tracked_link = tracked_link.name
+        click_event.visitor_id = visitor_id
+        click_event.visitor = visitor
+        click_event.click_time = frappe.utils.now()
+        click_event.ip_address = request_data.get("ip") if request_data else None
+        click_event.user_agent = request_data.get("user_agent") if request_data else None
+        click_event.referrer = request_data.get("referrer") if request_data else None
+        
+        # Parse user agent for click event
+        if request_data and request_data.get("user_agent"):
+            ua_info = parse_user_agent(request_data.get("user_agent"))
+            click_event.browser = ua_info.get("browser")
+            click_event.operating_system = ua_info.get("operating_system")
+            click_event.device_type = ua_info.get("device_type")
+        
+        # Get geo location if possible
+        if request_data and request_data.get("ip"):
+            try:
+                from trackflow.utils.geo import get_geo_location
+                geo = get_geo_location(request_data.get("ip"))
+                if geo:
+                    click_event.country = geo.get("country")
+                    click_event.city = geo.get("city")
+                    click_event.region = geo.get("region")
+            except:
+                # Geo location failed, continue without it
+                pass
+        
+        click_event.insert(ignore_permissions=True)
+        
+        return click_event
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), f"Create Click Event Error: {str(e)}")
+        raise
 
 def calculate_attribution(deal_name, model='last_touch'):
     """Calculate attribution for a deal based on the selected model"""
@@ -394,3 +460,67 @@ def format_duration(seconds):
         return f"{minutes}m {secs}s"
     else:
         return f"{secs}s"
+
+def check_gdpr_consent(visitor_id):
+    """Check if visitor has given GDPR consent"""
+    if not visitor_id:
+        return False
+    
+    visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, ["gdpr_consent", "consent_date"], as_dict=1)
+    
+    if visitor and visitor.get("gdpr_consent"):
+        return True
+    
+    return False
+
+def record_gdpr_consent(visitor_id, consent_given=True, consent_text=None):
+    """Record GDPR consent for a visitor"""
+    if not visitor_id:
+        return False
+    
+    visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+    
+    if visitor:
+        frappe.db.set_value("Visitor", visitor, {
+            "gdpr_consent": consent_given,
+            "consent_date": frappe.utils.now(),
+            "consent_text": consent_text or "Standard GDPR consent"
+        })
+        frappe.db.commit()
+        return True
+    
+    return False
+
+def anonymize_visitor_data(visitor_id):
+    """Anonymize visitor data for GDPR compliance"""
+    if not visitor_id:
+        return False
+    
+    visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+    
+    if visitor:
+        # Anonymize visitor data
+        frappe.db.set_value("Visitor", visitor, {
+            "ip_address": "0.0.0.0",
+            "user_agent": "Anonymized",
+            "gdpr_anonymized": 1,
+            "anonymized_date": frappe.utils.now()
+        })
+        
+        # Anonymize related events
+        frappe.db.sql("""
+            UPDATE `tabVisitor Event`
+            SET ip_address = '0.0.0.0', user_agent = 'Anonymized'
+            WHERE visitor = %s
+        """, visitor)
+        
+        frappe.db.sql("""
+            UPDATE `tabClick Event`
+            SET ip_address = '0.0.0.0', user_agent = 'Anonymized'
+            WHERE visitor = %s
+        """, visitor)
+        
+        frappe.db.commit()
+        return True
+    
+    return False
