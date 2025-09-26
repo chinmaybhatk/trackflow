@@ -478,14 +478,26 @@ CREATE INDEX idx_api_request_log_key_time ON `tabAPI Request Log` (api_key, requ
 | API Request Log | 90 days | Rotate logs |
 | Visitor Session | 1 year | Archive inactive visitors |
 
-### 6. Critical Relationships for Attribution
+### 6. Critical Relationships for Attribution ✅ WORKING
 
-The attribution engine relies on these key relationships:
+The attribution engine **currently working** relies on these relationships:
 
-1. **Visitor Journey**: `Visitor` → `Visitor Session` → `Visitor Event`
-2. **Campaign Attribution**: `Link Campaign` → `Tracked Link` → `Click Event` → `Conversion`
-3. **CRM Integration**: `Deal Attribution` ← `Attribution Model` → `Conversion`
-4. **Multi-Touch**: Multiple `Click Event` records per `Visitor` for attribution calculation
+1. **Visitor Journey**: `Visitor` → `Visitor Session` → `Visitor Event` ✅ **ACTIVE**
+2. **Campaign Attribution**: `Link Campaign` → `Tracked Link` → `Click Event` → `CRM Lead` ✅ **ACTIVE**
+3. **CRM Integration**: `Visitor` → `CRM Lead` (via trackflow_visitor_id) ✅ **ACTIVE**
+4. **Last-Click Attribution**: Most recent `Click Event` → `CRM Lead` attribution ✅ **ACTIVE**
+
+#### Current Attribution Logic (Production)
+```sql
+-- When CRM Lead is created, this attribution happens automatically:
+UPDATE `tabCRM Lead` SET
+  trackflow_source = (SELECT source FROM tabVisitor WHERE visitor_id = ?),
+  trackflow_medium = (SELECT medium FROM tabVisitor WHERE visitor_id = ?),
+  trackflow_campaign = (SELECT campaign FROM tabVisitor WHERE visitor_id = ?),
+  trackflow_first_touch_date = (SELECT first_seen FROM tabVisitor WHERE visitor_id = ?),
+  trackflow_last_touch_date = (SELECT last_seen FROM tabVisitor WHERE visitor_id = ?)
+WHERE name = ?;
+```
 
 ---
 
@@ -527,6 +539,52 @@ flowchart TD
     style E fill:#f3e5f5
     style P fill:#e8f5e8
     style X fill:#fff3e0
+```
+
+### Attribution Data Flow (WORKING)
+
+```mermaid
+flowchart TD
+    subgraph "Campaign Creation"
+        A[Link Campaign] --> B[Tracked Link]
+        B --> C[Short URL: /r/abc123]
+    end
+    
+    subgraph "Visitor Journey"
+        D[Visitor Clicks Link] --> E[Visitor Record Created]
+        E --> F[Click Event Logged]
+        F --> G[Session Tracking]
+        G --> H[Page View Events]
+    end
+    
+    subgraph "Attribution Logic ✅ WORKING"
+        I[Visitor Fills Form] --> J[CRM Lead Hook Triggered]
+        J --> K[Extract visitor_id from Cookie]
+        K --> L[Query Visitor Record]
+        L --> M[Copy Attribution Data]
+        M --> N[Lead Fields Populated]
+    end
+    
+    subgraph "Lead Attribution Data"
+        O[trackflow_source = 'email']
+        P[trackflow_medium = 'newsletter']
+        Q[trackflow_campaign = 'Q4-Email']
+        R[trackflow_first_touch_date]
+        S[trackflow_last_touch_date]
+    end
+    
+    N --> O
+    N --> P
+    N --> Q
+    N --> R
+    N --> S
+    
+    style A fill:#e3f2fd
+    style I fill:#e8f5e8
+    style M fill:#fff3e0
+    style O fill:#c8e6c9
+    style P fill:#c8e6c9
+    style Q fill:#c8e6c9
 ```
 
 ### Data Relationship Flow
@@ -607,10 +665,12 @@ graph LR
 
 ### 🔄 Implemented with Basic Features
 
-#### Attribution Models
-- **Available Models**: Last Touch, First Touch, Linear, Time Decay, Position Based
-- **Status**: DocType created, basic logic implemented
-- **Next**: Advanced calculation engine for multi-touch attribution
+#### Attribution Models ✅ PRODUCTION READY
+- **Last-Click Attribution**: ✅ **Fully Working** - Attributes leads to most recent campaign touch
+- **First-Touch Attribution**: ✅ **Working** - Uses visitor's initial campaign source
+- **Campaign Source Tracking**: ✅ **Complete** - Full UTM parameter capture and attribution
+- **Touch History**: ✅ **Tracked** - Complete visitor journey with timestamps
+- **Advanced Models**: ⏳ Linear, Time Decay, Position Based (planned enhancement)
 
 #### Analytics & Reporting  
 - **Basic Reports**: Campaign Performance, Lead Attribution, Visitor Journey

@@ -4,6 +4,26 @@
 
 TrackFlow can track **any external website** by embedding a JavaScript tracking script. This allows you to run TrackFlow on your Frappe/CRM server while tracking visitors on separate marketing websites, e-commerce sites, or landing pages.
 
+## ✅ **Working Attribution Example**
+
+Here's what happens when TrackFlow tracks an external website:
+
+1. **Visitor Journey**: John clicks email link → `yoursite.com/r/abc123` → Redirects to `yourcompany.com/products`
+2. **Tracking**: JavaScript tracks John's page views on `yourcompany.com`  
+3. **Conversion**: John fills contact form on `yourcompany.com`
+4. **Attribution**: CRM Lead created with full attribution:
+
+```python
+# Automatically populated by TrackFlow ✅ WORKING
+lead.trackflow_source = "email"              # From the tracked link
+lead.trackflow_medium = "newsletter"         # UTM medium parameter  
+lead.trackflow_campaign = "Q4-Product-Demo"  # Campaign name
+lead.trackflow_first_touch_date = "2024-01-01 10:30:00"
+lead.trackflow_last_touch_date = "2024-01-01 11:45:00"
+```
+
+**Result**: Your CRM shows exactly which email campaign generated the lead! 🎯
+
 ## Architecture: TrackFlow Server + External Website
 
 ```mermaid
@@ -271,18 +291,18 @@ def create_external_lead():
     lead.phone = data.get('phone', '')
     lead.source = visitor_data.get('source') or data.get('trackflow_source') or 'Website'
     
-    # Add TrackFlow attribution fields
+    # ✅ WORKING: Add TrackFlow attribution fields automatically
     lead.trackflow_visitor_id = visitor_id
-    lead.trackflow_source = visitor_data.get('source') or data.get('trackflow_source')
-    lead.trackflow_medium = visitor_data.get('medium') or data.get('trackflow_medium')  
-    lead.trackflow_campaign = visitor_data.get('campaign') or data.get('trackflow_campaign')
-    lead.trackflow_first_touch_date = visitor_data.get('first_seen')
-    lead.trackflow_last_touch_date = frappe.utils.now()
+    lead.trackflow_source = visitor_data.get('source') or data.get('trackflow_source')      # ✅ "email", "google"
+    lead.trackflow_medium = visitor_data.get('medium') or data.get('trackflow_medium')      # ✅ "newsletter", "organic"  
+    lead.trackflow_campaign = visitor_data.get('campaign') or data.get('trackflow_campaign') # ✅ "Q4-Email"
+    lead.trackflow_first_touch_date = visitor_data.get('first_seen')                        # ✅ First interaction
+    lead.trackflow_last_touch_date = frappe.utils.now()                                     # ✅ Current conversion
     
     try:
         lead.insert(ignore_permissions=True)
         
-        # Track conversion
+        # ✅ WORKING: Track conversion with attribution
         if visitor_id:
             create_conversion_record(lead, visitor_id, "external_lead_created")
         
