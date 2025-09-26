@@ -6,7 +6,7 @@ from trackflow.trackflow.utils.error_handler import handle_error, log_activity, 
 def on_lead_create(doc, method):
     """Track lead creation with TrackFlow"""
     # Check if lead has tracking information
-    visitor_id = doc.get('custom_trackflow_visitor_id')
+    visitor_id = doc.get('trackflow_visitor_id')
     
     if visitor_id:
         # Link lead to visitor
@@ -21,11 +21,11 @@ def on_lead_create(doc, method):
             log_activity("lead_created", {
                 "lead": doc.name,
                 "visitor_id": visitor_id,
-                "campaign": doc.get('custom_trackflow_campaign')
+                "campaign": doc.get('trackflow_campaign')
             })
         
         # Track conversion if from campaign
-        campaign = doc.get('custom_trackflow_campaign')
+        campaign = doc.get('trackflow_campaign')
         if campaign:
             track_conversion(doc, "lead_created", visitor_id, campaign)
 
@@ -43,7 +43,7 @@ def on_lead_update(doc, method):
             status_change.from_status = old_status
             status_change.to_status = doc.status
             status_change.changed_by = frappe.session.user
-            status_change.campaign = doc.get('custom_trackflow_campaign')
+            status_change.campaign = doc.get('trackflow_campaign')
             status_change.insert(ignore_permissions=True)
         
         # Log activity
@@ -55,15 +55,15 @@ def on_lead_update(doc, method):
         
         # Track conversion for qualified leads
         if doc.status in ["Qualified", "Converted"]:
-            visitor_id = doc.get('custom_trackflow_visitor_id')
-            campaign = doc.get('custom_trackflow_campaign')
+            visitor_id = doc.get('trackflow_visitor_id')
+            campaign = doc.get('trackflow_campaign')
             if visitor_id:
                 track_conversion(doc, "lead_qualified", visitor_id, campaign)
 
 @handle_error(error_type="CRM Lead Trash", return_response=False)
 def on_lead_trash(doc, method):
     """Clean up tracking data when lead is deleted"""
-    visitor_id = doc.get('custom_trackflow_visitor_id')
+    visitor_id = doc.get('trackflow_visitor_id')
     
     if visitor_id:
         # Remove visitor association
@@ -92,8 +92,8 @@ def track_conversion(doc, conversion_type, visitor_id, campaign=None):
         conversion.conversion_date = frappe.utils.now()
         
         # Add tracking details
-        conversion.source = doc.get('custom_trackflow_source') or doc.get('source')
-        conversion.medium = doc.get('custom_trackflow_medium')
+        conversion.source = doc.get('trackflow_source') or doc.get('source')
+        conversion.medium = doc.get('trackflow_medium')
         conversion.campaign = campaign
         
         # Add metadata
@@ -120,13 +120,13 @@ def get_lead_tracking_data(lead):
     lead_doc = frappe.get_doc("CRM Lead", lead)
     
     data = {
-        "visitor_id": lead_doc.get('custom_trackflow_visitor_id'),
-        "source": lead_doc.get('custom_trackflow_source') or lead_doc.get('source'),
-        "medium": lead_doc.get('custom_trackflow_medium'),
-        "campaign": lead_doc.get('custom_trackflow_campaign'),
-        "first_touch_date": lead_doc.get('custom_trackflow_first_touch_date'),
-        "last_touch_date": lead_doc.get('custom_trackflow_last_touch_date'),
-        "touch_count": lead_doc.get('custom_trackflow_touch_count', 0)
+        "visitor_id": lead_doc.get('trackflow_visitor_id'),
+        "source": lead_doc.get('trackflow_source') or lead_doc.get('source'),
+        "medium": lead_doc.get('trackflow_medium'),
+        "campaign": lead_doc.get('trackflow_campaign'),
+        "first_touch_date": lead_doc.get('trackflow_first_touch_date'),
+        "last_touch_date": lead_doc.get('trackflow_last_touch_date'),
+        "touch_count": lead_doc.get('trackflow_touch_count', 0)
     }
     
     # Get visitor sessions if visitor exists
@@ -175,7 +175,7 @@ def link_visitor_to_lead(lead, visitor_id):
             return {"status": "error", "message": _("Visitor not found")}
         
         # Update lead
-        frappe.db.set_value("CRM Lead", lead, "custom_trackflow_visitor_id", visitor_id)
+        frappe.db.set_value("CRM Lead", lead, "trackflow_visitor_id", visitor_id)
         
         # Update visitor
         visitor_name = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")

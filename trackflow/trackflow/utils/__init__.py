@@ -83,3 +83,108 @@ def get_visitor_from_request():
             visitor_id = frappe.request.headers.get('X-TrackFlow-Visitor-ID')
     
     return visitor_id
+
+def get_visitor_from_request(request=None):
+    """Get or create visitor from HTTP request"""
+    if not request:
+        request = frappe.local.request
+    
+    # Try to get visitor ID from cookie
+    visitor_id = request.cookies.get('trackflow_visitor_id')
+    
+    if not visitor_id:
+        # Generate new visitor ID
+        visitor_id = generate_visitor_id()
+    
+    # Get or create visitor record
+    if frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
+        visitor_name = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+    else:
+        # Create new visitor
+        visitor_doc = frappe.new_doc("Visitor")
+        visitor_doc.visitor_id = visitor_id
+        visitor_doc.first_seen = frappe.utils.now()
+        visitor_doc.last_seen = frappe.utils.now()
+        visitor_doc.ip_address = get_client_ip()
+        visitor_doc.user_agent = request.headers.get('User-Agent', '')
+        visitor_doc.insert(ignore_permissions=True)
+        visitor_name = visitor_doc.name
+    
+    return visitor_id, visitor_name
+
+def set_visitor_cookie(response, visitor_id):
+    """Set visitor tracking cookie"""
+    # Get cookie expiration from settings
+    try:
+        settings = frappe.get_single("TrackFlow Settings")
+        expires_days = getattr(settings, 'cookie_expires_days', 365)
+    except:
+        expires_days = 365
+    
+    response.set_cookie(
+        'trackflow_visitor_id',
+        visitor_id,
+        max_age=expires_days * 24 * 60 * 60,  # Convert days to seconds
+        secure=frappe.local.request.scheme == 'https',
+        httponly=False,  # Allow JavaScript access for client-side tracking
+        samesite='Lax'
+    )
+
+def parse_user_agent(user_agent):
+    """Parse user agent string to extract browser, OS, device info"""
+    # Simple user agent parsing - could be enhanced with a library
+    browser = "Unknown"
+    os = "Unknown"
+    device = "Desktop"
+    
+    if user_agent:
+        user_agent = user_agent.lower()
+        
+        # Browser detection
+        if 'chrome' in user_agent:
+            browser = "Chrome"
+        elif 'firefox' in user_agent:
+            browser = "Firefox"
+        elif 'safari' in user_agent:
+            browser = "Safari"
+        elif 'edge' in user_agent:
+            browser = "Edge"
+        elif 'opera' in user_agent:
+            browser = "Opera"
+        
+        # OS detection
+        if 'windows' in user_agent:
+            os = "Windows"
+        elif 'mac' in user_agent:
+            os = "macOS"
+        elif 'linux' in user_agent:
+            os = "Linux"
+        elif 'android' in user_agent:
+            os = "Android"
+        elif 'ios' in user_agent:
+            os = "iOS"
+        
+        # Device detection
+        if 'mobile' in user_agent or 'android' in user_agent:
+            device = "Mobile"
+        elif 'tablet' in user_agent or 'ipad' in user_agent:
+            device = "Tablet"
+    
+    return {
+        "browser": browser,
+        "os": os,
+        "device": device
+    }
+
+def check_gdpr_consent(visitor_id):
+    """Check if visitor has given GDPR consent"""
+    # Simple check - could be enhanced based on requirements
+    return frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "gdpr_consent") or False
+
+def record_gdpr_consent(visitor_id, consent=True):
+    """Record GDPR consent for visitor"""
+    if frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
+        frappe.db.set_value("Visitor", {"visitor_id": visitor_id}, {
+            "gdpr_consent": consent,
+            "gdpr_consent_date": frappe.utils.now()
+        })

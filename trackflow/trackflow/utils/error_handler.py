@@ -275,13 +275,19 @@ def is_internal_ip(ip_address):
     # Check against configured internal IP ranges
     internal_ranges = frappe.get_all(
         "Internal IP Range",
-        filters={"enabled": 1},
-        fields=["ip_range_start", "ip_range_end"]
+        fields=["ip_range"]
     )
     
-    for ip_range in internal_ranges:
-        if is_ip_in_range(ip_address, ip_range.ip_range_start, ip_range.ip_range_end):
-            return True
+    for ip_range_doc in internal_ranges:
+        try:
+            # Use ipaddress library to check CIDR ranges
+            import ipaddress
+            network = ipaddress.ip_network(ip_range_doc.ip_range, strict=False)
+            if ipaddress.ip_address(ip_address) in network:
+                return True
+        except ValueError:
+            # Skip invalid IP ranges
+            continue
     
     # Check common private IP ranges
     private_ranges = [
