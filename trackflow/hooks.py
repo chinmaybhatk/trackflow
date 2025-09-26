@@ -4,7 +4,7 @@ app_publisher = "Chinmay Bhat"
 app_description = "Smart link tracking and attribution for Frappe CRM"
 app_email = "support@trackflow.app"
 app_license = "MIT"
-app_version = "1.0.0"
+app_version = "1.0.1"
 
 # Add module configuration for CRM integration
 # Module definitions should be handled by module.py files in each module directory
