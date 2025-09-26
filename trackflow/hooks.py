@@ -124,7 +124,8 @@ fixtures = [
             ]
         ]
     },
-    "trackflow/fixtures/roles.json"
+    "trackflow/fixtures/roles.json",
+    "trackflow/fixtures/crm_workspace_extension.json"
 ]
 
 # App Icon
@@ -133,3 +134,13 @@ app_color = "#2563eb"
 
 # For Frappe CRM Integration
 has_web_view = 1
+
+# For Frappe CRM Integration - Frontend Override
+# This allows TrackFlow to appear in CRM sidebar
+extend_bootinfo = ["trackflow.boot.bootinfo"]
+
+# Override CRM workspace to include TrackFlow
+override_doctype_dashboards = {
+    "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
+    "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
+}

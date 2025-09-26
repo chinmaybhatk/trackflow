@@ -1,0 +1,52 @@
+[
+    {
+        "doctype": "Workspace Link",
+        "parent": "CRM",
+        "parenttype": "Workspace", 
+        "parentfield": "links",
+        "type": "Card Break",
+        "label": "TrackFlow Analytics",
+        "hidden": 0,
+        "onboard": 0,
+        "idx": 100
+    },
+    {
+        "doctype": "Workspace Link",
+        "parent": "CRM",
+        "parenttype": "Workspace",
+        "parentfield": "links", 
+        "type": "Link",
+        "link_type": "DocType",
+        "link_to": "Link Campaign",
+        "label": "Campaigns",
+        "hidden": 0,
+        "onboard": 0,
+        "idx": 101
+    },
+    {
+        "doctype": "Workspace Link",
+        "parent": "CRM", 
+        "parenttype": "Workspace",
+        "parentfield": "links",
+        "type": "Link",
+        "link_type": "DocType",
+        "link_to": "Tracked Link",
+        "label": "Tracked Links",
+        "hidden": 0,
+        "onboard": 0,
+        "idx": 102
+    },
+    {
+        "doctype": "Workspace Link",
+        "parent": "CRM",
+        "parenttype": "Workspace", 
+        "parentfield": "links",
+        "type": "Link",
+        "link_type": "DocType",
+        "link_to": "Click Event",
+        "label": "Click Analytics", 
+        "hidden": 0,
+        "onboard": 0,
+        "idx": 103
+    }
+]

@@ -380,3 +380,68 @@ def enable_tracking():
             print("Added TrackFlow tracking script to website")
     except Exception as e:
         print(f"Could not add tracking script: {str(e)}")
+
+def setup_crm_integration():
+    """Set up CRM workspace integration"""
+    try:
+        # Check if CRM workspace exists
+        if frappe.db.exists("Workspace", "CRM"):
+            crm_workspace = frappe.get_doc("Workspace", "CRM")
+            
+            # Check if TrackFlow links already exist
+            trackflow_exists = any(link.get('label') == 'TrackFlow Analytics' 
+                                 for link in crm_workspace.links)
+            
+            if not trackflow_exists:
+                # Add TrackFlow section to CRM workspace
+                trackflow_links = [
+                    {
+                        "type": "Card Break",
+                        "label": "TrackFlow Analytics",
+                        "hidden": 0,
+                        "onboard": 0
+                    },
+                    {
+                        "type": "Link",
+                        "link_type": "DocType",
+                        "link_to": "Link Campaign", 
+                        "label": "Campaigns",
+                        "hidden": 0,
+                        "onboard": 0
+                    },
+                    {
+                        "type": "Link",
+                        "link_type": "DocType",
+                        "link_to": "Tracked Link",
+                        "label": "Tracked Links", 
+                        "hidden": 0,
+                        "onboard": 0
+                    },
+                    {
+                        "type": "Link",
+                        "link_type": "DocType", 
+                        "link_to": "Click Event",
+                        "label": "Click Analytics",
+                        "hidden": 0,
+                        "onboard": 0
+                    }
+                ]
+                
+                # Append TrackFlow links to CRM workspace
+                for link in trackflow_links:
+                    crm_workspace.append("links", link)
+                
+                crm_workspace.save()
+                frappe.db.commit()
+                print("✓ TrackFlow integrated into CRM workspace")
+                
+    except Exception as e:
+        frappe.log_error(f"Error setting up CRM integration: {str(e)}", "TrackFlow Install")
+        print(f"Warning: Could not integrate with CRM workspace: {str(e)}")
+
+def after_migrate():
+    """Run after migration"""
+    create_custom_fields()
+    create_default_settings()
+    setup_crm_integration()
+    print("TrackFlow migration completed successfully!")
