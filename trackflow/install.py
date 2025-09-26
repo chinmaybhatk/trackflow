@@ -441,7 +441,7 @@ def setup_crm_integration():
 
 def after_migrate():
     """Run after migration"""
-    create_custom_fields()
-    create_default_settings()
+    create_fcrm_custom_fields()
+    create_default_data()
     setup_crm_integration()
     print("TrackFlow migration completed successfully!")
