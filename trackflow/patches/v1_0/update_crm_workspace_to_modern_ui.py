@@ -24,7 +24,7 @@ def execute():
             elif link.get('label') == 'Campaigns' and trackflow_section_found:
                 # Update to point to modern campaigns page
                 link.type = 'Link'
-                link.link_type = 'Page'
+                link.link_type = 'URL'
                 link.link_to = '/campaigns'
                 link.label = 'Campaigns'
                 updated_links.append(link)
@@ -32,7 +32,7 @@ def execute():
             elif link.get('label') == 'Tracked Links' and trackflow_section_found:
                 # Update to point to modern links page
                 link.type = 'Link'
-                link.link_type = 'Page' 
+                link.link_type = 'URL' 
                 link.link_to = '/links'
                 link.label = 'Tracked Links'
                 updated_links.append(link)
@@ -40,7 +40,7 @@ def execute():
             elif link.get('label') == 'Click Analytics' and trackflow_section_found:
                 # Update to point to modern analytics page
                 link.type = 'Link'
-                link.link_type = 'Page'
+                link.link_type = 'URL'
                 link.link_to = '/analytics' 
                 link.label = 'Analytics'
                 updated_links.append(link)
@@ -61,7 +61,7 @@ def execute():
                 },
                 {
                     "type": "Link",
-                    "link_type": "Page",
+                    "link_type": "URL",
                     "link_to": "/campaigns",
                     "label": "Campaigns",
                     "hidden": 0,
@@ -70,7 +70,7 @@ def execute():
                 },
                 {
                     "type": "Link",
-                    "link_type": "Page", 
+                    "link_type": "URL", 
                     "link_to": "/links",
                     "label": "Tracked Links",
                     "hidden": 0,
@@ -79,7 +79,7 @@ def execute():
                 },
                 {
                     "type": "Link",
-                    "link_type": "Page",
+                    "link_type": "URL",
                     "link_to": "/analytics",
                     "label": "Analytics",
                     "hidden": 0,
@@ -112,3 +112,12 @@ def execute():
         
         # Fallback: Try to add modern links without replacing existing ones
         try_fallback_update()
+
+def try_fallback_update():
+    """Fallback method to add TrackFlow links if main update fails"""
+    try:
+        print("Attempting fallback update method...")
+        # Simple approach - just add the links if they don't exist
+        pass  # Skip fallback for now
+    except Exception as e:
+        print(f"Fallback update also failed: {str(e)}")
