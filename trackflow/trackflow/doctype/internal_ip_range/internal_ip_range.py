@@ -23,7 +23,6 @@ class InternalIpRange(Document):
             # Get all internal IP ranges
             internal_ranges = frappe.get_all(
                 "Internal IP Range",
-                filters={"enabled": 1},
                 fields=["ip_range"]
             )
             
