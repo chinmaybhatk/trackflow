@@ -14,3 +14,12 @@ from .error_handler import (
     TrackingError,
     IntegrationError
 )
+
+# Import main utility functions
+from ..utils import (
+    generate_visitor_id,
+    create_click_event,
+    get_visitor_from_request,
+    set_visitor_cookie,
+    parse_utm_parameters
+)
