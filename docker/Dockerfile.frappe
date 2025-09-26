@@ -1,0 +1,36 @@
+FROM frappe/frappe-socketio:v15.29.0
+
+# Set working directory
+WORKDIR /workspace/development
+
+# Install system dependencies
+USER root
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    vim \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Switch to frappe user
+USER frappe
+
+# Create directory structure
+RUN mkdir -p /workspace/development/frappe-bench/apps
+
+# Initialize bench if not exists
+RUN if [ ! -d "/workspace/development/frappe-bench/.git" ]; then \
+        bench init frappe-bench --frappe-branch version-15 --python python3.11; \
+    fi
+
+WORKDIR /workspace/development/frappe-bench
+
+# Create setup script
+COPY docker/setup.sh /workspace/setup.sh
+RUN chmod +x /workspace/setup.sh
+
+# Expose ports
+EXPOSE 8000 9000
+
+# Default command
+CMD ["/workspace/setup.sh"]

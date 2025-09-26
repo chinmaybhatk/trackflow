@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # Database
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_DATABASE: frappe_db
+      MYSQL_USER: frappe
+      MYSQL_PASSWORD: frappe
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+      - ./docker/mariadb.cnf:/etc/mysql/conf.d/frappe.cnf
+    networks:
+      - frappe-network
+
+  # Redis
+  redis:
+    image: redis:6.2-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - frappe-network
+
+  # Frappe Bench
+  frappe:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frappe
+    ports:
+      - "8000:8000"   # Frappe web server
+      - "9000:9000"   # Socketio
+    volumes:
+      - .:/workspace/development/frappe-bench/apps/trackflow
+      - frappe_sites:/workspace/development/frappe-bench/sites
+    environment:
+      - FRAPPE_SITE_NAME=trackflow.localhost
+      - DB_HOST=mariadb
+      - DB_PORT=3306
+      - DB_NAME=frappe_db
+      - DB_USER=frappe
+      - DB_PASSWORD=frappe
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DEVELOPER_MODE=1
+    depends_on:
+      - mariadb
+      - redis
+    networks:
+      - frappe-network
+    stdin_open: true
+    tty: true
+
+volumes:
+  mariadb_data:
+  redis_data:
+  frappe_sites:
+
+networks:
+  frappe-network:
+    driver: bridge
