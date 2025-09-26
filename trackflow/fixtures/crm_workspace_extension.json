@@ -1,6 +1,7 @@
 [
     {
         "doctype": "Workspace Link",
+        "name": "CRM-TrackFlow-Card-Break",
         "parent": "CRM",
         "parenttype": "Workspace", 
         "parentfield": "links",
@@ -12,6 +13,7 @@
     },
     {
         "doctype": "Workspace Link",
+        "name": "CRM-TrackFlow-Campaigns",
         "parent": "CRM",
         "parenttype": "Workspace",
         "parentfield": "links", 
@@ -25,6 +27,7 @@
     },
     {
         "doctype": "Workspace Link",
+        "name": "CRM-TrackFlow-Tracked-Links",
         "parent": "CRM", 
         "parenttype": "Workspace",
         "parentfield": "links",
@@ -38,6 +41,7 @@
     },
     {
         "doctype": "Workspace Link",
+        "name": "CRM-TrackFlow-Click-Analytics",
         "parent": "CRM",
         "parenttype": "Workspace", 
         "parentfield": "links",
