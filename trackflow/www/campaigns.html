@@ -1,245 +1,222 @@
-{% extends "templates/web.html" %}
-
-{% block title %}{{ _("TrackFlow Campaigns") }}{% endblock %}
-
-{% block head_include %}
-<style>
-    .trackflow-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    
-    .trackflow-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .trackflow-title {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: #1a202c;
-        margin: 0;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        color: white;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .campaigns-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-        gap: 1.5rem;
-        margin-top: 2rem;
-    }
-    
-    .campaign-card {
-        background: white;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        border: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-    
-    .campaign-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        border-color: #667eea;
-    }
-    
-    .campaign-name {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 0.5rem;
-    }
-    
-    .campaign-description {
-        color: #718096;
-        margin-bottom: 1rem;
-        font-size: 0.875rem;
-    }
-    
-    .campaign-stats {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-    
-    .stat-item {
-        text-align: center;
-        padding: 0.75rem;
-        background: #f8fafc;
-        border-radius: 0.5rem;
-    }
-    
-    .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: #2d3748;
-    }
-    
-    .stat-label {
-        font-size: 0.75rem;
-        color: #718096;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .campaign-meta {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e2e8f0;
-    }
-    
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-active {
-        background: #c6f6d5;
-        color: #2f855a;
-    }
-    
-    .status-paused {
-        background: #fed7d7;
-        color: #c53030;
-    }
-    
-    .status-draft {
-        background: #e2e8f0;
-        color: #4a5568;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: #718096;
-    }
-    
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-state-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .empty-state-text {
-        margin-bottom: 2rem;
-    }
-    
-    @media (max-width: 768px) {
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title or "TrackFlow Campaigns" }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        
         .trackflow-container {
-            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         
         .trackflow-header {
-            flex-direction: column;
-            gap: 1rem;
-            align-items: stretch;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .trackflow-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            color: white;
         }
         
         .campaigns-grid {
-            grid-template-columns: 1fr;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
-    }
-</style>
-{% endblock %}
-
-{% block page_content %}
-<div class="trackflow-container">
-    <div class="trackflow-header">
-        <h1 class="trackflow-title">{{ _("TrackFlow Campaigns") }}</h1>
-        <a href="/app/link-campaign/new" class="btn btn-primary">
-            <i class="fa fa-plus"></i> {{ _("New Campaign") }}
-        </a>
-    </div>
-    
-    {% if campaigns %}
-        <div class="campaigns-grid">
-            {% for campaign in campaigns %}
-            <div class="campaign-card" onclick="viewCampaign('{{ campaign.name }}')">
-                <div class="campaign-name">{{ campaign.campaign_name or campaign.name }}</div>
-                <div class="campaign-description">
-                    {{ campaign.description[:100] + "..." if campaign.description and campaign.description|length > 100 else campaign.description or "No description" }}
-                </div>
-                
-                <div class="campaign-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ campaign.total_clicks or 0 }}</div>
-                        <div class="stat-label">{{ _("Clicks") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ campaign.unique_visitors or 0 }}</div>
-                        <div class="stat-label">{{ _("Visitors") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ campaign.conversions or 0 }}</div>
-                        <div class="stat-label">{{ _("Conversions") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ "%.1f"|format(campaign.conversion_rate or 0) }}%</div>
-                        <div class="stat-label">{{ _("Conv Rate") }}</div>
-                    </div>
-                </div>
-                
-                <div class="campaign-meta">
-                    <span class="status-badge status-{{ (campaign.status or 'draft')|lower }}">
-                        {{ campaign.status or "Draft" }}
-                    </span>
-                    <small class="text-muted">
-                        {{ frappe.format_date(campaign.creation) }}
-                    </small>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <div class="empty-state-title">{{ _("No campaigns yet") }}</div>
-            <div class="empty-state-text">{{ _("Create your first campaign to start tracking marketing performance.") }}</div>
-            <a href="/app/link-campaign/new" class="btn btn-primary">
-                <i class="fa fa-plus"></i> {{ _("Create First Campaign") }}
+        
+        .campaign-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .campaign-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            border-color: #667eea;
+        }
+        
+        .campaign-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .campaign-description {
+            color: #718096;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .campaign-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #2d3748;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .empty-state-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .trackflow-container {
+                padding: 1rem;
+            }
+            
+            .trackflow-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .campaigns-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="trackflow-container">
+        <div class="trackflow-header">
+            <h1 class="trackflow-title">TrackFlow Campaigns</h1>
+            <a href="/app/link-campaign/new" class="btn-primary">
+                <span>+ New Campaign</span>
             </a>
         </div>
-    {% endif %}
-</div>
+        
+        {% if error %}
+            <div class="error-message">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if campaigns and campaigns|length > 0 %}
+            <div class="campaigns-grid">
+                {% for campaign in campaigns %}
+                <div class="campaign-card" onclick="viewCampaign('{{ campaign.name }}')">
+                    <div class="campaign-name">{{ campaign.campaign_name or campaign.name }}</div>
+                    <div class="campaign-description">
+                        {{ (campaign.description[:100] + "...") if campaign.description and campaign.description|length > 100 else (campaign.description or "No description") }}
+                    </div>
+                    
+                    <div class="campaign-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ campaign.total_clicks or 0 }}</div>
+                            <div class="stat-label">Clicks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ campaign.unique_visitors or 0 }}</div>
+                            <div class="stat-label">Visitors</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ campaign.conversions or 0 }}</div>
+                            <div class="stat-label">Conversions</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ "%.1f"|format(campaign.conversion_rate or 0) }}%</div>
+                            <div class="stat-label">Conv Rate</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <div class="empty-state-title">No campaigns yet</div>
+                <div class="empty-state-text">Create your first campaign to start tracking marketing performance.</div>
+                <br>
+                <a href="/app/link-campaign/new" class="btn-primary">
+                    <span>+ Create First Campaign</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
 
-<script>
-function viewCampaign(campaignName) {
-    window.location.href = '/app/link-campaign/' + encodeURIComponent(campaignName);
-}
-</script>
-{% endblock %}
+    <script>
+    function viewCampaign(campaignName) {
+        window.location.href = '/app/link-campaign/' + encodeURIComponent(campaignName);
+    }
+    </script>
+</body>
+</html>

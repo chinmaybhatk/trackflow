@@ -1,345 +1,143 @@
-{% extends "templates/web.html" %}
-
-{% block title %}{{ _("TrackFlow Links") }}{% endblock %}
-
-{% block head_include %}
-<style>
-    .trackflow-container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 2rem;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    }
-    
-    .trackflow-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 2rem;
-        padding-bottom: 1rem;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    
-    .trackflow-title {
-        font-size: 1.875rem;
-        font-weight: 700;
-        color: #1a202c;
-        margin: 0;
-    }
-    
-    .btn-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 0.5rem;
-        color: white;
-        font-weight: 600;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    
-    .btn-primary:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        color: white;
-    }
-    
-    .links-list {
-        background: white;
-        border-radius: 1rem;
-        border: 1px solid #e2e8f0;
-        overflow: hidden;
-    }
-    
-    .link-item {
-        padding: 1.5rem;
-        border-bottom: 1px solid #f1f5f9;
-        transition: all 0.2s;
-        cursor: pointer;
-    }
-    
-    .link-item:last-child {
-        border-bottom: none;
-    }
-    
-    .link-item:hover {
-        background: #f8fafc;
-    }
-    
-    .link-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 1rem;
-    }
-    
-    .link-info {
-        flex: 1;
-        min-width: 0;
-    }
-    
-    .link-name {
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #2d3748;
-        margin-bottom: 0.25rem;
-    }
-    
-    .link-url {
-        color: #667eea;
-        text-decoration: none;
-        font-size: 0.875rem;
-        word-break: break-all;
-        margin-bottom: 0.5rem;
-        display: block;
-    }
-    
-    .link-url:hover {
-        text-decoration: underline;
-    }
-    
-    .target-url {
-        color: #718096;
-        font-size: 0.875rem;
-        word-break: break-all;
-    }
-    
-    .link-actions {
-        display: flex;
-        gap: 0.5rem;
-        flex-shrink: 0;
-    }
-    
-    .btn-sm {
-        padding: 0.5rem 1rem;
-        font-size: 0.875rem;
-        border-radius: 0.375rem;
-        border: 1px solid #e2e8f0;
-        background: white;
-        color: #4a5568;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    
-    .btn-sm:hover {
-        background: #f7fafc;
-        border-color: #cbd5e0;
-        color: #2d3748;
-    }
-    
-    .link-stats {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 1rem;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #f1f5f9;
-    }
-    
-    .stat-item {
-        text-align: center;
-        padding: 0.5rem;
-        background: #f8fafc;
-        border-radius: 0.375rem;
-    }
-    
-    .stat-value {
-        font-size: 1.25rem;
-        font-weight: 600;
-        color: #2d3748;
-    }
-    
-    .stat-label {
-        font-size: 0.75rem;
-        color: #718096;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
-    .campaign-tag {
-        display: inline-block;
-        padding: 0.25rem 0.75rem;
-        background: #e2e8f0;
-        color: #4a5568;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-    
-    .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 1rem;
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .status-active {
-        background: #c6f6d5;
-        color: #2f855a;
-    }
-    
-    .status-paused {
-        background: #fed7d7;
-        color: #c53030;
-    }
-    
-    .status-draft {
-        background: #e2e8f0;
-        color: #4a5568;
-    }
-    
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: #718096;
-    }
-    
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-    
-    .empty-state-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    .qr-icon {
-        width: 20px;
-        height: 20px;
-        margin-right: 0.5rem;
-    }
-    
-    @media (max-width: 768px) {
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title or "TrackFlow Links" }}</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8fafc;
+        }
+        
         .trackflow-container {
-            padding: 1rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
         }
         
         .trackflow-header {
-            flex-direction: column;
-            gap: 1rem;
-            align-items: stretch;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e2e8f0;
         }
         
-        .link-header {
-            flex-direction: column;
-            gap: 1rem;
+        .trackflow-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            color: #1a202c;
+            margin: 0;
         }
         
-        .link-actions {
-            justify-content: flex-start;
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
         }
         
-        .link-stats {
-            grid-template-columns: repeat(2, 1fr);
+        .links-list {
+            background: white;
+            border-radius: 1rem;
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
         }
-    }
-</style>
-{% endblock %}
-
-{% block page_content %}
-<div class="trackflow-container">
-    <div class="trackflow-header">
-        <h1 class="trackflow-title">{{ _("TrackFlow Links") }}</h1>
-        <a href="/app/tracked-link/new" class="btn btn-primary">
-            <i class="fa fa-plus"></i> {{ _("New Link") }}
-        </a>
-    </div>
-    
-    {% if links %}
-        <div class="links-list">
-            {% for link in links %}
-            <div class="link-item">
-                <div class="link-header">
-                    <div class="link-info">
-                        <div class="campaign-tag">{{ link.campaign_display }}</div>
-                        <div class="link-name">{{ link.link_name or link.name }}</div>
-                        <a href="{{ link.short_url }}" class="link-url" target="_blank">
-                            {{ link.short_url }}
-                        </a>
-                        <div class="target-url">→ {{ link.target_url }}</div>
-                    </div>
-                    <div class="link-actions">
-                        <button class="btn-sm" onclick="copyLink('{{ link.short_url }}')">
-                            <i class="fa fa-copy"></i> {{ _("Copy") }}
-                        </button>
-                        {% if link.qr_code %}
-                        <a href="{{ link.qr_code }}" class="btn-sm" target="_blank">
-                            <i class="fa fa-qrcode"></i> {{ _("QR") }}
-                        </a>
-                        {% endif %}
-                        <a href="/app/tracked-link/{{ link.name }}" class="btn-sm">
-                            <i class="fa fa-edit"></i> {{ _("Edit") }}
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="link-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ link.click_count or 0 }}</div>
-                        <div class="stat-label">{{ _("Total Clicks") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ link.recent_clicks or 0 }}</div>
-                        <div class="stat-label">{{ _("7-Day Clicks") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ link.unique_visitors_recent or 0 }}</div>
-                        <div class="stat-label">{{ _("Unique Visitors") }}</div>
-                    </div>
-                    <div class="stat-item">
-                        <span class="status-badge status-{{ (link.status or 'draft')|lower }}">
-                            {{ link.status or "Draft" }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-    {% else %}
-        <div class="empty-state">
-            <div class="empty-state-icon">🔗</div>
-            <div class="empty-state-title">{{ _("No links yet") }}</div>
-            <div class="empty-state-text">{{ _("Create your first tracked link to start monitoring clicks and engagement.") }}</div>
-            <a href="/app/tracked-link/new" class="btn btn-primary">
-                <i class="fa fa-plus"></i> {{ _("Create First Link") }}
+        
+        .link-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        .link-item:last-child {
+            border-bottom: none;
+        }
+        
+        .link-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+        }
+        
+        .link-url {
+            color: #667eea;
+            font-size: 0.875rem;
+            word-break: break-all;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .target-url {
+            color: #718096;
+            font-size: 0.875rem;
+            word-break: break-all;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #718096;
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="trackflow-container">
+        <div class="trackflow-header">
+            <h1 class="trackflow-title">TrackFlow Links</h1>
+            <a href="/app/tracked-link/new" class="btn-primary">
+                <span>+ New Link</span>
             </a>
         </div>
-    {% endif %}
-</div>
-
-<script>
-function copyLink(url) {
-    navigator.clipboard.writeText(url).then(function() {
-        // Show success message
-        frappe.show_alert({
-            message: 'Link copied to clipboard!',
-            indicator: 'green'
-        }, 2);
-    }, function(err) {
-        // Fallback for older browsers
-        const textArea = document.createElement("textarea");
-        textArea.value = url;
-        document.body.appendChild(textArea);
-        textArea.focus();
-        textArea.select();
-        try {
-            document.execCommand('copy');
-            frappe.show_alert({
-                message: 'Link copied to clipboard!',
-                indicator: 'green'
-            }, 2);
-        } catch (err) {
-            frappe.show_alert({
-                message: 'Failed to copy link',
-                indicator: 'red'
-            }, 2);
-        }
-        document.body.removeChild(textArea);
-    });
-}
-</script>
-{% endblock %}
+        
+        {% if error %}
+            <div class="error-message">
+                <strong>Error:</strong> {{ error }}
+            </div>
+        {% endif %}
+        
+        {% if links and links|length > 0 %}
+            <div class="links-list">
+                {% for link in links %}
+                <div class="link-item">
+                    <div class="link-name">{{ link.link_name or link.name }}</div>
+                    <div class="link-url">{{ link.short_url }}</div>
+                    <div class="target-url">→ {{ link.target_url }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🔗</div>
+                <div class="empty-state-title">No links yet</div>
+                <div class="empty-state-text">Create your first tracked link to start monitoring clicks and engagement.</div>
+                <br>
+                <a href="/app/tracked-link/new" class="btn-primary">
+                    <span>+ Create First Link</span>
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>

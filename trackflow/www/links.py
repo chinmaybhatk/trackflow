@@ -6,19 +6,23 @@ def get_context(context):
     context.no_cache = 1
     context.show_sidebar = False
     
-    # Get links with stats
-    links = get_links_with_stats()
-    
-    # Get campaigns for filter
-    campaigns = frappe.get_all("Link Campaign", fields=["name", "campaign_name"])
-    
-    context.update({
-        "title": _("TrackFlow Links"),
-        "links": links,
-        "campaigns": campaigns,
-        "page_name": "links",
-        "show_crm_navbar": True
-    })
+    try:
+        # Get links with stats
+        links = get_links_with_stats()
+        
+        context.update({
+            "title": _("TrackFlow Links"),
+            "links": links,
+            "page_name": "links"
+        })
+        
+    except Exception as e:
+        frappe.log_error(f"Error in links page: {str(e)}", "TrackFlow Links")
+        context.update({
+            "title": _("TrackFlow Links"),
+            "links": [],
+            "error": str(e)
+        })
     
     return context
 

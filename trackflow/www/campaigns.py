@@ -6,15 +6,23 @@ def get_context(context):
     context.no_cache = 1
     context.show_sidebar = False
     
-    # Get campaigns with stats
-    campaigns = get_campaigns_with_stats()
-    
-    context.update({
-        "title": _("TrackFlow Campaigns"),
-        "campaigns": campaigns,
-        "page_name": "campaigns",
-        "show_crm_navbar": True
-    })
+    try:
+        # Get campaigns with stats
+        campaigns = get_campaigns_with_stats()
+        
+        context.update({
+            "title": _("TrackFlow Campaigns"),
+            "campaigns": campaigns,
+            "page_name": "campaigns"
+        })
+        
+    except Exception as e:
+        frappe.log_error(f"Error in campaigns page: {str(e)}", "TrackFlow Campaigns")
+        context.update({
+            "title": _("TrackFlow Campaigns"),
+            "campaigns": [],
+            "error": str(e)
+        })
     
     return context
 
