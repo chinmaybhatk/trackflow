@@ -85,14 +85,8 @@ website_route_rules = [
 before_request = ["trackflow.www.redirect.before_request"]
 after_request = ["trackflow.tracking.after_request"]
 
-# REST API Methods
-rest_api_methods = [
-    "trackflow.api.analytics.get_analytics",
-    "trackflow.api.campaign.create_campaign",
-    "trackflow.api.tracking.track_event",
-    "trackflow.api.tracking.get_tracking_script",
-    "trackflow.api.visitor.get_visitor_profile"
-]
+# REST API Methods - These should be whitelisted in the respective modules
+# API methods are exposed through @frappe.whitelist() decorators in the respective files
 
 # Permissions
 permission_query_conditions = {
