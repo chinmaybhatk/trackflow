@@ -4,6 +4,12 @@ from trackflow.trackflow.utils import create_click_event, generate_visitor_id
 
 no_cache = 1
 
+def before_request():
+    """Hook called before each request - used for tracking setup"""
+    # This function is called by Frappe before processing any request
+    # We can use it to set up tracking context if needed
+    pass
+
 def get_context(context):
     """Handle redirect for tracked links"""
     # Get tracking ID from path
