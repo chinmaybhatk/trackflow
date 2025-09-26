@@ -1,0 +1,406 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ _("TrackFlow Analytics") }}{% endblock %}
+
+{% block head_include %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .trackflow-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    
+    .trackflow-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .trackflow-title {
+        font-size: 1.875rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stat-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        border-color: #667eea;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #718096;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.875rem;
+    }
+    
+    .chart-section {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .chart-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .chart-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+    
+    .canvas-container {
+        position: relative;
+        height: 300px;
+    }
+    
+    .top-lists {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .list-card {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .list-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+    
+    .list-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .list-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-name {
+        font-weight: 500;
+        color: #2d3748;
+    }
+    
+    .item-value {
+        font-weight: 600;
+        color: #667eea;
+    }
+    
+    .activity-section {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .activity-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+    
+    .activity-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.25rem;
+    }
+    
+    .activity-click {
+        background: #e2e8f0;
+        color: #4a5568;
+    }
+    
+    .activity-conversion {
+        background: #c6f6d5;
+        color: #2f855a;
+    }
+    
+    .activity-content {
+        flex: 1;
+    }
+    
+    .activity-title {
+        font-weight: 500;
+        color: #2d3748;
+        margin-bottom: 0.25rem;
+    }
+    
+    .activity-meta {
+        font-size: 0.875rem;
+        color: #718096;
+    }
+    
+    .activity-time {
+        font-size: 0.875rem;
+        color: #a0aec0;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #718096;
+    }
+    
+    @media (max-width: 768px) {
+        .trackflow-container {
+            padding: 1rem;
+        }
+        
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .chart-section {
+            grid-template-columns: 1fr;
+        }
+        
+        .top-lists {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block page_content %}
+<div class="trackflow-container">
+    <div class="trackflow-header">
+        <h1 class="trackflow-title">{{ _("TrackFlow Analytics") }}</h1>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ dashboard_data.total_stats.campaigns }}</div>
+            <div class="stat-label">{{ _("Total Campaigns") }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ dashboard_data.total_stats.links }}</div>
+            <div class="stat-label">{{ _("Total Links") }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ dashboard_data.recent_stats.clicks }}</div>
+            <div class="stat-label">{{ _("Clicks (30 days)") }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ dashboard_data.recent_stats.conversion_rate }}%</div>
+            <div class="stat-label">{{ _("Conversion Rate") }}</div>
+        </div>
+    </div>
+    
+    <!-- Charts Section -->
+    <div class="chart-section">
+        <div class="chart-card">
+            <div class="chart-title">{{ _("Daily Clicks (Last 14 Days)") }}</div>
+            <div class="canvas-container">
+                <canvas id="dailyClicksChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="chart-card">
+            <div class="chart-title">{{ _("Device Types") }}</div>
+            <div class="canvas-container">
+                <canvas id="deviceChart"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top Lists -->
+    <div class="top-lists">
+        <div class="list-card">
+            <div class="list-title">{{ _("Top Campaigns") }}</div>
+            {% if dashboard_data.top_campaigns %}
+                {% for campaign in dashboard_data.top_campaigns %}
+                <div class="list-item">
+                    <div class="item-name">{{ campaign.campaign_name or campaign.name }}</div>
+                    <div class="item-value">{{ campaign.clicks or 0 }} clicks</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">{{ _("No campaign data available") }}</div>
+            {% endif %}
+        </div>
+        
+        <div class="list-card">
+            <div class="list-title">{{ _("Top Links") }}</div>
+            {% if dashboard_data.top_links %}
+                {% for link in dashboard_data.top_links %}
+                <div class="list-item">
+                    <div class="item-name">{{ link.link_name or link.short_code }}</div>
+                    <div class="item-value">{{ link.clicks or 0 }} clicks</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">{{ _("No link data available") }}</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="activity-section">
+        <div class="chart-title">{{ _("Recent Activity") }}</div>
+        {% if dashboard_data.recent_activity %}
+            {% for activity in dashboard_data.recent_activity %}
+            <div class="activity-item">
+                <div class="activity-icon activity-{{ activity.type }}">
+                    {% if activity.type == 'click' %}🔗{% else %}✅{% endif %}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">
+                        {% if activity.type == 'click' %}
+                            Click on {{ activity.title or "Unknown Link" }}
+                        {% else %}
+                            Conversion: {{ activity.title }}
+                        {% endif %}
+                    </div>
+                    <div class="activity-meta">
+                        {% if activity.browser %}{{ activity.browser }}{% endif %}
+                        {% if activity.device_type %}• {{ activity.device_type }}{% endif %}
+                        {% if activity.country %}• {{ activity.country }}{% endif %}
+                    </div>
+                </div>
+                <div class="activity-time">
+                    {{ frappe.utils.pretty_date(activity.creation) }}
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">{{ _("No recent activity") }}</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+// Daily clicks chart
+const dailyClicksCtx = document.getElementById('dailyClicksChart').getContext('2d');
+const dailyClicksChart = new Chart(dailyClicksCtx, {
+    type: 'line',
+    data: {
+        labels: [
+            {% for day in dashboard_data.daily_clicks %}
+            '{{ frappe.format_date(day.date, "MMM dd") }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            label: 'Clicks',
+            data: [
+                {% for day in dashboard_data.daily_clicks %}
+                {{ day.clicks or 0 }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
+            tension: 0.4,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    precision: 0
+                }
+            }
+        }
+    }
+});
+
+// Device types chart
+const deviceCtx = document.getElementById('deviceChart').getContext('2d');
+const deviceChart = new Chart(deviceCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            {% for device in dashboard_data.device_stats %}
+            '{{ device.device_type or "Unknown" }}'{% if not loop.last %},{% endif %}
+            {% endfor %}
+        ],
+        datasets: [{
+            data: [
+                {% for device in dashboard_data.device_stats %}
+                {{ device.clicks or 0 }}{% if not loop.last %},{% endif %}
+                {% endfor %}
+            ],
+            backgroundColor: [
+                '#667eea',
+                '#764ba2',
+                '#f093fb',
+                '#f5576c',
+                '#4ecdc4'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+</script>
+{% endblock %}
