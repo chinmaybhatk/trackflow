@@ -3,3 +3,4 @@
 # trackflow.patches.v1_0.migrate_existing_links
 trackflow.patches.v1_0.fix_ip_range_validation
 trackflow.patches.v1_0.setup_crm_integration
+trackflow.patches.v1_0.force_crm_workspace_integration
