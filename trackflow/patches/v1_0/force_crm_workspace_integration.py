@@ -38,7 +38,7 @@ def execute():
                 "link_to": "Link Campaign",
                 "label": "Campaigns",
                 "hidden": 0,
-                "onboard": 0,
+                "onboard": 1,
                 "idx": len(crm_workspace.links) + 2
             },
             {
@@ -47,7 +47,7 @@ def execute():
                 "link_to": "Tracked Link",
                 "label": "Tracked Links",
                 "hidden": 0,
-                "onboard": 0,
+                "onboard": 1,
                 "idx": len(crm_workspace.links) + 3
             },
             {

@@ -31,25 +31,33 @@ def execute():
             },
             {
                 "type": "Link",
-                "link_type": "URL",
-                "link_to": "/campaigns",
+                "link_type": "DocType",
+                "link_to": "Link Campaign",
                 "label": "Campaigns",
                 "hidden": 0,
                 "onboard": 1
             },
             {
                 "type": "Link",
-                "link_type": "URL", 
-                "link_to": "/links",
+                "link_type": "DocType", 
+                "link_to": "Tracked Link",
                 "label": "Tracked Links",
                 "hidden": 0,
                 "onboard": 1
             },
             {
                 "type": "Link",
-                "link_type": "URL",
-                "link_to": "/analytics",
-                "label": "Analytics Dashboard",
+                "link_type": "DocType",
+                "link_to": "Click Event",
+                "label": "Click Analytics",
+                "hidden": 0,
+                "onboard": 0
+            },
+            {
+                "type": "Link",
+                "link_type": "DocType",
+                "link_to": "Visitor",
+                "label": "Visitors",
                 "hidden": 0,
                 "onboard": 0
             },
