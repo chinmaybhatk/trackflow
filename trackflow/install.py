@@ -243,7 +243,7 @@ def create_fcrm_custom_fields():
                 "fieldname": "trackflow_conversion_goal",
                 "label": "Conversion Goal",
                 "fieldtype": "Link",
-                "options": "Campaign Goal",
+                "options": "Link Campaign",
                 "insert_after": "trackflow_tracking_enabled",
                 "depends_on": "trackflow_tracking_enabled"
             }
