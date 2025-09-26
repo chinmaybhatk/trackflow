@@ -7,13 +7,7 @@ app_license = "MIT"
 app_version = "1.0.0"
 
 # Add module configuration for CRM integration
-modules = {
-    "TrackFlow": {
-        "label": "TrackFlow",
-        "icon": "fa fa-link",
-        "color": "#2563eb"
-    }
-}
+# Module definitions should be handled by module.py files in each module directory
 
 # Include files for CRM integration
 app_include_css = "/assets/trackflow/css/trackflow.css"
