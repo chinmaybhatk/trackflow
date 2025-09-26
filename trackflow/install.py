@@ -15,6 +15,9 @@ def after_install():
     """Tasks to run after installing TrackFlow"""
     print("Setting up TrackFlow...")
     
+    # Create Internal IP Range DocType first (required for TrackFlow Settings)
+    create_internal_ip_range_doctype()
+    
     # Create custom fields for FCRM
     create_fcrm_custom_fields()
     
@@ -23,6 +26,9 @@ def after_install():
     
     # Create default data
     create_default_data()
+    
+    # Create TrackFlow Settings
+    create_trackflow_settings()
     
     # Set up permissions
     setup_permissions()
@@ -55,6 +61,108 @@ def check_dependencies():
     
     if missing:
         frappe.throw(_("TrackFlow requires the following: {0}").format(", ".join(missing)))
+
+def create_internal_ip_range_doctype():
+    """Create Internal IP Range DocType - required for TrackFlow Settings"""
+    
+    if frappe.db.exists("DocType", "Internal IP Range"):
+        print("✅ Internal IP Range DocType already exists")
+        return
+        
+    print("🏗️ Creating Internal IP Range DocType...")
+    
+    try:
+        # Create the DocType
+        doctype = frappe.new_doc("DocType")
+        doctype.name = "Internal IP Range"
+        doctype.module = "TrackFlow"
+        doctype.istable = 1  # Child table
+        doctype.engine = "InnoDB"
+        doctype.allow_rename = 0
+        doctype.sort_field = "modified"
+        doctype.sort_order = "DESC"
+
+        # Add fields
+        doctype.append("fields", {
+            "fieldname": "ip_range",
+            "fieldtype": "Data",
+            "label": "IP Range",
+            "reqd": 1,
+            "in_list_view": 1,
+            "description": "IP range in CIDR notation (e.g., 192.168.1.0/24)"
+        })
+
+        doctype.append("fields", {
+            "fieldname": "description",
+            "fieldtype": "Data",
+            "label": "Description",
+            "in_list_view": 1,
+            "description": "Description of this IP range"
+        })
+
+        # Save the DocType
+        doctype.insert(ignore_permissions=True)
+        frappe.db.commit()
+        
+        print("✅ Internal IP Range DocType created successfully!")
+        
+    except Exception as e:
+        frappe.log_error(f"Error creating Internal IP Range DocType: {str(e)}", "TrackFlow Install")
+        print(f"❌ Failed to create Internal IP Range DocType: {str(e)}")
+        # Don't raise exception to avoid blocking installation
+
+def create_trackflow_settings():
+    """Create TrackFlow Settings with default values"""
+    
+    if frappe.db.exists("TrackFlow Settings", "TrackFlow Settings"):
+        print("✅ TrackFlow Settings already exists")
+        return
+        
+    print("🏗️ Creating TrackFlow Settings...")
+    
+    try:
+        # Create settings document
+        settings = frappe.new_doc("TrackFlow Settings")
+        settings.update({
+            # General settings
+            "enable_tracking": 1,
+            "auto_generate_short_codes": 1,
+            "short_code_length": 6,
+            "exclude_internal_traffic": 0,
+            "gdpr_compliance_enabled": 1,
+            "cookie_expires_days": 365,
+            
+            # Attribution
+            "default_attribution_model": "Last Touch",
+            "attribution_window_days": 30,
+            
+            # Privacy
+            "cookie_consent_required": 1,
+            "cookie_consent_text": "This site uses cookies for analytics and personalization. By continuing to browse, you agree to our use of cookies.",
+            "anonymize_ip_addresses": 0
+        })
+        
+        # Add default internal IP ranges
+        default_ranges = [
+            {"ip_range": "127.0.0.0/8", "description": "Localhost"},
+            {"ip_range": "10.0.0.0/8", "description": "Private Class A"},
+            {"ip_range": "172.16.0.0/12", "description": "Private Class B"},
+            {"ip_range": "192.168.0.0/16", "description": "Private Class C"}
+        ]
+        
+        for ip_range in default_ranges:
+            settings.append("internal_ip_ranges", ip_range)
+        
+        # Insert the settings
+        settings.insert(ignore_permissions=True)
+        frappe.db.commit()
+        
+        print("✅ TrackFlow Settings created successfully!")
+        
+    except Exception as e:
+        frappe.log_error(f"Error creating TrackFlow Settings: {str(e)}", "TrackFlow Install")
+        print(f"❌ Failed to create TrackFlow Settings: {str(e)}")
+        # Don't raise exception to avoid blocking installation
 
 def create_roles():
     """Create roles required for TrackFlow"""
@@ -441,7 +549,19 @@ def setup_crm_integration():
 
 def after_migrate():
     """Run after migration"""
+    # Ensure Internal IP Range DocType exists
+    create_internal_ip_range_doctype()
+    
+    # Create custom fields if needed
     create_fcrm_custom_fields()
+    
+    # Create TrackFlow Settings if needed
+    create_trackflow_settings()
+    
+    # Create default data
     create_default_data()
+    
+    # Setup CRM integration
     setup_crm_integration()
+    
     print("TrackFlow migration completed successfully!")
