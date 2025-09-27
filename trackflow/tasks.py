@@ -30,7 +30,7 @@ def process_visitor_sessions():
 def update_campaign_metrics():
     """Update campaign metrics from tracking data"""
     campaigns = frappe.get_all(
-        "Campaign",
+        "Link Campaign",
         filters={"status": "Active"},
         fields=["name"]
     )
@@ -42,7 +42,7 @@ def update_single_campaign_metrics(campaign_name):
     """Update metrics for a single campaign"""
     # Get all tracking links for this campaign
     links = frappe.get_all(
-        "Tracking Link",
+        "Tracked Link",
         filters={"campaign": campaign_name},
         fields=["name", "total_clicks"]
     )
@@ -56,7 +56,7 @@ def update_single_campaign_metrics(campaign_name):
     )
     
     # Update campaign
-    campaign = frappe.get_doc("Campaign", campaign_name)
+    campaign = frappe.get_doc("Link Campaign", campaign_name)
     campaign.total_clicks = total_clicks
     campaign.conversions = conversions
     

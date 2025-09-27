@@ -19,7 +19,7 @@
             "fieldtype": "Link",
             "in_list_view": 1,
             "label": "Tracking Link",
-            "options": "Tracking Link",
+            "options": "Tracked Link",
             "reqd": 1
         },
         {

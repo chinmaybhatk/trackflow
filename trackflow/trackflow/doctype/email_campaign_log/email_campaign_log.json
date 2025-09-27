@@ -64,7 +64,7 @@
             "fieldname": "tracking_link",
             "fieldtype": "Link",
             "label": "Tracking Link",
-            "options": "Tracking Link"
+            "options": "Tracked Link"
         },
         {
             "default": "0",
