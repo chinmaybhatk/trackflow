@@ -4,8 +4,8 @@
 trackflow.patches.v1_0.fix_ip_range_validation
 trackflow.patches.v1_0.setup_crm_integration
 trackflow.patches.v1_0.force_crm_workspace_integration
-trackflow.patches.v1_0.ensure_internal_ip_range_doctype
+# trackflow.patches.v1_0.ensure_internal_ip_range_doctype  # Removed - using proper DocType definition
 trackflow.patches.v1_0.create_default_trackflow_settings
-trackflow.patches.v1_0.manual_fix_internal_ip_range
+# trackflow.patches.v1_0.manual_fix_internal_ip_range  # Removed - using proper DocType definition
 # trackflow.patches.v1_0.update_crm_workspace_to_modern_ui  # Disabled - reverted to standard UI
 trackflow.patches.v1_0.create_trackflow_workspace
