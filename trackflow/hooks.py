@@ -140,7 +140,8 @@ has_web_view = 1
 extend_bootinfo = ["trackflow.boot.bootinfo"]
 
 # Override CRM workspace to include TrackFlow
-override_doctype_dashboards = {
-    "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
-    "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
-}
+# Temporarily disabled due to compatibility issues with Frappe v15
+# override_doctype_dashboards = {
+#     "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
+#     "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
+# }
