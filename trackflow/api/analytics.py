@@ -355,3 +355,49 @@ def export_analytics(format="csv", **kwargs):
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Export Analytics Error")
         return {"status": "error", "message": str(e)}
+
+
+@frappe.whitelist()
+def get_deal_roi(deal_name):
+    """Get ROI analysis for a deal"""
+    try:
+        deal = frappe.get_doc("CRM Deal", deal_name)
+        
+        # Get deal value
+        deal_value = deal.annual_revenue or 0
+        
+        # Get campaign costs if available
+        visitor_id = getattr(deal, 'trackflow_visitor_id', None)
+        campaign_costs = 0
+        campaign_name = None
+        
+        if visitor_id:
+            # Get visitor's campaign
+            visitor = frappe.db.get_value("Visitor", visitor_id, ["campaign"], as_dict=True)
+            if visitor and visitor.campaign:
+                campaign_name = visitor.campaign
+                # Get campaign cost
+                campaign_cost = frappe.db.get_value("Link Campaign", campaign_name, "budget_amount") or 0
+                
+                # Calculate attributed cost (simple last-touch for now)
+                campaign_costs = campaign_cost * 0.1  # 10% attribution for this deal
+        
+        # Calculate ROI
+        if campaign_costs > 0:
+            roi_percentage = ((deal_value - campaign_costs) / campaign_costs) * 100
+        else:
+            roi_percentage = float('inf') if deal_value > 0 else 0
+            
+        return {
+            "deal_name": deal.name,
+            "deal_value": deal_value,
+            "campaign_costs": campaign_costs,
+            "profit": deal_value - campaign_costs,
+            "roi_percentage": roi_percentage if roi_percentage != float('inf') else "Infinite",
+            "campaign": campaign_name,
+            "attribution_model": getattr(deal, 'trackflow_attribution_model', 'Last Touch')
+        }
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Get Deal ROI Error")
+        return {"error": str(e)}

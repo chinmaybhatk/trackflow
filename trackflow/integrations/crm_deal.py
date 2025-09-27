@@ -233,3 +233,41 @@ def create_attribution_record(doc):
             
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "TrackFlow Attribution Record Error")
+
+
+@frappe.whitelist()
+def get_deal_attribution_report(deal_name):
+    """Get attribution report for a deal"""
+    try:
+        deal = frappe.get_doc("CRM Deal", deal_name)
+        
+        # Get visitor ID and attribution data
+        visitor_id = getattr(deal, 'trackflow_visitor_id', None)
+        if not visitor_id:
+            return {"error": "No visitor tracking data found for this deal"}
+        
+        # Get all touchpoints for this deal
+        touchpoints = get_deal_touchpoints(deal)
+        
+        # Get attribution summary
+        attribution_summary = {
+            "deal_name": deal.name,
+            "deal_value": deal.annual_revenue or 0,
+            "attribution_model": getattr(deal, 'trackflow_attribution_model', 'Last Touch'),
+            "visitor_id": visitor_id,
+            "touchpoint_count": len(touchpoints),
+            "touchpoints": touchpoints[:10],  # Limit to latest 10
+        }
+        
+        # Calculate attribution breakdown
+        if touchpoints:
+            # Get attribution model
+            model_name = frappe.db.get_single_value("TrackFlow Settings", "default_attribution_model") or "last_touch"
+            attribution_credits = calculate_attribution_credits(touchpoints, model_name, deal.annual_revenue or 0)
+            attribution_summary["attribution_breakdown"] = attribution_credits
+        
+        return attribution_summary
+        
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Get Deal Attribution Report Error")
+        return {"error": str(e)}
