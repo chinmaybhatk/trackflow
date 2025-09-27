@@ -170,6 +170,8 @@ erDiagram
         decimal position_based_first_weight
         decimal position_based_last_weight
         int time_decay_half_life_days
+        int lookback_window_days
+        decimal time_decay_factor
     }
 
     ATTRIBUTION_CHANNEL_RULE {
@@ -208,13 +210,20 @@ erDiagram
     %% CRM Integration
     DEAL_ATTRIBUTION {
         string name PK
-        string deal_id
+        string deal FK
         string attribution_model FK
-        string first_touch_campaign
-        string last_touch_campaign
-        decimal attribution_value
-        json touch_points
-        datetime calculation_date
+        decimal deal_value
+        string touchpoint_type
+        string touchpoint_source
+        string touchpoint_campaign
+        string touchpoint_medium
+        string touchpoint_content
+        string touchpoint_term
+        datetime touchpoint_timestamp
+        decimal attribution_weight
+        decimal attributed_value
+        string position_in_journey
+        int days_to_conversion
     }
 
     DEAL_LINK_ASSOCIATION {
@@ -479,24 +488,39 @@ CREATE INDEX idx_api_request_log_key_time ON `tabAPI Request Log` (api_key, requ
 | API Request Log | 90 days | Rotate logs |
 | Visitor Session | 1 year | Archive inactive visitors |
 
-### 6. Critical Relationships for Attribution ✅ WORKING
+### 6. Critical Relationships for Attribution ✅ FULLY IMPLEMENTED
 
-The attribution engine **currently working** relies on these relationships:
+The attribution engine **production ready** relies on these relationships:
 
 1. **Visitor Journey**: `Visitor` → `Visitor Session` → `Visitor Event` ✅ **ACTIVE**
 2. **Campaign Attribution**: `Link Campaign` → `Tracked Link` → `Click Event` → `CRM Lead` ✅ **ACTIVE**
 3. **CRM Integration**: `Visitor` → `CRM Lead` (via trackflow_visitor_id) ✅ **ACTIVE**
-4. **Last-Click Attribution**: Most recent `Click Event` → `CRM Lead` attribution ✅ **ACTIVE**
+4. **Attribution Model Engine**: `Attribution Model` → `Deal Attribution` (via calculate_attribution) ✅ **ACTIVE**
+5. **Multi-Touch Attribution**: Complete visitor journey → `Attribution Model` → weighted attribution ✅ **ACTIVE**
 
 #### Current Attribution Logic (Production)
 ```sql
--- When CRM Lead is created, this attribution happens automatically:
-UPDATE `tabCRM Lead` SET
-  trackflow_source = (SELECT source FROM tabVisitor WHERE visitor_id = ?),
-  trackflow_medium = (SELECT medium FROM tabVisitor WHERE visitor_id = ?),
-  trackflow_campaign = (SELECT campaign FROM tabVisitor WHERE visitor_id = ?),
-  trackflow_first_touch_date = (SELECT first_seen FROM tabVisitor WHERE visitor_id = ?),
-  trackflow_last_touch_date = (SELECT last_seen FROM tabVisitor WHERE visitor_id = ?)
+-- When CRM Deal is created, this advanced attribution happens automatically:
+
+-- 1. Get complete visitor journey
+SELECT visitor, utm_source, utm_campaign, utm_medium, click_timestamp 
+FROM `tabClick Event` 
+WHERE visitor_id = ? 
+ORDER BY click_timestamp ASC;
+
+-- 2. Apply Attribution Model calculation engine (Python)
+attribution_result = attribution_model.calculate_attribution(touchpoints, deal_value)
+
+-- 3. Create Deal Attribution records for each touchpoint
+INSERT INTO `tabDeal Attribution` (
+  deal, attribution_model, touchpoint_type, touchpoint_source, 
+  attribution_weight, attributed_value, position_in_journey
+) VALUES (?, ?, ?, ?, ?, ?, ?);
+
+-- 4. Update Deal with attribution summary
+UPDATE `tabCRM Deal` SET
+  trackflow_attribution_model = ?,
+  trackflow_marketing_influenced = 1
 WHERE name = ?;
 ```
 
@@ -771,12 +795,14 @@ graph LR
 
 ### 🔄 Implemented with Basic Features
 
-#### Attribution Models ✅ PRODUCTION READY
-- **Last-Click Attribution**: ✅ **Fully Working** - Attributes leads to most recent campaign touch
-- **First-Touch Attribution**: ✅ **Working** - Uses visitor's initial campaign source
+#### Attribution Models ✅ FULLY IMPLEMENTED
+- **Last Touch Attribution**: ✅ **Production Ready** - 100% credit to final touchpoint
+- **First Touch Attribution**: ✅ **Production Ready** - 100% credit to initial touchpoint  
+- **Linear Attribution**: ✅ **Production Ready** - Equal credit distribution across all touchpoints
+- **Time Decay Attribution**: ✅ **Production Ready** - Exponential decay favoring recent touches
+- **Position Based Attribution**: ✅ **Production Ready** - 40% first/last, 20% middle touches
 - **Campaign Source Tracking**: ✅ **Complete** - Full UTM parameter capture and attribution
 - **Touch History**: ✅ **Tracked** - Complete visitor journey with timestamps
-- **Advanced Models**: ⏳ Linear, Time Decay, Position Based (planned enhancement)
 
 #### Analytics & Reporting  
 - **Basic Reports**: Campaign Performance, Lead Attribution, Visitor Journey
@@ -860,7 +886,7 @@ Total TrackFlow data: ~100MB/month
 ---
 
 *Last Updated: December 2024*
-*Schema Version: 2.1 - Production Ready (Post-Standardization)*  
-*Implementation Status: Phase 2 Complete + Critical Fixes Applied*
-*Total DocTypes: 29 | Custom Fields: 12 | API Endpoints: 15+ | Recent Fixes: 23*
+*Schema Version: 2.2 - Production Ready (Attribution Engine Complete)*  
+*Implementation Status: Attribution Model Engine Implemented*
+*Total DocTypes: 29 | Custom Fields: 12 | Attribution Models: 5 | API Endpoints: 15+ | Recent Fixes: 23*
 *Naming Convention: Standardized (Link Campaign, Link Conversion, trackflow_* fields)*

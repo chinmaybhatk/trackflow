@@ -34,7 +34,7 @@
             "fieldtype": "Link",
             "in_list_view": 1,
             "label": "Deal",
-            "options": "Deal",
+            "options": "CRM Deal",
             "reqd": 1
         },
         {

@@ -172,7 +172,7 @@
    "fieldname": "deal",
    "fieldtype": "Link",
    "label": "Deal",
-   "options": "Deal"
+   "options": "CRM Deal"
   },
   {
    "fieldname": "metadata_section",

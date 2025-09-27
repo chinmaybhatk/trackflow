@@ -193,7 +193,7 @@ def create_demo_tracking_links(campaigns):
     
     created_links = []
     for link_data in links_data:
-        link = frappe.new_doc("Tracking Link")
+        link = frappe.new_doc("Tracked Link")
         link.title = link_data["title"]
         link.campaign = link_data["campaign"]
         link.destination_url = link_data["destination_url"]
@@ -484,7 +484,7 @@ def clear_demo_data():
         "Page View",
         "Visitor Session",
         "Visitor Profile",
-        "Tracking Link",
+        "Tracked Link",
         "Link Campaign"
     ]
     

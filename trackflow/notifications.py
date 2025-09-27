@@ -12,7 +12,7 @@ def get_notification_config():
             "Campaign": {
                 "status": ("in", ["Active", "Paused"]),
             },
-            "Tracking Link": {
+            "Tracked Link": {
                 "total_clicks": (">", 100),
             }
         }

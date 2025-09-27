@@ -101,7 +101,7 @@ def get_data(filters):
             COALESCE(SUM(conv.conversion_value), 0) as total_value,
             c.total_cost as cost
         FROM `tabCampaign` c
-        LEFT JOIN `tabTracking Link` tl ON tl.campaign = c.name
+        LEFT JOIN `tabTracked Link` tl ON tl.campaign = c.name
         LEFT JOIN `tabPage View` pv ON pv.tracking_link = tl.name
         LEFT JOIN `tabVisitor` v ON pv.visitor = v.name
         LEFT JOIN `tabConversion` conv ON conv.visitor = v.name

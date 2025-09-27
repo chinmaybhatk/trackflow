@@ -56,27 +56,67 @@ def calculate_attribution(doc, method):
         if not touchpoints:
             return
             
-        # Get attribution model
-        attribution_model = frappe.db.get_single_value("TrackFlow Settings", "default_attribution_model") or "last_touch"
+        # Get attribution model using shared function
+        attribution_model = get_default_attribution_model_cached()
         
-        # Calculate attribution based on model
-        attribution_credits = calculate_attribution_credits(touchpoints, attribution_model, doc.annual_revenue)
+        if not attribution_model:
+            frappe.log_error("No attribution model available", "Deal Attribution Error")
+            return
+            
+        # Convert touchpoints using shared function
+        formatted_touchpoints = format_touchpoints_for_attribution(touchpoints)
+        
+        # Calculate attribution using Attribution Model engine
+        attribution_result = attribution_model.calculate_attribution(formatted_touchpoints, doc.annual_revenue or 0)
         
         # Save attribution records
-        for touchpoint, credit in attribution_credits.items():
+        for channel, data in attribution_result.items():
+            # Find corresponding touchpoint for additional details
+            touchpoint_data = next((tp for tp in touchpoints if tp.get("source") == channel), {})
+            
             attribution = frappe.new_doc("Deal Attribution")
             attribution.deal = doc.name
-            attribution.campaign = touchpoint.get("campaign")
-            attribution.source = touchpoint.get("source")
-            attribution.medium = touchpoint.get("medium")
-            attribution.touchpoint_date = touchpoint.get("date")
-            attribution.attribution_model = attribution_model
-            attribution.credit_amount = credit
-            attribution.credit_percentage = (credit / doc.annual_revenue * 100) if doc.annual_revenue else 0
+            attribution.attribution_model = attribution_model.name
+            attribution.deal_value = doc.annual_revenue or 0
+            attribution.touchpoint_type = channel.title()  # Convert to title case
+            attribution.touchpoint_source = channel
+            attribution.touchpoint_campaign = touchpoint_data.get("campaign")
+            attribution.touchpoint_medium = touchpoint_data.get("medium")
+            attribution.touchpoint_timestamp = touchpoint_data.get("date") or frappe.utils.now()
+            attribution.attribution_weight = (data.get("credit", 0) * 100)  # Convert decimal to percentage
+            attribution.attributed_value = data.get("value", 0)
+            
+            # Set position in journey if available
+            if touchpoint_data.get("position"):
+                attribution.position_in_journey = touchpoint_data.get("position")
+                
             attribution.insert(ignore_permissions=True)
+            
+        # Update deal with attribution summary
+        doc.trackflow_attribution_model = attribution_model.model_type
+        doc.trackflow_marketing_influenced = 1
+        doc.save()
             
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "TrackFlow Attribution Calculation Error")
+
+def format_touchpoints_for_attribution(touchpoints):
+    """Convert touchpoints to format expected by Attribution Model"""
+    formatted_touchpoints = []
+    for tp in touchpoints:
+        formatted_touchpoints.append({
+            "channel": tp.get("source", "direct"),
+            "timestamp": tp.get("date"),
+            "campaign": tp.get("campaign"),
+            "source": tp.get("source"), 
+            "medium": tp.get("medium")
+        })
+    return formatted_touchpoints
+
+def get_default_attribution_model_cached():
+    """Get default attribution model with caching"""
+    from trackflow.trackflow.doctype.attribution_model.attribution_model import get_default_attribution_model
+    return get_default_attribution_model()
 
 def get_deal_touchpoints(doc):
     """Get all marketing touchpoints for a deal"""
@@ -127,83 +167,8 @@ def get_deal_touchpoints(doc):
         frappe.log_error(frappe.get_traceback(), "TrackFlow Get Touchpoints Error")
         return []
 
-def calculate_attribution_credits(touchpoints, model, total_value):
-    """Calculate attribution credits based on model"""
-    if not touchpoints:
-        return {}
-        
-    credits = {}
-    
-    if model == "first_touch":
-        # All credit to first touchpoint
-        first = touchpoints[0]
-        key = f"{first['campaign']}_{first['source']}_{first['medium']}"
-        credits[key] = total_value
-        
-    elif model == "last_touch":
-        # All credit to last touchpoint
-        last = touchpoints[-1]
-        key = f"{last['campaign']}_{last['source']}_{last['medium']}"
-        credits[key] = total_value
-        
-    elif model == "linear":
-        # Equal credit to all touchpoints
-        credit_per_touch = total_value / len(touchpoints)
-        for tp in touchpoints:
-            key = f"{tp['campaign']}_{tp['source']}_{tp['medium']}"
-            credits[key] = credits.get(key, 0) + credit_per_touch
-            
-    elif model == "time_decay":
-        # More credit to recent touchpoints
-        total_weight = sum(range(1, len(touchpoints) + 1))
-        for i, tp in enumerate(touchpoints):
-            weight = i + 1
-            credit = (weight / total_weight) * total_value
-            key = f"{tp['campaign']}_{tp['source']}_{tp['medium']}"
-            credits[key] = credits.get(key, 0) + credit
-            
-    elif model == "position_based":
-        # 40% first, 40% last, 20% middle
-        if len(touchpoints) == 1:
-            tp = touchpoints[0]
-            key = f"{tp['campaign']}_{tp['source']}_{tp['medium']}"
-            credits[key] = total_value
-        elif len(touchpoints) == 2:
-            # 50/50 split
-            for tp in touchpoints:
-                key = f"{tp['campaign']}_{tp['source']}_{tp['medium']}"
-                credits[key] = total_value / 2
-        else:
-            # First touch: 40%
-            first = touchpoints[0]
-            key = f"{first['campaign']}_{first['source']}_{first['medium']}"
-            credits[key] = total_value * 0.4
-            
-            # Last touch: 40%
-            last = touchpoints[-1]
-            key = f"{last['campaign']}_{last['source']}_{last['medium']}"
-            credits[key] = credits.get(key, 0) + (total_value * 0.4)
-            
-            # Middle touches: 20% distributed
-            middle = touchpoints[1:-1]
-            if middle:
-                middle_credit = (total_value * 0.2) / len(middle)
-                for tp in middle:
-                    key = f"{tp['campaign']}_{tp['source']}_{tp['medium']}"
-                    credits[key] = credits.get(key, 0) + middle_credit
-    
-    # Convert keys back to touchpoint format
-    result = {}
-    for key, value in credits.items():
-        parts = key.split("_")
-        result[key] = {
-            "campaign": parts[0] if len(parts) > 0 else None,
-            "source": parts[1] if len(parts) > 1 else None,
-            "medium": parts[2] if len(parts) > 2 else None,
-            "credit": value
-        }
-        
-    return result
+# Deprecated: calculate_attribution_credits function removed
+# Attribution logic now handled by Attribution Model DocType
 
 def track_deal_conversion(doc):
     """Track deal conversion"""
@@ -259,12 +224,31 @@ def get_deal_attribution_report(deal_name):
             "touchpoints": touchpoints[:10],  # Limit to latest 10
         }
         
-        # Calculate attribution breakdown
-        if touchpoints:
-            # Get attribution model
-            model_name = frappe.db.get_single_value("TrackFlow Settings", "default_attribution_model") or "last_touch"
-            attribution_credits = calculate_attribution_credits(touchpoints, model_name, deal.annual_revenue or 0)
-            attribution_summary["attribution_breakdown"] = attribution_credits
+        # Check for existing attribution records first
+        existing_attributions = frappe.get_all(
+            "Deal Attribution",
+            filters={"deal": deal_name},
+            fields=["touchpoint_type", "touchpoint_source", "attribution_weight", "attributed_value"]
+        )
+        
+        if existing_attributions:
+            # Use stored attribution records
+            attribution_breakdown = {}
+            for attr in existing_attributions:
+                source = attr.touchpoint_source or attr.touchpoint_type
+                attribution_breakdown[source] = {
+                    "credit": attr.attribution_weight / 100,  # Convert percentage to decimal
+                    "value": attr.attributed_value
+                }
+            attribution_summary["attribution_breakdown"] = attribution_breakdown
+        elif touchpoints:
+            # Calculate attribution breakdown if no stored records
+            attribution_model = get_default_attribution_model_cached()
+            
+            if attribution_model:
+                formatted_touchpoints = format_touchpoints_for_attribution(touchpoints)
+                attribution_result = attribution_model.calculate_attribution(formatted_touchpoints, deal.annual_revenue or 0)
+                attribution_summary["attribution_breakdown"] = attribution_result
         
         return attribution_summary
         
