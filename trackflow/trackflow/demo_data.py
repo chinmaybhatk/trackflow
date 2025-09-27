@@ -113,8 +113,8 @@ def create_demo_campaigns():
     
     created_campaigns = []
     for campaign_data in campaigns:
-        if not frappe.db.exists("TrackFlow Campaign", campaign_data["campaign_name"]):
-            campaign = frappe.new_doc("TrackFlow Campaign")
+        if not frappe.db.exists("Link Campaign", campaign_data["campaign_name"]):
+            campaign = frappe.new_doc("Link Campaign")
             
             # Extract nested data
             goals = campaign_data.pop("campaign_goals", [])
@@ -370,7 +370,7 @@ def create_demo_conversions(visitors, campaigns):
         num_conversions = random.randint(1, 3)
         
         for _ in range(num_conversions):
-            conversion = frappe.new_doc("TrackFlow Conversion")
+            conversion = frappe.new_doc("Link Conversion")
             conversion.visitor_id = visitor.visitor_id
             conversion.conversion_type = random.choice(conversion_types)
             conversion.conversion_date = frappe.utils.add_days(
@@ -480,12 +480,12 @@ def clear_demo_data():
         "Deal Attribution",
         "Deal Link Association", 
         "Lead Link Association",
-        "TrackFlow Conversion",
+        "Link Conversion",
         "Page View",
         "Visitor Session",
         "Visitor Profile",
         "Tracking Link",
-        "TrackFlow Campaign"
+        "Link Campaign"
     ]
     
     for doctype in doctypes:

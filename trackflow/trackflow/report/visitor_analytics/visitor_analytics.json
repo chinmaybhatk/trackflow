@@ -25,7 +25,7 @@
    "fieldtype": "Link",
    "label": "Campaign",
    "mandatory": 0,
-   "options": "TrackFlow Campaign"
+   "options": "Link Campaign"
   },
   {
    "fieldname": "source",

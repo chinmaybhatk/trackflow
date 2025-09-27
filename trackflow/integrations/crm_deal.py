@@ -5,9 +5,9 @@ from frappe.utils import flt, nowdate
 def after_insert(doc, method):
     """Track deal creation with attribution"""
     try:
-        if hasattr(doc, 'custom_trackflow_visitor_id') and doc.custom_trackflow_visitor_id:
+        if hasattr(doc, 'trackflow_visitor_id') and doc.trackflow_visitor_id:
             # Link deal to visitor
-            visitor_id = doc.custom_trackflow_visitor_id
+            visitor_id = doc.trackflow_visitor_id
             
             if frappe.db.exists("Visitor", visitor_id):
                 visitor = frappe.get_doc("Visitor", visitor_id)
@@ -32,8 +32,8 @@ def on_update(doc, method):
             stage_change.to_stage = doc.deal_stage
             stage_change.changed_by = frappe.session.user
             
-            if hasattr(doc, 'custom_trackflow_campaign'):
-                stage_change.campaign = doc.custom_trackflow_campaign
+            if hasattr(doc, 'trackflow_last_touch_source'):
+                stage_change.campaign = doc.trackflow_last_touch_source
                 
             stage_change.insert(ignore_permissions=True)
             
@@ -84,7 +84,7 @@ def get_deal_touchpoints(doc):
     
     try:
         # Get visitor ID
-        visitor_id = doc.custom_trackflow_visitor_id if hasattr(doc, 'custom_trackflow_visitor_id') else None
+        visitor_id = doc.trackflow_visitor_id if hasattr(doc, 'trackflow_visitor_id') else None
         
         if not visitor_id:
             return touchpoints
@@ -213,9 +213,9 @@ def track_deal_conversion(doc):
         conversion.document_name = doc.name
         conversion.conversion_type = "deal_won"
         conversion.conversion_value = doc.annual_revenue
-        conversion.campaign = doc.custom_trackflow_campaign if hasattr(doc, 'custom_trackflow_campaign') else None
-        conversion.source = doc.custom_trackflow_first_touch_source if hasattr(doc, 'custom_trackflow_first_touch_source') else None
-        conversion.visitor_id = doc.custom_trackflow_visitor_id if hasattr(doc, 'custom_trackflow_visitor_id') else None
+        conversion.campaign = doc.trackflow_last_touch_source if hasattr(doc, 'trackflow_last_touch_source') else None
+        conversion.source = doc.trackflow_first_touch_source if hasattr(doc, 'trackflow_first_touch_source') else None
+        conversion.visitor_id = doc.trackflow_visitor_id if hasattr(doc, 'trackflow_visitor_id') else None
         conversion.insert(ignore_permissions=True)
         
     except Exception as e:
@@ -224,12 +224,11 @@ def track_deal_conversion(doc):
 def create_attribution_record(doc):
     """Create initial attribution record"""
     try:
-        if hasattr(doc, 'custom_trackflow_campaign') and doc.custom_trackflow_campaign:
+        if hasattr(doc, 'trackflow_last_touch_source') and doc.trackflow_last_touch_source:
             link_assoc = frappe.new_doc("Deal Link Association")
             link_assoc.deal = doc.name
-            link_assoc.campaign = doc.custom_trackflow_campaign
-            link_assoc.source = doc.custom_trackflow_first_touch_source if hasattr(doc, 'custom_trackflow_first_touch_source') else None
-            link_assoc.medium = doc.custom_trackflow_medium if hasattr(doc, 'custom_trackflow_medium') else None
+            link_assoc.campaign = doc.trackflow_last_touch_source
+            link_assoc.source = doc.trackflow_first_touch_source if hasattr(doc, 'trackflow_first_touch_source') else None
             link_assoc.insert(ignore_permissions=True)
             
     except Exception as e:

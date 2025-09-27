@@ -44,7 +44,7 @@ def on_opportunity_create(doc, method):
         
         # Create conversion record
         if visitor_id:
-            conversion = frappe.new_doc("TrackFlow Conversion")
+            conversion = frappe.new_doc("Link Conversion")
             conversion.visitor_id = visitor_id
             conversion.campaign = campaign or doc.campaign_name
             conversion.conversion_type = "Deal Created"
@@ -102,7 +102,7 @@ def on_opportunity_update(doc, method):
             if deal_link and deal_link.visitor_id:
                 # Check if conversion already exists
                 existing = frappe.db.exists(
-                    "TrackFlow Conversion",
+                    "Link Conversion",
                     {
                         "visitor_id": deal_link.visitor_id,
                         "conversion_type": "Deal Won",
@@ -111,7 +111,7 @@ def on_opportunity_update(doc, method):
                 )
                 
                 if not existing:
-                    conversion = frappe.new_doc("TrackFlow Conversion")
+                    conversion = frappe.new_doc("Link Conversion")
                     conversion.visitor_id = deal_link.visitor_id
                     conversion.campaign = deal_link.campaign
                     conversion.conversion_type = "Deal Won"
@@ -127,13 +127,13 @@ def on_opportunity_update(doc, method):
                     # Update campaign goal progress
                     if deal_link.campaign:
                         from trackflow.trackflow.doctype.trackflow_campaign.trackflow_campaign import update_campaign_metrics
-                        campaign_doc = frappe.get_doc("TrackFlow Campaign", deal_link.campaign)
+                        campaign_doc = frappe.get_doc("Link Campaign", deal_link.campaign)
                         update_campaign_metrics(campaign_doc)
 
 def get_opportunity_source_options():
     """Get list of active campaigns for opportunity source"""
     campaigns = frappe.get_all(
-        "TrackFlow Campaign",
+        "Link Campaign",
         filters={"status": "Active"},
         fields=["name", "campaign_name"],
         order_by="creation desc"
@@ -205,7 +205,7 @@ def get_opportunity_metrics(opportunity_name):
     
     # Form submissions
     conversions = frappe.get_all(
-        "TrackFlow Conversion",
+        "Link Conversion",
         filters={
             "visitor_id": deal_link.visitor_id,
             "conversion_type": "Form Submission"

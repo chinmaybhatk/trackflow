@@ -43,7 +43,7 @@ def create_custom_fields():
                 "fieldname": "trackflow_campaign",
                 "label": "First Touch Campaign",
                 "fieldtype": "Link",
-                "options": "TrackFlow Campaign",
+                "options": "Link Campaign",
                 "insert_after": "trackflow_column_break_1",
                 "read_only": 1
             },
@@ -98,7 +98,7 @@ def create_custom_fields():
                 "fieldname": "trackflow_last_campaign",
                 "label": "Last Campaign",
                 "fieldtype": "Link",
-                "options": "TrackFlow Campaign",
+                "options": "Link Campaign",
                 "insert_after": "trackflow_engagement_score",
                 "read_only": 1
             }
@@ -115,7 +115,7 @@ def create_custom_fields():
                 "fieldname": "trackflow_campaign",
                 "label": "Primary Campaign",
                 "fieldtype": "Link",
-                "options": "TrackFlow Campaign",
+                "options": "Link Campaign",
                 "insert_after": "trackflow_section"
             },
             {
@@ -196,7 +196,7 @@ def create_custom_fields():
                 "fieldname": "trackflow_acquisition_campaign",
                 "label": "Acquisition Campaign",
                 "fieldtype": "Link",
-                "options": "TrackFlow Campaign",
+                "options": "Link Campaign",
                 "insert_after": "trackflow_section",
                 "read_only": 1
             },

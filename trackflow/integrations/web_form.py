@@ -4,10 +4,10 @@ import json
 
 def inject_tracking_script(doc, method):
     """Auto-inject TrackFlow tracking into web forms"""
-    if not hasattr(doc, 'custom_trackflow_tracking_enabled'):
+    if not hasattr(doc, 'trackflow_tracking_enabled'):
         return
         
-    if doc.custom_trackflow_tracking_enabled:
+    if doc.trackflow_tracking_enabled:
         tracking_script = """
 // TrackFlow Web Form Tracking
 (function() {
@@ -45,10 +45,10 @@ def inject_tracking_script(doc, method):
         
 def validate_tracking_settings(doc, method):
     """Validate web form tracking settings"""
-    if hasattr(doc, 'custom_trackflow_conversion_goal') and doc.custom_trackflow_conversion_goal:
+    if hasattr(doc, 'trackflow_conversion_goal') and doc.trackflow_conversion_goal:
         # Ensure tracking is enabled if conversion goal is set
-        if not doc.custom_trackflow_tracking_enabled:
-            doc.custom_trackflow_tracking_enabled = 1
+        if not doc.trackflow_tracking_enabled:
+            doc.trackflow_tracking_enabled = 1
             
 def on_web_form_submit(doc, method):
     """Track web form submissions as conversions"""
@@ -63,8 +63,8 @@ def on_web_form_submit(doc, method):
             form_route = frappe.request.path.split("/web-form/")[1].split("/")[0]
             web_form = frappe.db.get_value("Web Form", 
                                           {"route": form_route}, 
-                                          ["name", "custom_trackflow_tracking_enabled", 
-                                           "custom_trackflow_conversion_goal"])
+                                          ["name", "trackflow_tracking_enabled", 
+                                           "trackflow_conversion_goal"])
             
         if not web_form or not web_form[1]:  # Not tracking enabled
             return

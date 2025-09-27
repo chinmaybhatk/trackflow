@@ -29,51 +29,51 @@ doctype_list_js = {
 # Document Events
 doc_events = {
     "CRM Lead": {
-        "after_insert": "trackflow.trackflow.integrations.crm_lead.on_lead_create",
-        "on_update": "trackflow.trackflow.integrations.crm_lead.on_lead_update",
-        "on_trash": "trackflow.trackflow.integrations.crm_lead.on_lead_trash"
+        "after_insert": "trackflow.integrations.crm_lead.on_lead_create",
+        "on_update": "trackflow.integrations.crm_lead.on_lead_update",
+        "on_trash": "trackflow.integrations.crm_lead.on_lead_trash"
     },
     "CRM Organization": {
-        "after_insert": "trackflow.trackflow.integrations.crm_organization.after_insert",
-        "on_update": "trackflow.trackflow.integrations.crm_organization.on_update"
+        "after_insert": "trackflow.integrations.crm_organization.after_insert",
+        "on_update": "trackflow.integrations.crm_organization.on_update"
     },
     "CRM Deal": {
-        "after_insert": "trackflow.trackflow.integrations.crm_deal.after_insert",
-        "on_update": "trackflow.trackflow.integrations.crm_deal.on_update",
-        "on_submit": "trackflow.trackflow.integrations.crm_deal.calculate_attribution"
+        "after_insert": "trackflow.integrations.crm_deal.after_insert",
+        "on_update": "trackflow.integrations.crm_deal.on_update",
+        "on_submit": "trackflow.integrations.crm_deal.calculate_attribution"
     },
     "Web Form": {
-        "on_update": "trackflow.trackflow.integrations.web_form.inject_tracking_script",
-        "validate": "trackflow.trackflow.integrations.web_form.validate_tracking_settings"
+        "on_update": "trackflow.integrations.web_form.inject_tracking_script",
+        "validate": "trackflow.integrations.web_form.validate_tracking_settings"
     }
 }
 
 # Scheduled Tasks
 scheduler_events = {
     "hourly": [
-        "trackflow.trackflow.tasks.process_visitor_sessions",
-        "trackflow.trackflow.tasks.update_campaign_metrics",
-        "trackflow.trackflow.notifications.check_campaign_performance"
+        "trackflow.tasks.process_visitor_sessions",
+        "trackflow.tasks.update_campaign_metrics",
+        "trackflow.notifications.check_campaign_performance"
     ],
     "daily": [
-        "trackflow.trackflow.tasks.cleanup_expired_data",
-        "trackflow.trackflow.tasks.generate_daily_reports",
-        "trackflow.trackflow.tasks.calculate_attribution"
+        "trackflow.tasks.cleanup_expired_data",
+        "trackflow.tasks.generate_daily_reports",
+        "trackflow.tasks.calculate_attribution"
     ],
     "weekly": [
-        "trackflow.trackflow.tasks.send_weekly_analytics",
-        "trackflow.trackflow.tasks.cleanup_old_visitors"
+        "trackflow.tasks.send_weekly_analytics",
+        "trackflow.tasks.cleanup_old_visitors"
     ]
 }
 
 # Installation hooks
-before_install = "trackflow.trackflow.install.before_install"
-after_install = "trackflow.trackflow.install.after_install"
-after_migrate = "trackflow.trackflow.install.after_migrate"
+before_install = "trackflow.install.before_install"
+after_install = "trackflow.install.after_install"
+after_migrate = "trackflow.install.after_migrate"
 
 # Whitelisted Methods for API
 override_whitelisted_methods = {
-    "frappe.www.contact.send_message": "trackflow.trackflow.overrides.track_form_submission"
+    "frappe.www.contact.send_message": "trackflow.overrides.contact.track_form_submission"
 }
 
 # Website tracking
@@ -82,8 +82,8 @@ website_route_rules = [
     {"from_route": "/t/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"}
 ]
 
-before_request = ["trackflow.trackflow.www.redirect.before_request"]
-after_request = ["trackflow.trackflow.tracking.after_request"]
+before_request = ["trackflow.www.redirect.before_request"]
+after_request = ["trackflow.tracking.after_request"]
 
 # REST API Methods - These should be whitelisted in the respective modules
 # API methods are exposed through @frappe.whitelist() decorators in the respective files
@@ -137,10 +137,10 @@ has_web_view = 1
 
 # For Frappe CRM Integration - Frontend Override
 # This allows TrackFlow to appear in CRM sidebar
-extend_bootinfo = ["trackflow.trackflow.boot.bootinfo"]
+extend_bootinfo = ["trackflow.boot.bootinfo"]
 
 # Override CRM workspace to include TrackFlow
 override_doctype_dashboards = {
-    "CRM Lead": "trackflow.trackflow.dashboard.crm_lead_dashboard",
-    "CRM Deal": "trackflow.trackflow.dashboard.crm_deal_dashboard"
+    "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
+    "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
 }

@@ -294,14 +294,14 @@ def get_visitor_journey(visitor_id):
         
         # Check if converted
         lead = frappe.db.get_value("CRM Lead", 
-                                  {"custom_trackflow_visitor_id": visitor_id}, 
+                                  {"trackflow_visitor_id": visitor_id}, 
                                   ["name", "lead_name", "status"])
         
         if lead:
             visitor_info["lead"] = lead
             
         deal = frappe.db.get_value("CRM Deal",
-                                  {"custom_trackflow_visitor_id": visitor_id},
+                                  {"trackflow_visitor_id": visitor_id},
                                   ["name", "deal_name", "status", "annual_revenue"])
         
         if deal:

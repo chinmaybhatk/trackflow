@@ -145,7 +145,7 @@ def get_stage_data(stage, filters):
                 COUNT(DISTINCT c.visitor_id) as count,
                 AVG(TIMESTAMPDIFF(SECOND, vs.creation, c.creation)) as avg_time,
                 0 as value
-            FROM `tabTrackFlow Conversion` c
+            FROM `tabLink Conversion` c
             INNER JOIN `tabVisitor Session` vs ON vs.visitor_id = c.visitor_id
             WHERE c.docstatus < 2 
             AND c.conversion_type = 'Form Submission'

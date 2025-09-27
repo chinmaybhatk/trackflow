@@ -42,7 +42,7 @@ def on_web_form_submit(doc, method):
     submission.insert(ignore_permissions=True)
     
     # Create conversion record
-    conversion = frappe.new_doc("TrackFlow Conversion")
+    conversion = frappe.new_doc("Link Conversion")
     conversion.visitor_id = visitor_id
     conversion.campaign = campaign
     conversion.conversion_type = "Form Submission"
@@ -66,7 +66,7 @@ def on_web_form_submit(doc, method):
     # Update campaign metrics
     if campaign:
         from trackflow.trackflow.doctype.trackflow_campaign.trackflow_campaign import update_campaign_metrics
-        campaign_doc = frappe.get_doc("TrackFlow Campaign", campaign)
+        campaign_doc = frappe.get_doc("Link Campaign", campaign)
         update_campaign_metrics(campaign_doc)
 
 def handle_lead_attribution(lead, visitor_id, campaign):
@@ -80,7 +80,7 @@ def handle_lead_attribution(lead, visitor_id, campaign):
     lead_link.insert(ignore_permissions=True)
     
     # Create conversion for lead creation
-    conversion = frappe.new_doc("TrackFlow Conversion")
+    conversion = frappe.new_doc("Link Conversion")
     conversion.visitor_id = visitor_id
     conversion.campaign = campaign
     conversion.conversion_type = "Lead Created"
@@ -124,7 +124,7 @@ def get_campaign_from_context():
         campaign = frappe.session.data.get("tf_campaign")
     
     # Validate campaign exists
-    if campaign and frappe.db.exists("TrackFlow Campaign", campaign):
+    if campaign and frappe.db.exists("Link Campaign", campaign):
         return campaign
     
     return None

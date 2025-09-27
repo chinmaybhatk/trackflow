@@ -7,7 +7,7 @@ def send_goal_achieved_notification(goal):
     if not goal.notification_enabled:
         return
     
-    campaign = frappe.get_doc("TrackFlow Campaign", goal.campaign)
+    campaign = frappe.get_doc("Link Campaign", goal.campaign)
     
     # Get recipients
     recipients = get_notification_recipients(campaign)
@@ -76,7 +76,7 @@ def send_goal_achieved_notification(goal):
 
 def send_conversion_notification(conversion):
     """Send notification for important conversions"""
-    campaign = frappe.get_doc("TrackFlow Campaign", conversion.campaign)
+    campaign = frappe.get_doc("Link Campaign", conversion.campaign)
     
     # Only send for high-value conversions
     if conversion.conversion_type not in ["Lead Created", "Deal Created", "Deal Won"]:
@@ -248,7 +248,7 @@ def send_campaign_alert(campaign, alert_type, message_details):
         notification.subject = config["subject"]
         notification.for_user = recipient
         notification.type = "Alert"
-        notification.document_type = "TrackFlow Campaign"
+        notification.document_type = "Link Campaign"
         notification.document_name = campaign.name
         notification.insert(ignore_permissions=True)
 
@@ -302,7 +302,7 @@ def check_campaign_performance():
     """Scheduled job to check campaign performance and send alerts"""
     # Get active campaigns
     campaigns = frappe.get_all(
-        "TrackFlow Campaign",
+        "Link Campaign",
         filters={
             "status": "Active",
             "docstatus": ["<", 2]
@@ -311,11 +311,11 @@ def check_campaign_performance():
     )
     
     for campaign in campaigns:
-        doc = frappe.get_doc("TrackFlow Campaign", campaign.name)
+        doc = frappe.get_doc("Link Campaign", campaign.name)
         
         # Get current metrics
         conversions = frappe.db.count(
-            "TrackFlow Conversion",
+            "Link Conversion",
             filters={
                 "campaign": campaign.name,
                 "docstatus": ["<", 2]

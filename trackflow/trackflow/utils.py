@@ -331,7 +331,7 @@ def calculate_attribution(deal_name, model='last_touch'):
 
 def get_campaign_roi(campaign_name):
     """Calculate ROI for a campaign"""
-    campaign = frappe.get_doc("TrackFlow Campaign", campaign_name)
+    campaign = frappe.get_doc("Link Campaign", campaign_name)
     
     # Get total revenue attributed to campaign
     revenue = frappe.db.sql("""

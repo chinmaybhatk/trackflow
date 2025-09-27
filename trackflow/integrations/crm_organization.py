@@ -4,9 +4,9 @@ from frappe import _
 def after_insert(doc, method):
     """Track organization creation"""
     try:
-        if hasattr(doc, 'custom_trackflow_visitor_id') and doc.custom_trackflow_visitor_id:
+        if hasattr(doc, 'trackflow_visitor_id') and doc.trackflow_visitor_id:
             # Link organization to visitor
-            visitor_id = doc.custom_trackflow_visitor_id
+            visitor_id = doc.trackflow_visitor_id
             
             if frappe.db.exists("Visitor", visitor_id):
                 visitor = frappe.get_doc("Visitor", visitor_id)
@@ -15,7 +15,7 @@ def after_insert(doc, method):
                 visitor.save(ignore_permissions=True)
             
             # Track conversion
-            if doc.custom_trackflow_campaign:
+            if doc.trackflow_last_campaign:
                 track_conversion(doc, "organization_created")
                 
     except Exception as e:
@@ -24,16 +24,16 @@ def after_insert(doc, method):
 def on_update(doc, method):
     """Update organization engagement score based on interactions"""
     try:
-        if not hasattr(doc, 'custom_trackflow_visitor_id') or not doc.custom_trackflow_visitor_id:
+        if not hasattr(doc, 'trackflow_visitor_id') or not doc.trackflow_visitor_id:
             return
             
         # Calculate engagement score
         engagement_score = calculate_engagement_score(doc)
         
         # Update if changed
-        if engagement_score != doc.custom_trackflow_engagement_score:
+        if engagement_score != doc.trackflow_engagement_score:
             frappe.db.set_value("CRM Organization", doc.name, 
-                              "custom_trackflow_engagement_score", engagement_score,
+                              "trackflow_engagement_score", engagement_score,
                               update_modified=False)
             
     except Exception as e:
@@ -43,7 +43,7 @@ def calculate_engagement_score(doc):
     """Calculate engagement score based on various factors"""
     try:
         score = 0
-        visitor_id = doc.custom_trackflow_visitor_id
+        visitor_id = doc.trackflow_visitor_id
         
         # Click events (1 point per click, max 20)
         clicks = frappe.db.count("Click Event", {"visitor_id": visitor_id})
@@ -61,12 +61,12 @@ def calculate_engagement_score(doc):
         
         # Form submissions (10 points per submission, max 30)
         form_submissions = frappe.db.count("Web Form Submission",
-                                          {"custom_trackflow_visitor_id": visitor_id})
+                                          {"trackflow_visitor_id": visitor_id})
         score += min(form_submissions * 10, 30)
         
         # Deals associated (20 points if any deals)
         deals = frappe.db.count("CRM Deal", 
-                               {"custom_trackflow_visitor_id": visitor_id})
+                               {"trackflow_visitor_id": visitor_id})
         if deals > 0:
             score += 20
             
@@ -83,10 +83,8 @@ def track_conversion(doc, conversion_type):
         conversion.doctype_name = "CRM Organization"
         conversion.document_name = doc.name
         conversion.conversion_type = conversion_type
-        conversion.campaign = doc.custom_trackflow_campaign if hasattr(doc, 'custom_trackflow_campaign') else None
-        conversion.source = doc.custom_trackflow_source if hasattr(doc, 'custom_trackflow_source') else None
-        conversion.medium = doc.custom_trackflow_medium if hasattr(doc, 'custom_trackflow_medium') else None
-        conversion.visitor_id = doc.custom_trackflow_visitor_id if hasattr(doc, 'custom_trackflow_visitor_id') else None
+        conversion.campaign = doc.trackflow_last_campaign if hasattr(doc, 'trackflow_last_campaign') else None
+        conversion.visitor_id = doc.trackflow_visitor_id if hasattr(doc, 'trackflow_visitor_id') else None
         conversion.insert(ignore_permissions=True)
         
     except Exception as e:
@@ -97,7 +95,7 @@ def get_organization_journey(organization):
     """Get complete journey for an organization"""
     try:
         org = frappe.get_doc("CRM Organization", organization)
-        visitor_id = org.custom_trackflow_visitor_id if hasattr(org, 'custom_trackflow_visitor_id') else None
+        visitor_id = org.trackflow_visitor_id if hasattr(org, 'trackflow_visitor_id') else None
         
         if not visitor_id:
             return {"touchpoints": [], "engagement_score": 0}
@@ -140,7 +138,7 @@ def get_organization_journey(organization):
         
         return {
             "touchpoints": touchpoints[:50],  # Latest 50 touchpoints
-            "engagement_score": org.custom_trackflow_engagement_score or 0,
+            "engagement_score": org.trackflow_engagement_score or 0,
             "total_touchpoints": len(touchpoints),
             "first_touch_date": touchpoints[-1]["date"] if touchpoints else None,
             "last_touch_date": touchpoints[0]["date"] if touchpoints else None
