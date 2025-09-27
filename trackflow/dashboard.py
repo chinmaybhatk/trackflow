@@ -1,7 +1,7 @@
 import frappe
 from frappe import _
 
-def crm_lead_dashboard():
+def crm_lead_dashboard(data=None):
     """Dashboard configuration for CRM Lead with TrackFlow integration"""
     return {
         "heatmap": False,
@@ -19,7 +19,7 @@ def crm_lead_dashboard():
         ]
     }
 
-def crm_deal_dashboard():
+def crm_deal_dashboard(data=None):
     """Dashboard configuration for CRM Deal with TrackFlow integration"""
     return {
         "heatmap": True,
