@@ -13,28 +13,28 @@ def on_lead_create(doc, method):
             
         # Check if lead has tracking information
         visitor_id = doc.get('trackflow_visitor_id')
-    
-    if visitor_id:
-        # Link lead to visitor
-        if frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
-            visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
-            frappe.db.set_value("Visitor", visitor, {
-                "crm_lead": doc.name,
-                "lead_created_date": frappe.utils.now()
-            })
-            
-            # Log activity
-            log_activity("lead_created", {
-                "lead": doc.name,
-                "visitor_id": visitor_id,
-                "campaign": doc.get('trackflow_campaign')
-            })
         
-        # Track conversion if from campaign
-        campaign = doc.get('trackflow_campaign')
-        if campaign:
-            track_conversion(doc, "lead_created", visitor_id, campaign)
+        if visitor_id:
+            # Link lead to visitor
+            if frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
+                visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+                frappe.db.set_value("Visitor", visitor, {
+                    "crm_lead": doc.name,
+                    "lead_created_date": frappe.utils.now()
+                })
+                
+                # Log activity
+                log_activity("lead_created", {
+                    "lead": doc.name,
+                    "visitor_id": visitor_id,
+                    "campaign": doc.get('trackflow_campaign')
+                })
             
+            # Track conversion if from campaign
+            campaign = doc.get('trackflow_campaign')
+            if campaign:
+                track_conversion(doc, "lead_created", visitor_id, campaign)
+                
     except Exception as e:
         # Log error but don't block lead creation
         frappe.log_error(f"TrackFlow lead tracking error: {str(e)}", "TrackFlow Lead Create Error")
