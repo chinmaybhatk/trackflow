@@ -4,12 +4,12 @@ def create_custom_fields():
     """Create custom fields for TrackFlow integration"""
     
     custom_fields = {
-        "Lead": [
+        "CRM Lead": [
             {
                 "fieldname": "trackflow_section",
                 "label": "TrackFlow Analytics",
                 "fieldtype": "Section Break",
-                "insert_after": "contact_by",
+                "insert_after": "website",
                 "collapsible": 1
             },
             {
@@ -42,8 +42,7 @@ def create_custom_fields():
             {
                 "fieldname": "trackflow_campaign",
                 "label": "First Touch Campaign",
-                "fieldtype": "Link",
-                "options": "Link Campaign",
+                "fieldtype": "Data",
                 "insert_after": "trackflow_column_break_1",
                 "read_only": 1
             },
@@ -70,7 +69,7 @@ def create_custom_fields():
                 "default": 0
             }
         ],
-        "Contact": [
+        "CRM Organization": [
             {
                 "fieldname": "trackflow_section",
                 "label": "TrackFlow Analytics",
@@ -97,13 +96,12 @@ def create_custom_fields():
             {
                 "fieldname": "trackflow_last_campaign",
                 "label": "Last Campaign",
-                "fieldtype": "Link",
-                "options": "Link Campaign",
+                "fieldtype": "Data",
                 "insert_after": "trackflow_engagement_score",
                 "read_only": 1
             }
         ],
-        "Opportunity": [
+        "CRM Deal": [
             {
                 "fieldname": "trackflow_section",
                 "label": "TrackFlow Attribution",
@@ -114,8 +112,7 @@ def create_custom_fields():
             {
                 "fieldname": "trackflow_campaign",
                 "label": "Primary Campaign",
-                "fieldtype": "Link",
-                "options": "Link Campaign",
+                "fieldtype": "Data",
                 "insert_after": "trackflow_section"
             },
             {
@@ -178,13 +175,12 @@ def create_custom_fields():
             {
                 "fieldname": "trackflow_conversion_goal",
                 "label": "Conversion Goal",
-                "fieldtype": "Link",
-                "options": "Campaign Goal",
+                "fieldtype": "Data",
                 "insert_after": "trackflow_tracking_enabled",
                 "description": "Link form submission to a campaign goal"
             }
         ],
-        "Customer": [
+        "Contact": [
             {
                 "fieldname": "trackflow_section",
                 "label": "TrackFlow Analytics",
@@ -195,8 +191,7 @@ def create_custom_fields():
             {
                 "fieldname": "trackflow_acquisition_campaign",
                 "label": "Acquisition Campaign",
-                "fieldtype": "Link",
-                "options": "Link Campaign",
+                "fieldtype": "Data",
                 "insert_after": "trackflow_section",
                 "read_only": 1
             },
@@ -218,25 +213,34 @@ def create_custom_fields():
     }
     
     for doctype, fields in custom_fields.items():
+        # Check if DocType exists before adding fields
+        if not frappe.db.exists("DocType", doctype):
+            print(f"DocType {doctype} does not exist, skipping custom fields")
+            continue
+            
         for field in fields:
-            if not frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": field["fieldname"]}):
-                cf = frappe.new_doc("Custom Field")
-                cf.dt = doctype
-                cf.update(field)
-                cf.insert()
-                print(f"Created custom field {field['fieldname']} in {doctype}")
+            try:
+                if not frappe.db.exists("Custom Field", {"dt": doctype, "fieldname": field["fieldname"]}):
+                    cf = frappe.new_doc("Custom Field")
+                    cf.dt = doctype
+                    cf.update(field)
+                    cf.insert(ignore_permissions=True)
+                    print(f"Created custom field {field['fieldname']} in {doctype}")
+            except Exception as e:
+                print(f"Error creating custom field {field['fieldname']} in {doctype}: {str(e)}")
+                frappe.log_error(f"Custom field creation error: {str(e)}", "TrackFlow Custom Fields")
 
 def create_property_setters():
     """Create property setters for TrackFlow"""
     property_setters = [
         {
-            "doctype": "Lead",
+            "doctype": "CRM Lead",
             "property": "track_views",
             "value": "1",
             "property_type": "Check"
         },
         {
-            "doctype": "Opportunity",
+            "doctype": "CRM Deal",
             "property": "track_views", 
             "value": "1",
             "property_type": "Check"
@@ -250,22 +254,31 @@ def create_property_setters():
     ]
     
     for ps in property_setters:
-        if not frappe.db.exists("Property Setter", {
-            "doc_type": ps["doctype"],
-            "property": ps["property"]
-        }):
-            prop_setter = frappe.new_doc("Property Setter")
-            prop_setter.doctype_or_field = "DocType"
-            prop_setter.doc_type = ps["doctype"]
-            prop_setter.property = ps["property"]
-            prop_setter.value = ps["value"]
-            prop_setter.property_type = ps["property_type"]
-            prop_setter.insert()
-            print(f"Created property setter for {ps['doctype']}.{ps['property']}")
+        try:
+            # Check if DocType exists
+            if not frappe.db.exists("DocType", ps["doctype"]):
+                print(f"DocType {ps['doctype']} does not exist, skipping property setter")
+                continue
+                
+            if not frappe.db.exists("Property Setter", {
+                "doc_type": ps["doctype"],
+                "property": ps["property"]
+            }):
+                prop_setter = frappe.new_doc("Property Setter")
+                prop_setter.doctype_or_field = "DocType"
+                prop_setter.doc_type = ps["doctype"]
+                prop_setter.property = ps["property"]
+                prop_setter.value = ps["value"]
+                prop_setter.property_type = ps["property_type"]
+                prop_setter.insert(ignore_permissions=True)
+                print(f"Created property setter for {ps['doctype']}.{ps['property']}")
+        except Exception as e:
+            print(f"Error creating property setter for {ps['doctype']}.{ps['property']}: {str(e)}")
+            frappe.log_error(f"Property setter creation error: {str(e)}", "TrackFlow Property Setters")
 
 def remove_custom_fields():
     """Remove custom fields created by TrackFlow"""
-    doctypes = ["Lead", "Contact", "Opportunity", "Web Form", "Customer"]
+    doctypes = ["CRM Lead", "CRM Organization", "CRM Deal", "Web Form", "Contact"]
     
     for doctype in doctypes:
         custom_fields = frappe.get_all(
