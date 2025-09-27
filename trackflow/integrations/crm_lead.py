@@ -5,8 +5,14 @@ from trackflow.trackflow.utils.error_handler import handle_error, log_activity, 
 @handle_error(error_type="CRM Lead Create", return_response=False)
 def on_lead_create(doc, method):
     """Track lead creation with TrackFlow"""
-    # Check if lead has tracking information
-    visitor_id = doc.get('trackflow_visitor_id')
+    try:
+        # Validate doc object
+        if not doc or not hasattr(doc, 'name'):
+            frappe.log_error("Invalid doc object in TrackFlow lead create hook", "TrackFlow Lead Create")
+            return
+            
+        # Check if lead has tracking information
+        visitor_id = doc.get('trackflow_visitor_id')
     
     if visitor_id:
         # Link lead to visitor
@@ -28,6 +34,11 @@ def on_lead_create(doc, method):
         campaign = doc.get('trackflow_campaign')
         if campaign:
             track_conversion(doc, "lead_created", visitor_id, campaign)
+            
+    except Exception as e:
+        # Log error but don't block lead creation
+        frappe.log_error(f"TrackFlow lead tracking error: {str(e)}", "TrackFlow Lead Create Error")
+        pass
 
 @handle_error(error_type="CRM Lead Update", return_response=False)
 def on_lead_update(doc, method):
