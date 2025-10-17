@@ -16,6 +16,149 @@ TrackFlow supports two primary deployment scenarios:
 - **Tracked Website**: Same Frappe site with website builder
 - **Use Case**: All-in-one Frappe setup with built-in website
 
+## System Architecture Flow
+
+```mermaid
+sequenceDiagram
+    participant U as User/Marketer
+    participant CRM as Frappe CRM
+    participant TF as TrackFlow
+    participant V as Visitor
+    participant W as Website
+    participant DB as Database
+    participant API as TrackFlow API
+
+    %% Campaign Setup (Production Ready)
+    Note over U,DB: 1. Campaign Setup & Link Generation
+    U->>CRM: Access TrackFlow from CRM Sidebar
+    CRM->>TF: Load Campaign Manager
+    U->>TF: Create New Link Campaign
+    TF->>DB: Store Campaign (Link Campaign DocType)
+    U->>TF: Generate Tracked Links
+    TF->>TF: Generate Short Code + QR Code
+    TF->>DB: Store Tracked Link with UTM Parameters
+    TF->>U: Return Short URLs & QR Codes
+
+    %% Visitor Journey (Implemented)
+    Note over V,DB: 2. Complete Visitor Tracking Flow
+    V->>W: Click Short Link (/r/abc123)
+    W->>API: GET /r/abc123 (Redirect Handler)
+    API->>TF: Process Link Click
+    TF->>TF: generate_visitor_id() + set_visitor_cookie()
+    TF->>DB: Create/Update Visitor Record
+    TF->>DB: Log Click Event with UTM Data
+    TF->>DB: Create Visitor Session
+    API->>V: HTTP 302 Redirect to Target URL
+    
+    V->>W: Browse Website Pages
+    W->>API: Track Page Views (JavaScript)
+    API->>TF: track_event() API Method
+    TF->>DB: Log Visitor Events
+    TF->>DB: Update Session Data
+
+    %% CRM Integration (Working)
+    Note over V,CRM: 3. Lead Attribution & CRM Integration
+    V->>W: Fill Contact/Lead Form
+    W->>CRM: Submit Lead Data
+    CRM->>TF: CRM Lead Hook (on_lead_create)
+    TF->>TF: Extract trackflow_visitor_id from Form
+    TF->>DB: Query Visitor Data (source, medium, campaign)
+    TF->>TF: Apply Attribution Logic
+    TF->>CRM: Update Lead with Attribution Fields
+    TF->>DB: Create Conversion Record
+    
+    %% Deal Attribution (Advanced Implementation)
+    Note over CRM,DB: 4. Multi-Touch Deal Attribution
+    CRM->>TF: Deal Created Hook (on_deal_create)
+    TF->>DB: Query Complete Visitor Journey
+    TF->>TF: Apply Attribution Model Engine (5 Models)
+    TF->>DB: Create Deal Attribution Record
+    TF->>CRM: Update Deal with Attribution Data
+    
+    %% Analytics & Reporting (Available)
+    Note over U,DB: 5. Analytics & Performance Tracking
+    U->>CRM: View Campaign Performance
+    CRM->>TF: Load Analytics Dashboard
+    TF->>DB: Query Click Events & Conversions
+    TF->>DB: Calculate Campaign ROI
+    TF->>U: Display Real-time Metrics
+```
+
+## Data Flow Architecture
+
+```mermaid
+flowchart TD
+    A[Marketing Campaigns] --> B[Link Generation]
+    B --> C[Short URLs + QR Codes]
+    C --> D[Visitor Clicks]
+    
+    D --> E[Visitor Identification]
+    E --> F[Cookie/Session Tracking]
+    F --> G[Page View Events]
+    
+    G --> H[Lead Forms]
+    H --> I[CRM Lead Creation]
+    I --> J[Attribution Calculation]
+    
+    J --> K[Touch Point Analysis]
+    K --> L[Multi-Touch Attribution]
+    L --> M[Campaign Performance]
+    
+    M --> N[Analytics Dashboard]
+    N --> O[ROI Reports]
+    
+    style A fill:#e3f2fd
+    style D fill:#f3e5f5
+    style I fill:#e8f5e8
+    style L fill:#fff3e0
+```
+
+## Attribution Flow (Production Implementation)
+
+```mermaid
+flowchart TD
+    subgraph "Campaign Creation"
+        A[Link Campaign] --> B[Tracked Link]
+        B --> C[Short URL: /r/abc123]
+    end
+    
+    subgraph "Visitor Journey"
+        D[Visitor Clicks Link] --> E[Visitor Record Created]
+        E --> F[Click Event Logged]
+        F --> G[Session Tracking]
+        G --> H[Page View Events]
+    end
+    
+    subgraph "Attribution Logic ✅ WORKING"
+        I[Visitor Fills Form] --> J[CRM Lead Hook Triggered]
+        J --> K[Extract visitor_id from Cookie]
+        K --> L[Query Visitor Record]
+        L --> M[Copy Attribution Data]
+        M --> N[Lead Fields Populated]
+    end
+    
+    subgraph "Lead Attribution Data"
+        O[trackflow_source = 'email']
+        P[trackflow_medium = 'newsletter']
+        Q[trackflow_campaign = 'Q4-Email']
+        R[trackflow_first_touch_date]
+        S[trackflow_last_touch_date]
+    end
+    
+    N --> O
+    N --> P
+    N --> Q
+    N --> R
+    N --> S
+    
+    style A fill:#e3f2fd
+    style I fill:#e8f5e8
+    style M fill:#fff3e0
+    style O fill:#c8e6c9
+    style P fill:#c8e6c9
+    style Q fill:#c8e6c9
+```
+
 ## Core Features & Status
 
 ### ✅ Production-Ready Features
@@ -35,7 +178,116 @@ TrackFlow supports two primary deployment scenarios:
 4. **Time Decay** - Recent interactions weighted higher
 5. **Position Based** - 40% first, 40% last, 20% middle
 
-## Database Architecture
+## Database Architecture & Schema
+
+### Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    %% Core Campaign Management
+    LINK_CAMPAIGN {
+        string name PK
+        string campaign_id UK
+        string campaign_type
+        string status
+        date start_date
+        date end_date
+        string source
+        string medium
+        decimal budget
+        int total_clicks
+        int conversions
+        decimal revenue
+        decimal roi_percentage
+    }
+
+    TRACKED_LINK {
+        string name PK
+        string short_code UK
+        text destination_url
+        string status
+        string campaign FK
+        string source
+        string medium
+        string content
+        int click_count
+        datetime last_click
+    }
+
+    %% Visitor Tracking
+    VISITOR {
+        string visitor_id PK
+        datetime first_seen
+        datetime last_seen
+        int page_views
+        string source
+        string medium
+        string campaign
+        boolean has_converted
+        decimal engagement_score
+    }
+
+    VISITOR_SESSION {
+        string name PK
+        string visitor_id FK
+        datetime session_start
+        datetime session_end
+        int page_views
+        string entry_page
+        string device_type
+        string browser
+    }
+
+    CLICK_EVENT {
+        string name PK
+        string visitor_id
+        string tracked_link FK
+        string utm_source
+        string utm_medium
+        string utm_campaign
+        datetime click_timestamp
+        string ip_address
+        text user_agent
+    }
+
+    %% Attribution & Conversion
+    ATTRIBUTION_MODEL {
+        string name PK
+        string model_type
+        json custom_rules
+        boolean is_active
+        int lookback_window_days
+    }
+
+    CONVERSION {
+        string name PK
+        string visitor FK
+        string tracked_link FK
+        string conversion_type
+        decimal value
+        datetime conversion_date
+        json attribution_data
+    }
+
+    DEAL_ATTRIBUTION {
+        string name PK
+        string deal FK
+        string attribution_model FK
+        decimal deal_value
+        string touchpoint_source
+        datetime touchpoint_timestamp
+        decimal attribution_weight
+        decimal attributed_value
+    }
+
+    %% Relationships
+    LINK_CAMPAIGN ||--o{ TRACKED_LINK : "has many"
+    TRACKED_LINK ||--o{ CLICK_EVENT : "generates"
+    VISITOR ||--o{ VISITOR_SESSION : "has sessions"
+    VISITOR ||--o{ CLICK_EVENT : "generates"
+    VISITOR ||--o{ CONVERSION : "converts"
+    ATTRIBUTION_MODEL ||--o{ DEAL_ATTRIBUTION : "calculates"
+```
 
 ### Core Data Flow
 ```
@@ -51,6 +303,31 @@ Link Campaign → Tracked Link → Click Event → Visitor → CRM Lead → Deal
 - **Attribution Model**: Multi-touch attribution calculation engine
 - **Conversion**: Goal tracking and conversion events
 - **Deal Attribution**: Revenue attribution to marketing touchpoints
+
+### Database Performance Optimizations
+
+#### Implemented Indexes
+```sql
+-- High-traffic query optimization
+CREATE INDEX idx_click_event_visitor_timestamp ON `tabClick Event` (visitor_id, click_timestamp);
+CREATE INDEX idx_click_event_tracked_link ON `tabClick Event` (tracked_link);
+CREATE INDEX idx_visitor_session_visitor_start ON `tabVisitor Session` (visitor_id, session_start);
+CREATE INDEX idx_conversion_visitor_date ON `tabConversion` (visitor, conversion_date);
+
+-- Campaign performance queries
+CREATE INDEX idx_tracked_link_campaign ON `tabTracked Link` (campaign);
+CREATE INDEX idx_click_event_campaign ON `tabClick Event` (campaign, click_timestamp);
+```
+
+#### Data Volume Planning
+```python
+# Expected data volumes (per month for active site)
+Click Events: ~100,000 records     # ~50MB/month
+Visitor Sessions: ~20,000 records  # ~10MB/month
+Visitors: ~15,000 unique records   # ~5MB/month
+Conversions: ~1,000 records        # ~2MB/month
+Total TrackFlow data: ~100MB/month
+```
 
 ### Performance Optimizations
 - **Indexed Fields**: visitor_id, click_timestamp, campaign references
