@@ -1,73 +1,87 @@
 # 🚀 TrackFlow Getting Started Guide
 
-Complete step-by-step guide to start using TrackFlow for marketing attribution and link tracking.
+**Complete installation and setup guide for TrackFlow marketing attribution platform**
 
-## 📋 Prerequisites
+## Prerequisites
 
-1. ✅ Frappe Cloud site with TrackFlow installed
-2. ✅ Frappe CRM app installed
-3. ✅ Administrator access to the site
-4. ✅ Migration completed successfully
+- **Frappe Framework v15+** with Python 3.10+
+- **Frappe CRM** installed and configured
+- **MariaDB/MySQL** database backend
+- **Administrator access** to your Frappe site
 
----
+## Installation
 
-## 🎯 Step 1: Access TrackFlow
+### Method 1: One-Command Install
+```bash
+# Navigate to your bench directory
+cd ~/frappe-bench
 
-### Method 1: Via CRM Sidebar
-1. Go to your Frappe Cloud site: `https://[your-site].frappe.cloud`
-2. Login with Administrator credentials
-3. Navigate to **CRM** workspace
-4. Look for **"TrackFlow Analytics"** section in the sidebar
-5. You should see:
-   - 📊 **Campaigns**
-   - 🔗 **Tracked Links** 
-   - 📈 **Click Analytics**
+# Get TrackFlow from GitHub
+bench get-app https://github.com/chinmaybhatk/trackflow.git
 
-### Method 2: Via TrackFlow Workspace
-1. From the main dashboard, click on **"TrackFlow"** in the workspace list
-2. Access all TrackFlow features from the dedicated workspace
+# Install on your site
+bench --site your-site-name install-app trackflow
 
----
+# Deploy and configure
+cd apps/trackflow && chmod +x deploy.sh && ./deploy.sh your-site-name
+```
 
-## ⚙️ Step 2: Configure TrackFlow Settings
+### Method 2: Manual Installation
+```bash
+# Clone and install
+cd frappe-bench/apps
+git clone https://github.com/chinmaybhatk/trackflow.git
+bench install-app trackflow --site your-site-name
 
+# Run migrations and restart
+bench migrate --site your-site-name
+bench restart
+```
+
+### Verify Installation
+```bash
+# Check installation
+bench --site your-site-name console
+>>> import trackflow
+>>> frappe.get_installed_apps()  # Should include 'trackflow'
+```
+
+## Initial Configuration
+
+### 1. Access TrackFlow
+**Via CRM Sidebar:**
+1. Go to your Frappe site: `https://[your-site].frappe.cloud`
+2. Navigate to **CRM** workspace
+3. Look for **"TrackFlow Analytics"** section in the sidebar
+
+**Via TrackFlow Workspace:**
+1. Click **"TrackFlow"** in the workspace list
+2. Access all features from the dedicated workspace
+
+### 2. Configure Settings
 1. Go to **TrackFlow** workspace → **Settings**
 2. Or navigate to: `[your-site]/app/trackflow-settings`
-3. Configure basic settings:
 
+**Basic Configuration:**
 ```
-✅ Basic Configuration:
-Enable Tracking: ✓ Checked
-Auto Generate Short Codes: ✓ Checked  
-Short Code Length: 6
-Default Shortlink Domain: [leave empty to use your site domain]
-
-✅ Attribution Settings:
-Default Attribution Model: Last Touch
-Attribution Window (days): 30
-
-✅ Privacy Settings:
-GDPR Compliance: ✓ Checked
-Cookie Consent Required: ✓ Checked
-Cookie Expires (days): 365
-Exclude Internal Traffic: ✓ Checked
+✅ Enable Tracking: ON
+✅ Auto Generate Short Codes: ON  
+✅ Short Code Length: 6
+✅ Attribution Model: Last Touch
+✅ Attribution Window: 30 days
+✅ GDPR Compliance: ON (recommended)
+✅ Cookie Consent Required: ON (recommended)
+✅ Exclude Internal Traffic: ON
 ```
 
-4. **Save** the settings
+## Quick Setup Workflow
 
----
-
-## 📊 Step 3: Create Your First Campaign
-
-1. Go to **CRM** → **TrackFlow Analytics** → **Campaigns**
-2. Click **"+ New"** button
-3. Fill in the campaign details:
-
+### Step 1: Create Your First Campaign
 ```
-📝 SAMPLE CAMPAIGN DATA:
+Go to: CRM → TrackFlow Analytics → Campaigns → + New
 
-Campaign Name: Q4 Email Newsletter
-Description: Holiday season email marketing campaign targeting existing customers
+Campaign Name: Test Email Campaign
+Description: Holiday season email marketing
 Campaign Type: Email Marketing
 Status: Active
 Start Date: [Today's date]
@@ -76,272 +90,191 @@ End Date: [30 days from today]
 UTM Parameters:
 Source: newsletter
 Medium: email  
-Campaign: q4-holiday
-Term: [leave empty]
-Content: main-cta
-
-Budget Information:
-Budget: 5000
-Currency: USD
-Budget Period: Monthly
-
-Goals:
-Primary Goal: Lead Generation
-Target Clicks: 1000
-Target Conversions: 50
-Target Revenue: 25000
+Campaign: test-campaign
+Budget: 5000 USD
 ```
 
-4. **Save** the campaign
-
----
-
-## 🔗 Step 4: Create Tracked Links
-
-1. Go to **CRM** → **TrackFlow Analytics** → **Tracked Links**
-2. Click **"+ New"** button
-3. Create multiple sample links:
-
-### Link 1: Product Page
+### Step 2: Generate Tracked Links
 ```
-📝 SAMPLE LINK DATA:
+Go to: CRM → TrackFlow Analytics → Tracked Links → + New
 
-Link Name: Holiday Products Landing Page
-Campaign: Q4 Email Newsletter [select from dropdown]
-Target URL: https://yourstore.com/holiday-products
-Description: Main product showcase for holiday campaign
-
-Short URL Settings:
-Auto Generate Short Code: ✓ Checked
-Custom Short Code: [leave empty - will auto generate]
-Status: Active
-
-Tracking Options:
-Track Clicks: ✓ Checked
-Generate QR Code: ✓ Checked
-Enable UTM Parameters: ✓ Checked
+Link Name: Test Product Link
+Campaign: [Select your campaign]
+Target URL: https://example.com/products
+✅ Auto Generate Short Code: ON
+✅ Track Clicks: ON
+✅ Generate QR Code: ON
 ```
 
-### Link 2: Special Offer
-```
-Link Name: 20% Off Holiday Special
-Campaign: Q4 Email Newsletter
-Target URL: https://yourstore.com/holiday-special?discount=20OFF
-Description: Special discount link for email subscribers
-
-[Same tracking settings as above]
-```
-
-### Link 3: Blog Content
-```
-Link Name: Holiday Gift Guide Blog
-Campaign: Q4 Email Newsletter  
-Target URL: https://yourstore.com/blog/holiday-gift-guide
-Description: Educational content to drive engagement
-
-[Same tracking settings as above]
-```
-
-4. **Save** each link
-5. **Copy the generated short URLs** - you'll use these in your marketing
-
----
-
-## 🎯 Step 5: Test Link Tracking
-
-1. **Get your short URLs** from the Tracked Links list
-2. **Open each short URL** in a new browser tab/incognito window
-3. You should be redirected to the target URLs
-4. **Verify tracking is working**:
+### Step 3: Test Link Tracking
+1. **Copy the generated short URL** from the Tracked Links list
+2. **Open in a new browser tab/incognito window**
+3. **Verify tracking works**:
    - Go to **Click Analytics** 
-   - You should see click events for each link you tested
-   - Check visitor information, browser details, timestamps
+   - Check for click events with browser details and timestamps
 
----
-
-## 📈 Step 6: View Analytics & Data
-
-### Check Click Events
-1. Go to **CRM** → **TrackFlow Analytics** → **Click Analytics**
-2. You should see entries for your test clicks with:
-   - Visitor ID
-   - Tracked Link
-   - Click timestamp
-   - Browser/device information
-   - Campaign attribution
-
-### Check Visitors
-1. Go to **TrackFlow** workspace → **Visitors**
-2. View visitor sessions and journey data
-
-### Campaign Performance
-1. Return to your **Campaign** (Q4 Email Newsletter)
-2. Check the statistics:
-   - Total clicks
-   - Unique visitors
-   - Click-through rates
-
----
-
-## 🎭 Step 7: Simulate Lead Generation
-
-1. **Create a test CRM Lead**:
-   - Go to **CRM** → **Leads** → **+ New**
-   - Fill in basic information:
-
+### Step 4: Create Attributed Lead
 ```
-📝 SAMPLE LEAD DATA:
+Go to: CRM → Leads → + New
 
-Lead Name: John Test Customer
-Email: john.test@example.com
-Mobile: +1-555-0123
-Organization: Test Company
-Status: Open
-
-🔑 IMPORTANT: In the TrackFlow tab, add:
-TrackFlow Visitor ID: [copy from a visitor record in Click Analytics]
-Source: newsletter
-Medium: email
-Campaign: Q4 Email Newsletter
+Lead Name: Test Customer
+Email: test@example.com
+TrackFlow Tab:
+  - Visitor ID: [copy from click event]
+  - Source: newsletter
+  - Medium: email
+  - Campaign: Test Email Campaign
 ```
 
-2. **Save the lead**
-3. **Check attribution**: The lead should now be attributed to your campaign
+### Step 5: Verify Attribution
+1. **Check Click Events**: CRM → TrackFlow Analytics → Click Analytics
+2. **Check Visitors**: TrackFlow workspace → Visitors  
+3. **Campaign Performance**: Return to your campaign to see statistics
 
----
+## Advanced Setup
 
-## 🏆 Step 8: Test Deal Attribution
+### External Website Tracking
+For tracking visitors on external websites (WordPress, Shopify, custom sites):
 
-1. **Convert Lead to Deal**:
-   - Open your test lead
-   - Click **"Create Deal"** or manually create a deal
-   - Link it to the test lead
+**1. Configure Cross-Domain Settings**
+```python
+# In TrackFlow Settings
+settings.enable_cross_domain_tracking = 1
+settings.append("allowed_domains", {
+    "domain": "yourcompany.com",
+    "description": "Main marketing website"
+})
+```
 
-2. **Check Deal Attribution**:
-   - Open the deal
-   - Go to **TrackFlow Attribution** tab
-   - Verify attribution data inherited from the lead
+**2. Embed Tracking Script**
+```html
+<!-- Add to external website <head> -->
+<script>
+(function(t,r,a,c,k,f,l,o,w) {
+    t['TrackFlowObject'] = k;
+    t[k] = t[k] || function() { (t[k].q = t[k].q || []).push(arguments) };
+    f = r.createElement(a), l = r.getElementsByTagName(a)[0];
+    f.async = 1; f.src = c; l.parentNode.insertBefore(f, l);
+})(window, document, 'script', 'https://your-site.com/api/method/trackflow.api.tracking.get_tracking_script', 'trackflow');
 
----
+trackflow('config', {
+    server_url: 'https://your-site.com',
+    site_domain: 'yourcompany.com'
+});
+trackflow('page_view');
+</script>
+```
 
-## 📊 Step 9: Review Complete Analytics
-
-### Campaign ROI Analysis
-1. Review your **Q4 Email Newsletter** campaign
-2. Check metrics:
-   - Total clicks: [your test clicks]
-   - Conversions: [leads/deals created]
-   - Conversion rate
-   - Attribution data
-
-### Visitor Journey
-1. Go to **Visitors** list
-2. Open a visitor record
-3. Review their complete journey:
-   - Click events
-   - Session data
-   - Attribution details
-   - Linked leads/deals
-
----
-
-## 🔧 Step 10: Advanced Configuration
+**3. Track Form Submissions**
+```javascript
+// Auto-populate tracking fields in forms
+document.addEventListener('DOMContentLoaded', function() {
+    const visitorData = trackflow('get_visitor_data');
+    document.getElementById('tf-visitor').value = visitorData.visitor_id;
+    document.getElementById('tf-source').value = visitorData.source;
+    document.getElementById('tf-campaign').value = visitorData.campaign;
+});
+```
 
 ### Attribution Models
-1. Go to **TrackFlow** workspace → **Attribution Models**
-2. Create custom attribution rules
-3. Test different attribution approaches
+TrackFlow supports 5 attribution models:
 
-### Custom UTM Parameters
-1. Create campaigns with different UTM combinations
-2. Test tracking across multiple channels:
-   - Social media campaigns
-   - Google Ads campaigns  
-   - Direct email campaigns
-   - Partner/affiliate campaigns
+1. **Last Touch** (Default) - 100% credit to final interaction
+2. **First Touch** - 100% credit to initial touchpoint  
+3. **Linear** - Equal credit across all touchpoints
+4. **Time Decay** - Recent interactions weighted higher
+5. **Position Based** - 40% first, 40% last, 20% middle
 
----
+Configure in **TrackFlow** → **Attribution Models**
 
-## 🎯 Real-World Usage Scenarios
+## Development Setup
 
-### Email Marketing Campaign
-```
-1. Create campaign: "Weekly Newsletter #47"
-2. Create links for each email section:
-   - Header CTA → Product page
-   - Main content → Blog post
-   - Footer offer → Discount page
-3. Send email with tracked links
-4. Monitor click performance
-5. Track leads generated from email
+### Local Docker Development
+```bash
+git clone https://github.com/chinmaybhatk/trackflow.git
+cd trackflow
+./dev.sh start
+
+# Access at http://localhost:8000
+# Username: Administrator
+# Password: admin
 ```
 
-### Social Media Campaign
-```
-1. Create campaign: "Instagram Holiday Promo"
-2. Create tracked links for:
-   - Instagram bio link
-   - Story swipe-up links
-   - Post CTAs
-3. Post content with tracked links
-4. Monitor social traffic and conversions
+### Local Bench Development
+```bash
+# Install in development mode
+bench get-app . --skip-assets
+bench --site your-site.local install-app trackflow
+bench --site your-site.local set-config developer_mode 1
 ```
 
-### Multi-Channel Attribution
-```
-1. Create separate campaigns for each channel
-2. Use consistent UTM parameters
-3. Track customer journey across touchpoints
-4. Analyze which channels drive highest value
+## Troubleshooting
+
+### Common Issues
+
+**TrackFlow Not Visible in CRM**
+```bash
+# Clear cache and restart
+bench clear-cache --site your-site
+bench restart
+
+# Check workspace integration
+frappe.call("trackflow.install.setup_crm_integration")
 ```
 
----
+**Links Not Redirecting**
+- Verify Target URL is accessible
+- Check TrackFlow Settings has "Enable Tracking" enabled
+- Ensure link status is "Active"
 
-## ✅ Success Checklist
+**No Click Events Showing**
+- Check if you're on internal IP (excluded by default)
+- Clear browser cache and try again
+- Verify JavaScript is enabled
+
+**Attribution Not Working**
+- Ensure Visitor ID is correctly set on leads
+- Check Attribution Window hasn't expired (default 30 days)
+- Verify UTM parameters match between links and campaigns
+
+### Debug Commands
+```python
+# Check installation
+bench --site your-site console
+>>> import trackflow
+>>> frappe.get_single("TrackFlow Settings")
+
+# Test attribution
+lead = frappe.get_doc("CRM Lead", "LEAD-001")
+print(f"Attribution: {lead.trackflow_source} / {lead.trackflow_campaign}")
+
+# Check API endpoints
+frappe.call("trackflow.api.tracking.track_event", 
+           event_type="test", visitor_id="test123")
+```
+
+## Success Checklist
 
 After completing this guide, you should have:
 
-- ✅ **Configured TrackFlow Settings** with your preferences
-- ✅ **Created sample campaigns** with proper UTM parameters  
-- ✅ **Generated tracked links** that redirect correctly
-- ✅ **Verified click tracking** is working
-- ✅ **Created attributed leads** linked to campaigns
-- ✅ **Tested deal attribution** inheritance
-- ✅ **Reviewed analytics** showing complete visitor journeys
-- ✅ **Understanding of ROI tracking** for campaigns
+- ✅ **TrackFlow installed** and accessible in CRM
+- ✅ **Settings configured** with your preferences  
+- ✅ **Test campaign created** with proper UTM parameters
+- ✅ **Tracked links generated** that redirect correctly
+- ✅ **Click tracking verified** with analytics showing
+- ✅ **Attributed leads created** linked to campaigns
+- ✅ **Attribution working** with complete visitor journeys
 
----
+## Next Steps
 
-## 🚨 Troubleshooting
-
-### Links Not Redirecting
-- Check Target URL is valid and accessible
-- Verify TrackFlow Settings has "Enable Tracking" checked
-- Check link status is "Active"
-
-### No Click Events Showing
-- Verify you're not on internal IP (check Internal IP Ranges in settings)
-- Clear browser cache and try again
-- Check if JavaScript is enabled
-
-### Attribution Not Working
-- Ensure Visitor ID is correctly set on leads
-- Check Attribution Window hasn't expired
-- Verify UTM parameters match between links and campaigns
-
-### Settings Page Error
-- Run migration: `bench --site [site] migrate`
-- Check Internal IP Range DocType exists
-- Verify TrackFlow Settings document exists
-
----
-
-## 🎉 Next Steps
-
-1. **Test with real campaigns** using actual URLs
-2. **Train your marketing team** on creating tracked links
+1. **Create real campaigns** with actual marketing URLs
+2. **Train your team** on creating tracked links
 3. **Set up regular reporting** on campaign performance  
-4. **Integrate with your website** for automatic tracking
+4. **Integrate with external websites** for comprehensive tracking
 5. **Explore advanced attribution models** for complex customer journeys
 
-You're now ready to use TrackFlow for comprehensive marketing attribution! 🚀
+For detailed implementation guides, see [docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md)
+
+---
+
+**🎉 You're ready to track comprehensive marketing attribution with TrackFlow!**
