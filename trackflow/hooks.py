@@ -71,10 +71,11 @@ before_install = "trackflow.install.before_install"
 after_install = "trackflow.install.after_install"
 after_migrate = "trackflow.install.after_migrate"
 
-# Whitelisted Methods for API
-override_whitelisted_methods = {
-    "frappe.www.contact.send_message": "trackflow.overrides.contact.track_form_submission"
-}
+# Whitelisted Methods for API - Commented out to prevent installation conflicts
+# The override functionality can be implemented through other hooks like doc_events
+# override_whitelisted_methods = {
+#     "frappe.www.contact.send_message": "trackflow.overrides.contact.track_form_submission"
+# }
 
 # Website tracking
 website_route_rules = [
