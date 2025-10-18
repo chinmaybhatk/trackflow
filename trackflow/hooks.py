@@ -77,14 +77,15 @@ after_migrate = "trackflow.install.after_migrate"
 #     "frappe.www.contact.send_message": "trackflow.overrides.contact.track_form_submission"
 # }
 
-# Website tracking
-website_route_rules = [
-    {"from_route": "/r/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"},
-    {"from_route": "/t/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"}
-]
+# Website tracking - Temporarily disabled to prevent installation conflicts
+# website_route_rules = [
+#     {"from_route": "/r/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"},
+#     {"from_route": "/t/<path:tracking_id>", "to_route": "trackflow.www.redirect.handle_redirect"}
+# ]
 
-before_request = ["trackflow.www.redirect.before_request"]
-after_request = ["trackflow.tracking.after_request"]
+# Temporarily disabled to prevent installation conflicts
+# before_request = ["trackflow.www.redirect.before_request"]
+# after_request = ["trackflow.tracking.after_request"]
 
 # REST API Methods - These should be whitelisted in the respective modules
 # API methods are exposed through @frappe.whitelist() decorators in the respective files
@@ -136,9 +137,9 @@ app_color = "#2563eb"
 # For Frappe CRM Integration
 has_web_view = 1
 
-# For Frappe CRM Integration - Frontend Override
+# For Frappe CRM Integration - Frontend Override - Temporarily disabled
 # This allows TrackFlow to appear in CRM sidebar
-extend_bootinfo = ["trackflow.boot.bootinfo"]
+# extend_bootinfo = ["trackflow.boot.bootinfo"]
 
 # Override CRM workspace to include TrackFlow
 # Temporarily disabled due to compatibility issues with Frappe v15
