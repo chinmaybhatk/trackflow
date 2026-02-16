@@ -2,11 +2,11 @@ import frappe
 
 def bootinfo(bootinfo):
     """Add TrackFlow configuration to bootinfo for CRM integration"""
-    
+
     # Check if user has access to TrackFlow
     if frappe.has_permission("Link Campaign", "read"):
         bootinfo["trackflow_enabled"] = True
-        
+
         # Add TrackFlow settings to bootinfo
         try:
             settings = frappe.get_single("TrackFlow Settings")
@@ -19,5 +19,17 @@ def bootinfo(bootinfo):
                 "enable_tracking": True,
                 "default_attribution_model": "Last Touch"
             }
-    
+
+    # Tell CRM frontend to include TrackFlow navigation
+    if not bootinfo.get("crm_navigation_items"):
+        bootinfo["crm_navigation_items"] = []
+
+    bootinfo["crm_navigation_items"].append({
+        "label": "TrackFlow",
+        "icon": "TrendingUp",
+        "route": "/trackflow",
+        "type": "section",
+        "section": "Marketing"
+    })
+
     return bootinfo

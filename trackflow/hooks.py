@@ -140,13 +140,24 @@ app_color = "#2563eb"
 # For Frappe CRM Integration
 has_web_view = 1
 
-# For Frappe CRM Integration - Frontend Override - Temporarily disabled
-# This allows TrackFlow to appear in CRM sidebar
-# extend_bootinfo = ["trackflow.boot.bootinfo"]
+# For Frappe CRM Integration - Frontend Override
+# This allows TrackFlow to extend CRM sidebar
+extend_bootinfo = ["trackflow.boot.bootinfo"]
+
+# CRM Frontend Override Configuration
+# Tell Frappe to use TrackFlow's version of CRM components
+app_override_files = {
+    "crm": {
+        "frontend/src/components/Layouts/Sidebar.vue": "frontend/src/components/Layouts/Sidebar.vue"
+    }
+}
+
+# Build configuration for Frappe Cloud
+# This tells the build system to compile our Vue components
+build_apps = ["trackflow"]
 
 # Override CRM workspace to include TrackFlow
-# Temporarily disabled due to compatibility issues with Frappe v15
-# override_doctype_dashboards = {
-#     "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
-#     "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
-# }
+override_doctype_dashboards = {
+    "CRM Lead": "trackflow.dashboard.crm_lead_dashboard",
+    "CRM Deal": "trackflow.dashboard.crm_deal_dashboard"
+}
