@@ -25,3 +25,8 @@ Issues = "https://github.com/chinmaybhatk/trackflow/issues"
 [build-system]
 requires = ["flit_core >=3.2,<4"]
 build-backend = "flit_core.buildapi"
+
+[tool.bench.frappe-dependencies]
+frappe = "~=15.0"
+erpnext = "~=15.0"
+crm = "~=1.0"
