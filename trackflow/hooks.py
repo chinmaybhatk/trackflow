@@ -11,7 +11,10 @@ app_version = "1.0.1"
 
 # Include files for CRM integration
 app_include_css = "/assets/trackflow/css/trackflow.css"
-app_include_js = "/assets/trackflow/js/trackflow.js"
+app_include_js = [
+    "/assets/trackflow/js/trackflow.js",
+    "/assets/trackflow/js/crm_navigation_hook.js"
+]
 
 # DocType JavaScript for CRM integration
 doctype_js = {
