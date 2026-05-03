@@ -24,6 +24,7 @@ doctype_list_js = {
 
 doc_events = {
     "CRM Lead": {
+        "before_insert": "trackflow.integrations.crm_lead.before_lead_create",
         "after_insert": "trackflow.integrations.crm_lead.on_lead_create",
         "on_update": "trackflow.integrations.crm_lead.on_lead_update",
         "on_trash": "trackflow.integrations.crm_lead.on_lead_trash",

@@ -4,35 +4,29 @@
 import frappe
 from frappe.model.document import Document
 
+
 class Visitor(Document):
     def before_save(self):
-        # Update engagement score
         self.engagement_score = self.calculate_engagement_score()
-        
+
     def calculate_engagement_score(self):
-        """Calculate visitor engagement based on activities"""
+        """Lightweight 0-100 engagement score based on actual fields."""
         score = 0
-        
-        # Clicks (1 point per click, max 20)
+
+        # Clicks (1 pt each, capped at 30)
         clicks = frappe.db.count("Click Event", {"visitor_id": self.visitor_id})
-        score += min(clicks, 20)
-        
-        # Has lead (20 points)
-        if self.lead:
-            score += 20
-            
-        # Has deal (30 points)  
-        if self.deal:
+        score += min(clicks, 30)
+
+        # Page views (0.5 pt each, capped at 20)
+        page_views = self.page_views or 0
+        score += min(page_views * 0.5, 20)
+
+        # Has CRM lead linked (+30)
+        if self.get("crm_lead"):
             score += 30
-            
-        # Has organization (10 points)
-        if self.organization:
-            score += 10
-            
-        # Page views (0.5 per view, max 10)
-        score += min(self.total_page_views * 0.5, 10) if self.total_page_views else 0
-        
-        # Sessions (2 per session, max 10)
-        score += min(self.total_sessions * 2, 10) if self.total_sessions else 0
-        
+
+        # Conversion count (5 pt each, capped at 20)
+        conversions = self.conversion_count or 0
+        score += min(conversions * 5, 20)
+
         return min(int(score), 100)

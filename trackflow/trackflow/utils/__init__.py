@@ -26,9 +26,47 @@ def generate_visitor_id():
     return f"v_{hashlib.md5((timestamp + random_str).encode()).hexdigest()[:16]}"
 
 
+def upsert_visitor(visitor_id, request_data=None, tracked_link=None):
+    """Ensure a Visitor record exists for visitor_id, return its name."""
+    if not visitor_id:
+        return None
+    visitor_name = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+    now = frappe.utils.now()
+    if visitor_name:
+        frappe.db.set_value("Visitor", visitor_name, "last_seen", now, update_modified=False)
+        return visitor_name
+    visitor = frappe.new_doc("Visitor")
+    visitor.visitor_id = visitor_id
+    visitor.first_seen = now
+    visitor.last_seen = now
+    if request_data:
+        visitor.ip_address = request_data.get("ip")
+        visitor.user_agent = request_data.get("user_agent")
+        visitor.referrer = request_data.get("referrer")
+    if tracked_link:
+        if tracked_link.get("source"):
+            visitor.source = tracked_link["source"]
+        if tracked_link.get("medium"):
+            visitor.medium = tracked_link["medium"]
+        if tracked_link.get("campaign"):
+            visitor.campaign = tracked_link["campaign"]
+    visitor.insert(ignore_permissions=True)
+    return visitor.name
+
+
 def create_click_event(tracked_link, visitor_id, request_data=None):
     """Create a click event record for a tracked link"""
     try:
+        upsert_visitor(
+            visitor_id,
+            request_data=request_data,
+            tracked_link={
+                "source": getattr(tracked_link, "source", None),
+                "medium": getattr(tracked_link, "medium", None),
+                "campaign": getattr(tracked_link, "campaign", None),
+            },
+        )
+
         click_event = frappe.new_doc("Click Event")
         click_event.tracked_link = tracked_link.name
         click_event.short_code = tracked_link.short_code

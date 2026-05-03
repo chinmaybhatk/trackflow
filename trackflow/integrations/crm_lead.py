@@ -2,6 +2,87 @@ import frappe
 from frappe import _
 from trackflow.trackflow.utils.error_handler import handle_error, log_activity, IntegrationError
 
+
+def _resolve_visitor_id_from_request():
+    """Find a TrackFlow visitor id from the current request, if any.
+
+    Looks at, in order: form_dict (works for web form submissions and API
+    calls), then the trackflow_visitor cookie set by the redirect handler.
+    Returns None outside a request context.
+    """
+    try:
+        form_dict = getattr(frappe, "form_dict", None)
+        if form_dict:
+            v = form_dict.get("tf_visitor") or form_dict.get("trackflow_visitor")
+            if v:
+                return v
+        request = getattr(frappe, "request", None)
+        if request and getattr(request, "cookies", None):
+            return request.cookies.get("trackflow_visitor")
+    except Exception:
+        pass
+    return None
+
+
+def _resolve_attribution_from_visitor(visitor_id):
+    """Look up the visitor's most recent click and return source/medium/campaign."""
+    if not visitor_id:
+        return {}
+    visitor_name = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+    if not visitor_name:
+        return {}
+    last_click = frappe.db.sql(
+        """
+        SELECT tracked_link
+        FROM `tabClick Event`
+        WHERE visitor_id = %s
+        ORDER BY click_timestamp DESC
+        LIMIT 1
+        """,
+        visitor_id,
+        as_dict=True,
+    )
+    if not last_click:
+        return {}
+    link = frappe.db.get_value(
+        "Tracked Link",
+        last_click[0].tracked_link,
+        ["source", "medium", "campaign"],
+        as_dict=True,
+    )
+    return link or {}
+
+
+def before_lead_create(doc, method):
+    """Capture the originating visitor from the current request.
+
+    If the lead is being created from a web form submission (or any request)
+    that carries a tf_visitor parameter / trackflow_visitor cookie, stamp the
+    visitor id and best-known attribution onto the lead before insert so the
+    downstream after_insert hook can link visitor -> lead.
+    """
+    if doc.get("trackflow_visitor_id"):
+        return
+    visitor_id = _resolve_visitor_id_from_request()
+    if not visitor_id:
+        return
+    doc.trackflow_visitor_id = visitor_id
+    attribution = _resolve_attribution_from_visitor(visitor_id)
+    if attribution.get("source") and not doc.get("trackflow_source"):
+        doc.trackflow_source = attribution["source"]
+    if attribution.get("medium") and not doc.get("trackflow_medium"):
+        doc.trackflow_medium = attribution["medium"]
+    if attribution.get("campaign") and not doc.get("trackflow_campaign"):
+        doc.trackflow_campaign = attribution["campaign"]
+
+    # Make sure a Visitor record exists so the after_insert hook can link it.
+    try:
+        from trackflow.trackflow.utils import upsert_visitor
+        upsert_visitor(visitor_id)
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "TrackFlow visitor upsert (before_lead_create)")
+
+
 @handle_error(error_type="CRM Lead Create", return_response=False)
 def on_lead_create(doc, method):
     """Track lead creation with TrackFlow"""

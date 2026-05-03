@@ -26,7 +26,10 @@
         "last_conversion_date",
         "engagement_section",
         "engagement_score",
-        "last_activity"
+        "last_activity",
+        "crm_section",
+        "crm_lead",
+        "lead_created_date"
     ],
     "fields": [
         {
@@ -144,6 +147,22 @@
             "fieldname": "last_activity",
             "fieldtype": "Datetime",
             "label": "Last Activity"
+        },
+        {
+            "fieldname": "crm_section",
+            "fieldtype": "Section Break",
+            "label": "CRM"
+        },
+        {
+            "fieldname": "crm_lead",
+            "fieldtype": "Link",
+            "label": "CRM Lead",
+            "options": "CRM Lead"
+        },
+        {
+            "fieldname": "lead_created_date",
+            "fieldtype": "Datetime",
+            "label": "Lead Created Date"
         }
     ],
     "links": [],
