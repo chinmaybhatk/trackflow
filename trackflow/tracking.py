@@ -4,167 +4,112 @@ Tracking module for after_request hook
 
 import frappe
 from frappe import _
-from trackflow.utils import get_visitor_from_request, create_visitor_session
+
 
 def after_request(response):
     """Process tracking after request"""
     try:
-        # Skip if it's an API call or static file
         if frappe.request and frappe.request.path:
             if frappe.request.path.startswith(("/api/", "/files/", "/private/files/", "/assets/")):
                 return response
-                
-        # Skip if user is logged in (internal users)
+
         if frappe.session and frappe.session.user != "Guest":
             return response
-            
-        # Check if tracking is enabled
+
         try:
             if frappe.db.exists("TrackFlow Settings", "TrackFlow Settings"):
                 settings = frappe.get_cached_doc("TrackFlow Settings", "TrackFlow Settings")
                 if not settings.enable_tracking:
                     return response
-        except Exception as settings_error:
-            # If settings don't exist or can't be accessed, skip tracking
-            # Log the error but don't let it break the response
-            if frappe.local.conf.developer_mode:
-                frappe.log_error(f"TrackFlow settings error: {str(settings_error)}", "TrackFlow Settings Access")
+        except Exception:
             return response
-            
-        # Track the page view
+
         track_page_view()
-        
+
     except Exception as e:
-        # Don't break the response for tracking errors
-        # Only log errors in developer mode to avoid flooding logs
-        if frappe.local.conf.developer_mode:
+        if frappe.local.conf.get("developer_mode"):
             frappe.log_error(f"TrackFlow tracking error: {str(e)}", "TrackFlow After Request")
-        
+
     return response
 
 
 def track_page_view():
     """Track a page view"""
-    from trackflow.utils import get_visitor_from_request, create_visitor_session
-    
-    # Get or create visitor
-    visitor = get_visitor_from_request()
-    if not visitor:
+    from trackflow.trackflow.utils import get_visitor_from_request
+
+    result = get_visitor_from_request()
+    if not result:
         return
-        
-    # Update last seen
-    visitor.last_seen = frappe.utils.now()
-    visitor.page_views = (visitor.page_views or 0) + 1
-    visitor.save(ignore_permissions=True)
-    
-    # Create or update session
-    session_id = frappe.request.cookies.get('trackflow_session')
-    if session_id:
-        # Try to get existing session
-        if frappe.db.exists("Visitor Session", {"session_id": session_id}):
-            session = frappe.get_doc("Visitor Session", {"session_id": session_id})
-            session.page_views = (session.page_views or 0) + 1
-            session.last_activity = frappe.utils.now()
-            session.save(ignore_permissions=True)
-        else:
-            # Create new session
-            session = create_visitor_session(visitor, frappe.request.url)
+
+    visitor_id, visitor_name = result
+    if not visitor_name:
+        return
+
+    frappe.db.set_value("Visitor", visitor_name, {
+        "last_seen": frappe.utils.now(),
+        "page_views": frappe.db.get_value("Visitor", visitor_name, "page_views", 0) + 1,
+    }, update_modified=False)
+
+    session_id = frappe.request.cookies.get("trackflow_session") if frappe.request else None
+    if session_id and frappe.db.exists("Visitor Session", {"session_id": session_id}):
+        vs_name = frappe.db.get_value("Visitor Session", {"session_id": session_id}, "name")
+        frappe.db.set_value("Visitor Session", vs_name, {
+            "page_views": frappe.db.get_value("Visitor Session", vs_name, "page_views", 0) + 1,
+            "last_activity": frappe.utils.now(),
+        }, update_modified=False)
     else:
-        # Create new session
-        session = create_visitor_session(visitor, frappe.request.url)
+        from trackflow.utils import create_visitor_session
+        visitor_doc = frappe.get_doc("Visitor", visitor_name)
+        session = create_visitor_session(visitor_doc, frappe.request.url if frappe.request else None)
         if session:
-            # Set session cookie
-            frappe.local.cookie_manager.set_cookie('trackflow_session', session.session_id)
-    
-    # Record page view event
-    if session:
-        record_page_view_event(visitor, session, frappe.request.url)
-
-
-def record_page_view_event(visitor, session, url):
-    """Record a page view event"""
-    try:
-        event = frappe.new_doc("Visitor Event")
-        event.visitor = visitor.name
-        event.session = session.name if session else None
-        event.event_type = "page_view"
-        event.event_category = "navigation"
-        event.url = url
-        event.timestamp = frappe.utils.now()
-        event.insert(ignore_permissions=True)
-    except Exception as e:
-        frappe.log_error(f"Error recording page view: {str(e)}")
+            frappe.local.cookie_manager.set_cookie("trackflow_session", session.session_id)
 
 
 def track_event(visitor_id, event_type, event_data=None):
     """Track a custom event"""
     try:
-        if not frappe.db.exists("Visitor", visitor_id):
-            frappe.log_error(f"Visitor {visitor_id} not found")
+        if not frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
             return None
-            
+
         event = frappe.new_doc("Visitor Event")
-        event.visitor = visitor_id
+        event.visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
         event.event_type = event_type
         event.event_category = event_data.get("category", "custom") if event_data else "custom"
-        event.event_action = event_data.get("action") if event_data else None
-        event.event_label = event_data.get("label") if event_data else None
-        event.event_value = event_data.get("value") if event_data else None
-        event.url = event_data.get("url", frappe.request.url if frappe.request else None) if event_data else None
+        event.url = event_data.get("url") if event_data else None
         event.timestamp = frappe.utils.now()
-        
-        # Store additional data as JSON
+
         if event_data:
             event.event_data = frappe.as_json(event_data)
-            
+
         event.insert(ignore_permissions=True)
         return event
-        
+
     except Exception as e:
-        frappe.log_error(f"Error tracking event: {str(e)}")
+        frappe.log_error(f"Error tracking event: {str(e)}", "TrackFlow Event")
         return None
 
 
 def track_conversion(visitor_id, conversion_type, conversion_value=None, metadata=None):
     """Track a conversion event"""
     try:
-        if not frappe.db.exists("Visitor", visitor_id):
-            frappe.log_error(f"Visitor {visitor_id} not found")
+        if not frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
             return None
-            
-        # Create conversion record
+
         conversion = frappe.new_doc("Conversion")
-        conversion.visitor = visitor_id
+        conversion.visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
         conversion.conversion_type = conversion_type
         conversion.conversion_value = conversion_value
         conversion.conversion_date = frappe.utils.now()
-        
-        # Add metadata
+
         if metadata:
             conversion.source = metadata.get("source")
             conversion.medium = metadata.get("medium")
             conversion.campaign = metadata.get("campaign")
             conversion.metadata = frappe.as_json(metadata)
-            
+
         conversion.insert(ignore_permissions=True)
-        
-        # Also track as an event
-        track_event(visitor_id, "conversion", {
-            "category": "conversion",
-            "action": conversion_type,
-            "value": conversion_value,
-            "metadata": metadata
-        })
-        
-        # Update visitor conversion status
-        visitor = frappe.get_doc("Visitor", visitor_id)
-        visitor.has_converted = 1
-        visitor.conversion_count = (visitor.conversion_count or 0) + 1
-        visitor.last_conversion_date = frappe.utils.now()
-        visitor.save(ignore_permissions=True)
-        
         return conversion
-        
+
     except Exception as e:
-        frappe.log_error(f"Error tracking conversion: {str(e)}")
+        frappe.log_error(f"Error tracking conversion: {str(e)}", "TrackFlow Conversion")
         return None

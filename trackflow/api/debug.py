@@ -25,7 +25,7 @@ def debug():
         
         # Check if app is installed
         results["checks"]["app_installed"] = {
-            "status": "TrackFlow" in frappe.get_installed_apps(),
+            "status": "trackflow" in frappe.get_installed_apps(),
             "message": "TrackFlow app is installed"
         }
         
@@ -53,7 +53,7 @@ def debug():
         
         for doctype in doctypes_to_check:
             try:
-                exists = frappe.db.table_exists(doctype.lower().replace(" ", "_"))
+                exists = bool(frappe.db.exists("DocType", doctype))
                 results["checks"][f"doctype_{doctype}"] = {
                     "status": exists,
                     "message": f"{doctype} table {'exists' if exists else 'does not exist'}"

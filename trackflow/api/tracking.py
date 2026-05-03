@@ -2,12 +2,10 @@ import frappe
 from frappe import _
 import json
 from trackflow.trackflow.utils import (
-    generate_visitor_id, 
-    get_visitor_from_request, 
+    generate_visitor_id,
+    get_visitor_from_request,
     set_visitor_cookie,
     parse_user_agent,
-    check_gdpr_consent,
-    record_gdpr_consent
 )
 from trackflow.trackflow.utils.error_handler import (
     handle_error,
@@ -17,7 +15,7 @@ from trackflow.trackflow.utils.error_handler import (
     get_client_ip,
     rate_limit_check,
     ValidationError,
-    TrackingError
+    TrackingError,
 )
 
 @frappe.whitelist(allow_guest=True)
@@ -40,21 +38,14 @@ def track_event():
         raise ValidationError(_("No data provided"))
     
     # Get or create visitor
-    visitor_id = data.get("visitor_id") or get_visitor_from_request()
-    
+    result = get_visitor_from_request()
+    if result and isinstance(result, tuple):
+        visitor_id = result[0]
+    else:
+        visitor_id = data.get("visitor_id")
+
     if not visitor_id:
         visitor_id = generate_visitor_id()
-        set_visitor_cookie(visitor_id)
-    
-    # Check GDPR consent if enabled
-    settings = frappe.get_single("TrackFlow Settings")
-    if settings.require_gdpr_consent and not check_gdpr_consent(visitor_id):
-        # Don't track without consent
-        return {
-            "status": "error",
-            "error_code": "GDPR_CONSENT_REQUIRED",
-            "message": _("User consent required for tracking")
-        }
     
     # Sanitize event data
     event_type = data.get("event_type", "pageview")
@@ -71,18 +62,8 @@ def track_event():
     event.event_type = event_type
     event.event_category = properties.get("category", "custom")
     event.url = url
-    event.referrer = referrer
     event.timestamp = frappe.utils.now()
     event.event_data = json.dumps(properties)
-    event.ip_address = client_ip
-    event.user_agent = frappe.request.headers.get('User-Agent', '')
-    
-    # Get UTM parameters
-    event.utm_source = data.get("utm_source") or properties.get("utm_source")
-    event.utm_medium = data.get("utm_medium") or properties.get("utm_medium")
-    event.utm_campaign = data.get("utm_campaign") or properties.get("utm_campaign")
-    event.utm_content = data.get("utm_content") or properties.get("utm_content")
-    event.utm_term = data.get("utm_term") or properties.get("utm_term")
     
     # Insert event
     event.insert(ignore_permissions=True)
@@ -94,7 +75,7 @@ def track_event():
     if event_type == "pageview":
         frappe.db.sql("""
             UPDATE `tabVisitor`
-            SET total_page_views = IFNULL(total_page_views, 0) + 1
+            SET page_views = IFNULL(page_views, 0) + 1
             WHERE name = %s
         """, visitor)
     
@@ -124,29 +105,6 @@ def get_or_create_visitor(visitor_id, ip_address):
     visitor.last_seen = frappe.utils.now()
     visitor.ip_address = ip_address
     visitor.user_agent = frappe.request.headers.get('User-Agent', '')
-    
-    # Parse user agent
-    ua_info = parse_user_agent(visitor.user_agent)
-    visitor.browser = ua_info.get('browser')
-    visitor.operating_system = ua_info.get('operating_system')
-    visitor.device_type = ua_info.get('device_type')
-    
-    # Get geo location
-    try:
-        from trackflow.utils.geo import get_geo_location
-        geo = get_geo_location(ip_address)
-        if geo:
-            visitor.country = geo.get("country")
-            visitor.city = geo.get("city")
-    except:
-        pass
-    
-    # Initialize counters
-    visitor.total_page_views = 0
-    visitor.total_sessions = 0
-    visitor.total_clicks = 0
-    visitor.engagement_score = 0
-    
     visitor.insert(ignore_permissions=True)
     return visitor.name
 
@@ -238,9 +196,9 @@ def get_tracking_script():
 })();
 """ % (
         frappe.utils.get_url(),
-        get_visitor_from_request() or "",
+        (get_visitor_from_request() or ("", ""))[0] or "",
         frappe.request.cookies.get("trackflow_session") or "",
-        "true" if settings.require_gdpr_consent else "false"
+        "true" if getattr(settings, "require_gdpr_consent", False) else "false"
     )
     
     # Set content type
@@ -264,19 +222,20 @@ def create_tracked_link(**kwargs):
         raise ValidationError(_("Invalid campaign"))
     
     # Generate short code
-    from trackflow.utils import generate_short_code
-    short_code = generate_short_code()
+    import string, random
+    settings = frappe.get_single("TrackFlow Settings")
+    length = getattr(settings, "short_code_length", 6) or 6
+    short_code = "".join(random.choices(string.ascii_letters + string.digits, k=length))
     
     # Create tracked link
     link = frappe.new_doc("Tracked Link")
     link.short_code = short_code
     link.campaign = campaign
-    link.custom_identifier = kwargs.get("custom_identifier")
     link.target_url = target_url
     link.source = kwargs.get("source")
     link.medium = kwargs.get("medium")
     link.status = "Active"
-    link.created_by_user = frappe.session.user
+    link.created_by = frappe.session.user
     
     # Set expiry date if specified
     expiry_days = kwargs.get("expiry_days")
@@ -362,8 +321,8 @@ def get_link_statistics(link_name):
     conversions = frappe.db.sql("""
         SELECT
             COUNT(*) as total_conversions,
-            SUM(conversion_value) as total_value
-        FROM `tabConversion`
+            COALESCE(SUM(conversion_value), 0) as total_value
+        FROM `tabLink Conversion`
         WHERE tracked_link = %s
     """, link_name, as_dict=True)[0]
     
@@ -398,20 +357,19 @@ def track_conversion(**kwargs):
         raise ValidationError(_("Visitor not found"))
     
     # Create conversion record
-    conversion = frappe.new_doc("Conversion")
-    conversion.visitor = visitor_name
+    conversion = frappe.new_doc("Link Conversion")
+    conversion.visitor_id = visitor_id
     conversion.conversion_type = kwargs.get("conversion_type", "general")
     conversion.tracked_link = kwargs.get("tracked_link")
     conversion.conversion_value = float(kwargs.get("conversion_value", 0))
-    conversion.conversion_date = frappe.utils.now()
-    
+    conversion.conversion_timestamp = frappe.utils.now()
+
     # Add metadata
     metadata = kwargs.get("metadata", {})
     if metadata:
-        conversion.source = metadata.get("source")
-        conversion.medium = metadata.get("medium")
+        conversion.source_type = metadata.get("source")
         conversion.campaign = metadata.get("campaign")
-        conversion.metadata = frappe.as_json(metadata)
+        conversion.conversion_metadata = frappe.as_json(metadata)
     
     conversion.insert(ignore_permissions=True)
     
@@ -439,26 +397,24 @@ def record_consent():
     """Record GDPR consent"""
     data = json.loads(frappe.request.data or '{}')
     
-    visitor_id = data.get("visitor_id") or get_visitor_from_request()
+    visitor_id = data.get("visitor_id")
+    if not visitor_id:
+        result = get_visitor_from_request()
+        visitor_id = result[0] if isinstance(result, tuple) else result
     consent_given = data.get("consent_given", False)
-    
+
     if not visitor_id:
         raise ValidationError(_("Visitor ID required"))
-    
-    # Record consent
-    success = record_gdpr_consent(visitor_id, consent_given, data.get("consent_text"))
-    
+
     # Set consent cookie
-    if success and consent_given:
+    if consent_given:
         frappe.local.cookie_manager.set_cookie(
-            'trackflow_consent',
-            'true',
-            max_age=31536000,  # 1 year
-            httponly=False,  # Allow JS access
-            samesite='Lax'
+            "trackflow_consent",
+            "true",
+            expires=365 * 24 * 60 * 60,
         )
-    
+
     return {
-        "status": "success" if success else "error",
-        "message": _("Consent recorded") if success else _("Failed to record consent")
+        "status": "success",
+        "message": _("Consent recorded"),
     }

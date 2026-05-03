@@ -47,16 +47,6 @@ def on_lead_update(doc, method):
     if doc.has_value_changed("status"):
         old_status = doc.get_doc_before_save().status if doc.get_doc_before_save() else None
         
-        # Create status change record
-        if frappe.db.exists("DocType", "Lead Status Change"):
-            status_change = frappe.new_doc("Lead Status Change")
-            status_change.lead = doc.name
-            status_change.from_status = old_status
-            status_change.to_status = doc.status
-            status_change.changed_by = frappe.session.user
-            status_change.campaign = doc.get('trackflow_campaign')
-            status_change.insert(ignore_permissions=True)
-        
         # Log activity
         log_activity("lead_status_changed", {
             "lead": doc.name,

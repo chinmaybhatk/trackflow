@@ -27,24 +27,20 @@ def get_campaign_stats(campaign=None, campaign_name=None):
         
         # Get tracked links for this campaign
         tracked_links = frappe.db.sql("""
-            SELECT 
+            SELECT
                 tl.name,
                 tl.short_code,
-                tl.custom_identifier,
+                tl.title,
                 tl.click_count,
-                tl.unique_visitors,
+                tl.unique_visitor_count,
                 tl.status
             FROM `tabTracked Link` tl
             WHERE tl.campaign = %s
             ORDER BY tl.click_count DESC
         """, campaign_name, as_dict=True)
-        
+
         # Get conversions
-        conversions = frappe.db.sql("""
-            SELECT COUNT(*) as count
-            FROM `tabClick Event`
-            WHERE campaign = %s AND led_to_conversion = 1
-        """, campaign_name)[0][0] or 0
+        conversions = frappe.db.count("Link Conversion", {"campaign": campaign_name})
         
         # Calculate conversion rate
         conversion_rate = 0
@@ -377,7 +373,7 @@ def get_deal_roi(deal_name):
             if visitor and visitor.campaign:
                 campaign_name = visitor.campaign
                 # Get campaign cost
-                campaign_cost = frappe.db.get_value("Link Campaign", campaign_name, "budget_amount") or 0
+                campaign_cost = frappe.db.get_value("Link Campaign", campaign_name, "budget") or 0
                 
                 # Calculate attributed cost (simple last-touch for now)
                 campaign_costs = campaign_cost * 0.1  # 10% attribution for this deal

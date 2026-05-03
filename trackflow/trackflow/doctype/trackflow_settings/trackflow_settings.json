@@ -23,9 +23,7 @@
         "cookie_consent_text",
         "privacy_policy_link",
         "cookie_policy_link",
-        "anonymize_ip_addresses",
-        "internal_traffic_section",
-        "internal_ip_ranges"
+        "anonymize_ip_addresses"
     ],
     "fields": [
         {
@@ -138,17 +136,6 @@
             "fieldname": "anonymize_ip_addresses",
             "fieldtype": "Check",
             "label": "Anonymize IP Addresses"
-        },
-        {
-            "fieldname": "internal_traffic_section",
-            "fieldtype": "Section Break",
-            "label": "Internal Traffic"
-        },
-        {
-            "fieldname": "internal_ip_ranges",
-            "fieldtype": "Table",
-            "label": "Internal IP Ranges",
-            "options": "Internal IP Range"
         }
     ],
     "is_single": 1,
@@ -183,5 +170,6 @@
     "sort_field": "modified",
     "sort_order": "DESC",
     "states": [],
-    "track_changes": 1
+    "track_changes": 1,
+    "issingle": 1
 }

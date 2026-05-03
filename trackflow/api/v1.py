@@ -4,370 +4,170 @@ TrackFlow REST API v1
 
 import frappe
 from frappe import _
-from frappe.utils import cint, get_url, now_datetime
+from frappe.utils import now_datetime
 import json
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse, parse_qs, urlunparse
+
 
 @frappe.whitelist(allow_guest=True)
 def track_click(short_code=None):
-    """
-    Track a click on a short link
-    Called when someone visits /tl/SHORT_CODE
-    """
+    """Track a click on a short link and redirect"""
     if not short_code:
         frappe.throw(_("Invalid link"))
-    
-    # Get the tracked link
-    try:
-        link = frappe.get_doc("Tracked Link", {"short_code": short_code})
-    except frappe.DoesNotExistError:
-        frappe.throw(_("Link not found"), frappe.DoesNotExistError)
-    
-    # Check if link is active
-    if link.status != "Active":
-        if link.status == "Expired":
-            frappe.throw(_("This link has expired"))
-        else:
-            frappe.throw(_("This link is no longer active"))
-    
-    # Get request details
-    request_data = get_request_details()
-    
-    # Queue the click for processing
-    queue_click_event(link, request_data)
-    
-    # Build final URL with UTM parameters
-    final_url = build_final_url(link)
-    
-    # Redirect to final URL
+
+    link = frappe.db.get_value(
+        "Tracked Link",
+        {"short_code": short_code, "status": "Active"},
+        ["name", "target_url", "destination_url", "campaign", "source", "medium"],
+        as_dict=True,
+    )
+
+    if not link:
+        frappe.throw(_("Link not found or inactive"), frappe.DoesNotExistError)
+
+    from trackflow.trackflow.utils import generate_visitor_id, create_click_event
+
+    visitor_id = (
+        frappe.request.cookies.get("trackflow_visitor") if frappe.request else None
+    )
+    if not visitor_id:
+        visitor_id = generate_visitor_id()
+
+    link_doc = frappe.get_doc("Tracked Link", link.name)
+
+    request_data = {}
+    if frappe.request:
+        request_data = {
+            "ip": frappe.request.headers.get("X-Forwarded-For", frappe.request.remote_addr),
+            "user_agent": frappe.request.headers.get("User-Agent", ""),
+            "referrer": frappe.request.headers.get("Referer", ""),
+        }
+
+    create_click_event(link_doc, visitor_id, request_data)
+
+    frappe.db.sql(
+        """UPDATE `tabTracked Link`
+        SET click_count = IFNULL(click_count, 0) + 1, last_click = %s
+        WHERE name = %s""",
+        (frappe.utils.now(), link.name),
+    )
+    frappe.db.commit()
+
+    final_url = _build_final_url(link)
+
     frappe.local.response["type"] = "redirect"
     frappe.local.response["location"] = final_url
-    
-    return
+
 
 @frappe.whitelist()
-def create_link(url, campaign=None, custom_alias=None, **kwargs):
-    """
-    Create a new tracked link
-    """
-    # Validate URL
-    if not url or not url.startswith(('http://', 'https://')):
+def create_link(url, campaign=None, title=None, source=None, medium=None, **kwargs):
+    """Create a new tracked link"""
+    if not url or not url.startswith(("http://", "https://")):
         frappe.throw(_("Please provide a valid URL"))
-    
-    # Create tracked link document
+
     link = frappe.new_doc("Tracked Link")
+    link.title = title or url[:140]
     link.target_url = url
-    link.link_campaign = campaign
-    link.custom_alias = custom_alias
-    
-    # Set UTM parameters if provided
-    for param in ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']:
-        if kwargs.get(param):
-            setattr(link, param, kwargs[param])
-    
-    # Set additional options
-    if kwargs.get('expiry_date'):
-        link.expiry_date = kwargs['expiry_date']
-    
-    if kwargs.get('tags'):
-        link.tags = kwargs['tags']
-    
+    link.destination_url = url
+    link.campaign = campaign
+    link.source = source
+    link.medium = medium
+    link.status = "Active"
+
+    if kwargs.get("expiry_date"):
+        link.expiry_date = kwargs["expiry_date"]
+
     link.insert()
-    
+
+    site_url = frappe.utils.get_url()
     return {
         "success": True,
-        "short_url": link.short_url,
+        "name": link.name,
         "short_code": link.short_code,
-        "tracking_url": link.get_tracking_url()
+        "tracking_url": f"{site_url}/r/{link.short_code}",
     }
+
 
 @frappe.whitelist()
 def get_analytics(short_code=None, campaign=None, period="7d"):
-    """
-    Get analytics for a link or campaign
-    """
+    """Get analytics for a link or campaign"""
     filters = {}
-    
+
     if short_code:
-        link = frappe.get_doc("Tracked Link", {"short_code": short_code})
-        filters["tracked_link"] = link.name
+        link_name = frappe.db.get_value("Tracked Link", {"short_code": short_code}, "name")
+        if not link_name:
+            frappe.throw(_("Link not found"))
+        filters["tracked_link"] = link_name
     elif campaign:
-        filters["link_campaign"] = campaign
+        filters["campaign"] = campaign
     else:
         frappe.throw(_("Please provide either short_code or campaign"))
-    
-    # Get date range
-    date_range = get_date_range(period)
-    filters["timestamp"] = ["between", date_range]
-    
-    # Get click events
+
+    date_range = _get_date_range(period)
+    filters["click_timestamp"] = ["between", date_range]
+
     clicks = frappe.get_all(
         "Click Event",
         filters=filters,
-        fields=[
-            "timestamp",
-            "country",
-            "city",
-            "browser",
-            "device_type",
-            "referrer_domain"
-        ],
-        order_by="timestamp desc"
+        fields=["click_timestamp", "ip_address", "user_agent", "referrer", "utm_source", "utm_medium"],
+        order_by="click_timestamp desc",
+        limit=500,
     )
-    
-    # Calculate analytics
-    analytics = calculate_analytics(clicks)
-    
+
     return {
         "success": True,
         "period": period,
-        "data": analytics,
-        "clicks": clicks[:100]  # Return latest 100 clicks
+        "total_clicks": len(clicks),
+        "clicks": clicks[:100],
     }
 
-@frappe.whitelist()
-def track_conversion(short_code, conversion_value=0, conversion_type="sale"):
-    """
-    Track a conversion from a tracked link
-    """
-    # Get the link
-    link = frappe.get_doc("Tracked Link", {"short_code": short_code})
-    
-    # Create conversion record
-    conversion = frappe.new_doc("Link Conversion")
-    conversion.tracked_link = link.name
-    conversion.conversion_type = conversion_type
-    conversion.conversion_value = conversion_value
-    conversion.timestamp = now_datetime()
-    
-    # Try to match with a lead/contact
-    if frappe.session.user != "Guest":
-        conversion.user = frappe.session.user
-        
-        # Check if user is a lead or contact
-        if frappe.db.exists("Contact", {"email_id": frappe.session.user}):
-            conversion.contact = frappe.db.get_value("Contact", 
-                {"email_id": frappe.session.user}, "name")
-        elif frappe.db.exists("Lead", {"email_id": frappe.session.user}):
-            conversion.lead = frappe.db.get_value("Lead", 
-                {"email_id": frappe.session.user}, "name")
-    
-    conversion.insert(ignore_permissions=True)
-    
-    # Update link stats
-    link.total_conversions = (link.total_conversions or 0) + 1
-    link.total_conversion_value = (link.total_conversion_value or 0) + conversion_value
-    link.save(ignore_permissions=True)
-    
-    return {
-        "success": True,
-        "message": _("Conversion tracked successfully")
-    }
 
 @frappe.whitelist()
 def bulk_create_links(links):
-    """
-    Create multiple tracked links at once
-    """
+    """Create multiple tracked links at once"""
     if isinstance(links, str):
         links = json.loads(links)
-    
-    created_links = []
+
+    created = []
     errors = []
-    
+
     for link_data in links:
         try:
             result = create_link(**link_data)
-            created_links.append(result)
+            created.append(result)
         except Exception as e:
-            errors.append({
-                "url": link_data.get("url"),
-                "error": str(e)
-            })
-    
-    return {
-        "success": len(errors) == 0,
-        "created": len(created_links),
-        "links": created_links,
-        "errors": errors
-    }
+            errors.append({"url": link_data.get("url"), "error": str(e)})
 
-def get_request_details():
-    """
-    Extract request details for tracking
-    """
-    request = frappe.local.request
-    
-    return {
-        "ip_address": request.headers.get('X-Forwarded-For', request.remote_addr),
-        "user_agent": request.headers.get('User-Agent', ''),
-        "referrer": request.headers.get('Referer', ''),
-        "language": request.headers.get('Accept-Language', '').split(',')[0],
-        "timestamp": now_datetime()
-    }
+    return {"success": len(errors) == 0, "created": len(created), "links": created, "errors": errors}
 
-def queue_click_event(link, request_data):
-    """
-    Queue click event for async processing
-    """
-    # Parse user agent for device info
-    device_info = parse_user_agent(request_data.get('user_agent', ''))
-    
-    # Get geo info from IP (if service is configured)
-    geo_info = get_geo_info(request_data.get('ip_address', ''))
-    
-    # Create queue entry
-    queue_entry = frappe.new_doc("Click Queue")
-    queue_entry.tracked_link = link.name
-    queue_entry.timestamp = request_data['timestamp']
-    queue_entry.ip_address = request_data['ip_address']
-    queue_entry.user_agent = request_data['user_agent']
-    queue_entry.referrer = request_data.get('referrer', '')
-    queue_entry.browser = device_info.get('browser', '')
-    queue_entry.device_type = device_info.get('device_type', '')
-    queue_entry.os = device_info.get('os', '')
-    queue_entry.country = geo_info.get('country', '')
-    queue_entry.city = geo_info.get('city', '')
-    queue_entry.status = "Pending"
-    
-    queue_entry.insert(ignore_permissions=True)
-    frappe.db.commit()
 
-def build_final_url(link):
-    """
-    Build final URL with UTM parameters
-    """
-    url = link.target_url
-    
-    # Add UTM parameters
-    utm_params = {}
-    for param in ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']:
-        value = getattr(link, param, None)
-        if value:
-            utm_params[param] = value
-    
-    if utm_params:
-        # Check if URL already has parameters
-        separator = '&' if '?' in url else '?'
-        url += separator + urlencode(utm_params)
-    
-    return url
+def _build_final_url(link):
+    """Build final URL with UTM parameters"""
+    url = link.target_url or link.destination_url
+    if not url:
+        return "/"
 
-def parse_user_agent(user_agent_string):
-    """
-    Parse user agent string to extract device info
-    """
-    # Simple implementation - in production, use a proper UA parser
-    device_info = {
-        'browser': 'Unknown',
-        'device_type': 'Desktop',
-        'os': 'Unknown'
-    }
-    
-    ua_lower = user_agent_string.lower()
-    
-    # Detect browser
-    if 'chrome' in ua_lower:
-        device_info['browser'] = 'Chrome'
-    elif 'firefox' in ua_lower:
-        device_info['browser'] = 'Firefox'
-    elif 'safari' in ua_lower:
-        device_info['browser'] = 'Safari'
-    elif 'edge' in ua_lower:
-        device_info['browser'] = 'Edge'
-    
-    # Detect device type
-    if 'mobile' in ua_lower:
-        device_info['device_type'] = 'Mobile'
-    elif 'tablet' in ua_lower:
-        device_info['device_type'] = 'Tablet'
-    
-    # Detect OS
-    if 'windows' in ua_lower:
-        device_info['os'] = 'Windows'
-    elif 'mac' in ua_lower:
-        device_info['os'] = 'macOS'
-    elif 'linux' in ua_lower:
-        device_info['os'] = 'Linux'
-    elif 'android' in ua_lower:
-        device_info['os'] = 'Android'
-    elif 'ios' in ua_lower or 'iphone' in ua_lower:
-        device_info['os'] = 'iOS'
-    
-    return device_info
+    parsed = urlparse(url)
+    params = parse_qs(parsed.query)
 
-def get_geo_info(ip_address):
-    """
-    Get geographical information from IP address
-    """
-    # Placeholder - implement with actual geo service
-    return {
-        'country': 'Unknown',
-        'city': 'Unknown',
-        'region': 'Unknown'
-    }
+    if link.source and "utm_source" not in params:
+        params["utm_source"] = [link.source]
+    if link.medium and "utm_medium" not in params:
+        params["utm_medium"] = [link.medium]
+    if link.campaign:
+        campaign_name = frappe.db.get_value("Link Campaign", link.campaign, "campaign_name")
+        if campaign_name and "utm_campaign" not in params:
+            params["utm_campaign"] = [campaign_name]
 
-def get_date_range(period):
-    """
-    Convert period string to date range
-    """
+    updated_query = urlencode(params, doseq=True)
+    return urlunparse((parsed.scheme, parsed.netloc, parsed.path, parsed.params, updated_query, parsed.fragment))
+
+
+def _get_date_range(period):
+    """Convert period string to date range"""
     from frappe.utils import add_days, get_datetime
-    
-    end_date = get_datetime()
-    
-    if period == "1d":
-        start_date = add_days(end_date, -1)
-    elif period == "7d":
-        start_date = add_days(end_date, -7)
-    elif period == "30d":
-        start_date = add_days(end_date, -30)
-    elif period == "90d":
-        start_date = add_days(end_date, -90)
-    else:
-        start_date = add_days(end_date, -7)  # Default to 7 days
-    
-    return [start_date, end_date]
 
-def calculate_analytics(clicks):
-    """
-    Calculate analytics from click data
-    """
-    from collections import defaultdict
-    
-    analytics = {
-        "total_clicks": len(clicks),
-        "unique_visitors": len(set(c.get('ip_address') for c in clicks)),
-        "countries": defaultdict(int),
-        "browsers": defaultdict(int),
-        "devices": defaultdict(int),
-        "referrers": defaultdict(int),
-        "daily_clicks": defaultdict(int)
-    }
-    
-    for click in clicks:
-        # Country distribution
-        country = click.get('country', 'Unknown')
-        analytics['countries'][country] += 1
-        
-        # Browser distribution
-        browser = click.get('browser', 'Unknown')
-        analytics['browsers'][browser] += 1
-        
-        # Device distribution
-        device = click.get('device_type', 'Unknown')
-        analytics['devices'][device] += 1
-        
-        # Referrer distribution
-        referrer = click.get('referrer_domain', 'Direct')
-        analytics['referrers'][referrer] += 1
-        
-        # Daily clicks
-        date = click.get('timestamp').date() if click.get('timestamp') else None
-        if date:
-            analytics['daily_clicks'][str(date)] += 1
-    
-    # Convert defaultdicts to regular dicts
-    for key in ['countries', 'browsers', 'devices', 'referrers', 'daily_clicks']:
-        analytics[key] = dict(analytics[key])
-    
-    return analytics
+    end_date = get_datetime()
+    days_map = {"1d": -1, "7d": -7, "30d": -30, "90d": -90}
+    start_date = add_days(end_date, days_map.get(period, -7))
+    return [start_date, end_date]

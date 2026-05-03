@@ -123,7 +123,7 @@ def get_campaign_performance_data(campaign_name=None, date_range=None):
         campaigns = frappe.get_all(
             "Link Campaign",
             filters=filters,
-            fields=["name", "campaign_name", "total_clicks", "conversions", "conversion_rate", "budget_amount"]
+            fields=["name", "campaign_name", "total_clicks", "conversions", "conversion_rate", "budget"]
         )
         
         performance_data = []
@@ -137,8 +137,8 @@ def get_campaign_performance_data(campaign_name=None, date_range=None):
                 "clicks": clicks,
                 "conversions": conversions,
                 "conversion_rate": (conversions / clicks * 100) if clicks > 0 else 0,
-                "budget": campaign.budget_amount or 0,
-                "cost_per_click": (campaign.budget_amount / clicks) if clicks > 0 and campaign.budget_amount else 0
+                "budget": campaign.budget or 0,
+                "cost_per_click": (campaign.budget / clicks) if clicks > 0 and campaign.budget else 0
             })
             
         return {"data": performance_data}

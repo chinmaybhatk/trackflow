@@ -25,18 +25,6 @@ def on_update(doc, method):
     """Track deal stage changes"""
     try:
         if doc.has_value_changed("deal_stage"):
-            # Create stage change record
-            stage_change = frappe.new_doc("Deal Stage Change")
-            stage_change.deal = doc.name
-            stage_change.from_stage = doc.get_doc_before_save().deal_stage if doc.get_doc_before_save() else None
-            stage_change.to_stage = doc.deal_stage
-            stage_change.changed_by = frappe.session.user
-            
-            if hasattr(doc, 'trackflow_last_touch_source'):
-                stage_change.campaign = doc.trackflow_last_touch_source
-                
-            stage_change.insert(ignore_permissions=True)
-            
             # Track conversion for won deals
             if doc.status == "Won":
                 track_deal_conversion(doc)
@@ -69,29 +57,6 @@ def calculate_attribution(doc, method):
         # Calculate attribution using Attribution Model engine
         attribution_result = attribution_model.calculate_attribution(formatted_touchpoints, doc.annual_revenue or 0)
         
-        # Save attribution records
-        for channel, data in attribution_result.items():
-            # Find corresponding touchpoint for additional details
-            touchpoint_data = next((tp for tp in touchpoints if tp.get("source") == channel), {})
-            
-            attribution = frappe.new_doc("Deal Attribution")
-            attribution.deal = doc.name
-            attribution.attribution_model = attribution_model.name
-            attribution.deal_value = doc.annual_revenue or 0
-            attribution.touchpoint_type = channel.title()  # Convert to title case
-            attribution.touchpoint_source = channel
-            attribution.touchpoint_campaign = touchpoint_data.get("campaign")
-            attribution.touchpoint_medium = touchpoint_data.get("medium")
-            attribution.touchpoint_timestamp = touchpoint_data.get("date") or frappe.utils.now()
-            attribution.attribution_weight = (data.get("credit", 0) * 100)  # Convert decimal to percentage
-            attribution.attributed_value = data.get("value", 0)
-            
-            # Set position in journey if available
-            if touchpoint_data.get("position"):
-                attribution.position_in_journey = touchpoint_data.get("position")
-                
-            attribution.insert(ignore_permissions=True)
-            
         # Update deal with attribution summary
         doc.trackflow_attribution_model = attribution_model.model_type
         doc.trackflow_marketing_influenced = 1
@@ -187,17 +152,8 @@ def track_deal_conversion(doc):
         frappe.log_error(frappe.get_traceback(), "TrackFlow Deal Conversion Error")
 
 def create_attribution_record(doc):
-    """Create initial attribution record"""
-    try:
-        if hasattr(doc, 'trackflow_last_touch_source') and doc.trackflow_last_touch_source:
-            link_assoc = frappe.new_doc("Deal Link Association")
-            link_assoc.deal = doc.name
-            link_assoc.campaign = doc.trackflow_last_touch_source
-            link_assoc.source = doc.trackflow_first_touch_source if hasattr(doc, 'trackflow_first_touch_source') else None
-            link_assoc.insert(ignore_permissions=True)
-            
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "TrackFlow Attribution Record Error")
+    """Create initial attribution record (logged only)"""
+    pass
 
 
 @frappe.whitelist()

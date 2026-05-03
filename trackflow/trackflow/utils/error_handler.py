@@ -272,23 +272,6 @@ def is_internal_ip(ip_address):
     if not ip_address:
         return False
     
-    # Check against configured internal IP ranges
-    internal_ranges = frappe.get_all(
-        "Internal IP Range",
-        fields=["ip_range"]
-    )
-    
-    for ip_range_doc in internal_ranges:
-        try:
-            # Use ipaddress library to check CIDR ranges
-            import ipaddress
-            network = ipaddress.ip_network(ip_range_doc.ip_range, strict=False)
-            if ipaddress.ip_address(ip_address) in network:
-                return True
-        except ValueError:
-            # Skip invalid IP ranges
-            continue
-    
     # Check common private IP ranges
     private_ranges = [
         ("10.0.0.0", "10.255.255.255"),
@@ -327,26 +310,11 @@ def is_ip_in_range(ip, start, end):
         return False
 
 def log_activity(activity_type, details=None, severity="info"):
-    """Log TrackFlow activity for audit purposes
-    
-    Args:
-        activity_type: Type of activity
-        details: Dictionary with activity details
-        severity: Log severity (info, warning, error)
-    """
+    """Log TrackFlow activity using Frappe's error log"""
     try:
-        activity_log = frappe.new_doc("TrackFlow Activity Log")
-        activity_log.activity_type = activity_type
-        activity_log.severity = severity
-        activity_log.user = frappe.session.user
-        activity_log.ip_address = get_client_ip()
-        activity_log.timestamp = frappe.utils.now()
-        
+        message = f"[{severity.upper()}] {activity_type}"
         if details:
-            activity_log.details = frappe.as_json(details)
-        
-        activity_log.insert(ignore_permissions=True)
-        
+            message += f"\n{frappe.as_json(details)}"
+        frappe.logger("trackflow").info(message)
     except Exception:
-        # Don't let logging errors break the application
         pass

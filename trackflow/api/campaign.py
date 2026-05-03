@@ -3,7 +3,7 @@ from frappe import _
 from frappe.utils import getdate, add_days, nowdate
 
 @frappe.whitelist()
-def create_campaign(name, start_date=None, end_date=None, budget=0, channel=None, description=None):
+def create_campaign(name, start_date=None, end_date=None, budget=0, description=None):
     """Create a new link campaign"""
     try:
         campaign = frappe.new_doc("Link Campaign")
@@ -11,7 +11,6 @@ def create_campaign(name, start_date=None, end_date=None, budget=0, channel=None
         campaign.start_date = start_date or nowdate()
         campaign.end_date = end_date
         campaign.budget = budget
-        campaign.channel = channel
         campaign.description = description
         campaign.status = "Active"
         campaign.insert()
@@ -84,14 +83,13 @@ def get_campaign_list():
     """Get list of all campaigns with basic metrics"""
     try:
         campaigns = frappe.db.sql("""
-            SELECT 
+            SELECT
                 c.name,
                 c.campaign_name,
                 c.status,
                 c.start_date,
                 c.end_date,
                 c.budget,
-                c.channel,
                 COUNT(DISTINCT ce.visitor_id) as visitors,
                 COUNT(ce.name) as clicks,
                 COUNT(DISTINCT lc.name) as conversions

@@ -13,18 +13,11 @@ def track_email_open(campaign_id, recipient_id):
     try:
         # Log email open
         log = frappe.new_doc("Email Campaign Log")
-        log.campaign = campaign_id
-        log.recipient = recipient_id
-        log.action = "opened"
+        log.event_type = "opened"
+        log.recipient_id = recipient_id
         log.timestamp = now()
         log.ip_address = frappe.local.request_ip
         log.user_agent = frappe.request.headers.get("User-Agent", "")
-        
-        # Get visitor ID if exists
-        visitor_id = frappe.request.cookies.get("tf_visitor_id")
-        if visitor_id:
-            log.visitor_id = visitor_id
-            
         log.insert(ignore_permissions=True)
         frappe.db.commit()
         
@@ -43,17 +36,11 @@ def track_email_click(campaign_id, recipient_id, link_id):
     try:
         # Log email click
         log = frappe.new_doc("Email Campaign Log")
-        log.campaign = campaign_id
-        log.recipient = recipient_id
-        log.action = "clicked"
-        log.link_id = link_id
+        log.event_type = "clicked"
+        log.recipient_id = recipient_id
+        log.tracking_link = link_id
         log.timestamp = now()
         log.ip_address = frappe.local.request_ip
-        
-        visitor_id = frappe.request.cookies.get("tf_visitor_id")
-        if visitor_id:
-            log.visitor_id = visitor_id
-            
         log.insert(ignore_permissions=True)
         
         # Get actual link URL
@@ -167,14 +154,14 @@ def get_email_campaign_stats(campaign):
     """Get email campaign statistics"""
     try:
         stats = frappe.db.sql("""
-            SELECT 
-                action,
+            SELECT
+                event_type,
                 COUNT(*) as count,
-                COUNT(DISTINCT recipient) as unique_recipients
+                COUNT(DISTINCT recipient_id) as unique_recipients
             FROM `tabEmail Campaign Log`
-            WHERE campaign = %s
-            GROUP BY action
-        """, campaign, as_dict=True)
+            WHERE recipient_id IS NOT NULL
+            GROUP BY event_type
+        """, as_dict=True)
         
         result = {
             "sent": 0,
@@ -185,11 +172,11 @@ def get_email_campaign_stats(campaign):
         }
         
         for stat in stats:
-            if stat.action == "sent":
+            if stat.event_type == "sent":
                 result["sent"] = stat.count
-            elif stat.action == "opened":
+            elif stat.event_type == "opened":
                 result["opened"] = stat.unique_recipients
-            elif stat.action == "clicked":
+            elif stat.event_type == "clicked":
                 result["clicked"] = stat.unique_recipients
                 
         # Calculate rates

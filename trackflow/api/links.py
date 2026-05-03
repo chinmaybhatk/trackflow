@@ -19,14 +19,14 @@ def bulk_generate_links(campaign, identifiers):
     for identifier in identifiers:
         try:
             # Check if link already exists
-            if frappe.db.exists("Tracked Link", {"campaign": campaign, "custom_identifier": identifier}):
+            if frappe.db.exists("Tracked Link", {"campaign": campaign, "title": identifier}):
                 continue
-                
+
             # Create tracked link
             link = frappe.new_doc("Tracked Link")
             link.campaign = campaign
-            link.custom_identifier = identifier
-            link.destination_url = f"https://example.com/{identifier}"  # Default URL
+            link.title = identifier
+            link.destination_url = f"https://example.com/{identifier}"
             link.status = "Active"
             link.insert()
             created_links.append(link.name)
