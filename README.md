@@ -2,7 +2,7 @@
 
 **The most comprehensive marketing attribution platform for Frappe CRM** - Track every click, measure campaign ROI, and attribute revenue to the right marketing channels with advanced multi-touch attribution models.
 
-[![Frappe CRM](https://img.shields.io/badge/Frappe-CRM-blue.svg)](https://frappecrm.com) [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://python.org)
+[![Frappe](https://img.shields.io/badge/Frappe-v16-blue.svg)](https://frappeframework.com) [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://python.org)
 
 ## 🚀 What is TrackFlow?
 
@@ -60,8 +60,9 @@ Transform your marketing analytics with sophisticated attribution:
 ## 💻 Quick Installation
 
 ### Prerequisites
-- **Frappe Framework v15+** with **Frappe CRM**
-- **Python 3.10+** and **MariaDB/MySQL**
+- **Frappe Framework v16+** with **Frappe CRM**
+- **Python 3.14+** and **MariaDB/MySQL**
+- **Node.js 24+** for asset builds
 - **Administrator access** to your Frappe site
 
 ### One-Command Install
@@ -74,14 +75,18 @@ bench get-app https://github.com/chinmaybhatk/trackflow.git
 
 # Install on your site
 bench --site your-site-name install-app trackflow
+
+# Apply workspace fixture and migrations
+bench --site your-site-name migrate
+bench build --app trackflow
 ```
 
 ### Quick Setup
-1. **Access TrackFlow**: CRM → TrackFlow Analytics (in sidebar)
+1. **Access TrackFlow**: Open `/desk/trackflow` — TrackFlow appears as its own app in the Frappe v16 desk with sidebar links for Dashboard, Campaigns, and Tracked Links
 2. **Configure Settings**: TrackFlow Settings → Enable tracking, set attribution model
 3. **Create Campaign**: Campaigns → New → Add UTM parameters and budget
-4. **Generate Links**: Tracked Links → New → Create trackable URLs with analytics
-5. **Test Attribution**: Create test lead and verify campaign attribution
+4. **Generate Links**: Tracked Links → New → Create trackable URLs (the short link auto-uses the current site domain)
+5. **Test Attribution**: Visit a tracked link, fill a form/create a lead, and verify the visitor → lead → deal attribution chain in CRM
 
 **[📖 Complete setup guide →](GETTING_STARTED.md)**
 

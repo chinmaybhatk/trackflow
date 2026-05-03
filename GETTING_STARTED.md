@@ -4,7 +4,8 @@
 
 ## Prerequisites
 
-- **Frappe Framework v15+** with Python 3.10+
+- **Frappe Framework v16+** with Python 3.14+
+- **Node.js 24+** for asset builds
 - **Frappe CRM** installed and configured
 - **MariaDB/MySQL** database backend
 - **Administrator access** to your Frappe site
@@ -22,8 +23,9 @@ bench get-app https://github.com/chinmaybhatk/trackflow.git
 # Install on your site
 bench --site your-site-name install-app trackflow
 
-# Deploy and configure
-cd apps/trackflow && chmod +x deploy.sh && ./deploy.sh your-site-name
+# Apply workspace fixture and build assets
+bench --site your-site-name migrate
+bench build --app trackflow
 ```
 
 ### Method 2: Manual Installation
@@ -33,8 +35,9 @@ cd frappe-bench/apps
 git clone https://github.com/chinmaybhatk/trackflow.git
 bench install-app trackflow --site your-site-name
 
-# Run migrations and restart
-bench migrate --site your-site-name
+# Run migrations, build, restart
+bench --site your-site-name migrate
+bench build --app trackflow
 bench restart
 ```
 
@@ -49,18 +52,17 @@ bench --site your-site-name console
 ## Initial Configuration
 
 ### 1. Access TrackFlow
-**Via CRM Sidebar:**
-1. Go to your Frappe site: `https://[your-site].frappe.cloud`
-2. Navigate to **CRM** workspace
-3. Look for **"TrackFlow Analytics"** section in the sidebar
+TrackFlow is registered as its own app in the Frappe v16 desk.
 
-**Via TrackFlow Workspace:**
-1. Click **"TrackFlow"** in the workspace list
-2. Access all features from the dedicated workspace
+- Open `https://[your-site]/desk/trackflow`
+- The desk shows a **"T TrackFlow"** badge in the top-left and a sidebar with **Home**, **Dashboard**, **Campaigns**, and **Tracked Links**
+- Shortcut cards on the home page jump straight to Dashboard, Campaigns, Tracked Links, and Settings
+
+> Note: Frappe CRM is a separate SPA at `/crm/`, so TrackFlow does not appear inside the CRM frontend itself — use the Frappe desk URL above for the TrackFlow workspace.
 
 ### 2. Configure Settings
-1. Go to **TrackFlow** workspace → **Settings**
-2. Or navigate to: `[your-site]/app/trackflow-settings`
+1. Open the **Settings** shortcut from the TrackFlow workspace, or
+2. Navigate to: `[your-site]/app/trackflow-settings`
 
 **Basic Configuration:**
 ```
@@ -78,7 +80,7 @@ bench --site your-site-name console
 
 ### Step 1: Create Your First Campaign
 ```
-Go to: CRM → TrackFlow Analytics → Campaigns → + New
+Go to: TrackFlow workspace → Campaigns → + New
 
 Campaign Name: Test Email Campaign
 Description: Holiday season email marketing
@@ -96,7 +98,7 @@ Budget: 5000 USD
 
 ### Step 2: Generate Tracked Links
 ```
-Go to: CRM → TrackFlow Analytics → Tracked Links → + New
+Go to: TrackFlow workspace → Tracked Links → + New
 
 Link Name: Test Product Link
 Campaign: [Select your campaign]
@@ -127,7 +129,7 @@ TrackFlow Tab:
 ```
 
 ### Step 5: Verify Attribution
-1. **Check Click Events**: CRM → TrackFlow Analytics → Click Analytics
+1. **Check Click Events**: TrackFlow workspace → Click Analytics
 2. **Check Visitors**: TrackFlow workspace → Visitors  
 3. **Campaign Performance**: Return to your campaign to see statistics
 
