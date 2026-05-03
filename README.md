@@ -1,247 +1,180 @@
-# TrackFlow - Marketing Attribution & Link Tracking for Frappe CRM
-
-**The most comprehensive marketing attribution platform for Frappe CRM** - Track every click, measure campaign ROI, and attribute revenue to the right marketing channels with advanced multi-touch attribution models.
+# TrackFlow — Link Tracking & Attribution for Frappe
 
 [![Frappe](https://img.shields.io/badge/Frappe-v16-blue.svg)](https://frappeframework.com) [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE) [![Python](https://img.shields.io/badge/python-3.14%2B-blue.svg)](https://python.org)
 
-## 🚀 What is TrackFlow?
+TrackFlow is a link-tracking app for Frappe v16. It generates short trackable URLs (with QR codes), captures click events with visitor identification, and exposes the data through Frappe's standard list views and form analytics. It can run standalone or alongside Frappe CRM.
 
-TrackFlow is an enterprise-grade **marketing attribution and link tracking system** built specifically for Frappe CRM. It transforms how businesses understand their marketing funnel by providing:
+> **Status:** This README only documents features that are verified working today. Planned and partially-implemented features live in the [Roadmap](#-roadmap) section. Things not yet working are listed under [Known Issues](#-known-issues).
 
-- **Advanced Multi-Touch Attribution** - 5 different attribution models
-- **Complete Visitor Journey Tracking** - From first click to conversion
-- **Deep CRM Integration** - Automatic lead and deal attribution
-- **Campaign Performance Analytics** - ROI tracking and optimization insights
-- **QR Code Generation** - For offline-to-online attribution
-- **GDPR Compliant** - Privacy-first visitor tracking
+---
 
-## 🎯 Key Features
+## ✅ What works today
 
-### 📊 Multi-Touch Attribution Models
-Transform your marketing analytics with sophisticated attribution:
-- **Last Touch** - 100% credit to final interaction
-- **First Touch** - 100% credit to initial touchpoint  
-- **Linear** - Equal credit distribution across all touches
-- **Time Decay** - Recent interactions weighted higher
-- **Position Based** - 40% first, 40% last, 20% middle touches
+### Tracked Links
+- Create a Tracked Link with a destination URL
+- Short code auto-generated (e.g. `4oATbZ`); short URL: `https://your-site/r/<code>`
+- Copy short link from the form's top banner
+- Soft fields: title, expiry date, status (Active/Inactive), UTM parameters (campaign, source, medium, content, term)
+- Click count, unique visitor count, last click timestamp on the form
 
-### 🔗 Advanced Link Tracking
-- **Smart Short URLs** with unique code generation
-- **UTM Parameter Management** - Automatic tagging and tracking
-- **Bulk Link Generation** - Create hundreds of tracking links instantly  
-- **QR Code Generation** - Bridge offline campaigns to digital tracking
-- **Link Expiration & Status** - Full lifecycle management
-- **Cross-Domain Tracking** - Maintain visitor identity across domains
+### QR Code Generation
+- QR code PNG auto-generated on insert and stored as a public File attachment
+- "Regenerate QR" button on form toolbar (forces refresh)
+- "Download PNG" and "Copy QR URL" actions in the QR preview block
 
-### 👥 Comprehensive Visitor Intelligence
-- **Persistent Visitor Identification** - Cookie-based tracking
-- **Session Management** - Complete user journey mapping
-- **Engagement Scoring** - 0-100 behavioral scoring system
-- **Conversion Tracking** - Goal achievement monitoring
-- **Activity Timeline** - Complete visitor interaction history
+### Click Tracking & Redirect
+- `/r/<short_code>` redirects (HTTP 301) to the destination URL
+- Each click creates a `Click Event` record (visitor ID, timestamp, IP, user-agent)
+- Visitor identification via `tf_visitor` query parameter appended to the destination URL
+- Click count and unique visitor count update on the Tracked Link form
 
-### 🔌 Deep Frappe CRM Integration
-**Automatic Data Sync** with your CRM:
-- **CRM Leads** - Source, medium, campaign attribution
-- **CRM Deals** - Revenue attribution with marketing influence calculation
-- **CRM Organizations** - Account-level engagement metrics
-- **Web Forms** - Conversion goal tracking and optimization
+### Click Event Analytics
+- The 📊 **Analytics** button on a Tracked Link opens the Click Event list filtered by that link
+- Standard Frappe list filters / exports / reports work on Click Events
 
-## 🏆 Why Choose TrackFlow?
+### Frappe v16 Desk Workspace
+- TrackFlow registers as its own app in the Frappe desk (`/desk/trackflow`)
+- Sidebar: **Home**, **Dashboard**, **Campaigns**, **Tracked Links**
+- Shortcut cards on the workspace home: Dashboard, Campaigns, Tracked Links, Settings
+- Workspace fixture (`trackflow/fixtures/trackflow_workspace.json`) is reapplied on `bench migrate`
 
-| Traditional Link Shorteners | TrackFlow Attribution Platform |
-|----------------------------|--------------------------------|
-| Basic click counting | Advanced multi-touch attribution |
-| No CRM integration | Deep Frappe CRM integration |
-| Limited analytics | Complete visitor journey tracking |
-| No attribution models | 5 sophisticated attribution models |
-| Basic reporting | Campaign ROI and performance insights |
+### Standalone Mode
+- TrackFlow installs cleanly without Frappe CRM present
+- FCRM-specific custom fields (`trackflow_visitor_id`, etc.) are skipped when CRM is not installed
+- Helper: `trackflow.trackflow.utils.fcrm.is_fcrm_installed()`
 
-## 💻 Quick Installation
+---
+
+## 💻 Installation
 
 ### Prerequisites
-- **Frappe Framework v16+** with **Frappe CRM**
-- **Python 3.14+** and **MariaDB/MySQL**
+- **Frappe Framework v16+** with Python 3.14+
 - **Node.js 24+** for asset builds
+- **MariaDB/MySQL** database backend
 - **Administrator access** to your Frappe site
+- *(Optional)* **Frappe CRM** for lead/deal integration features
 
-### One-Command Install
+### Install
+
 ```bash
-# Navigate to your bench directory
 cd ~/frappe-bench
 
-# Get TrackFlow from GitHub
 bench get-app https://github.com/chinmaybhatk/trackflow.git
-
-# Install on your site
 bench --site your-site-name install-app trackflow
-
-# Apply workspace fixture and migrations
 bench --site your-site-name migrate
 bench build --app trackflow
+bench restart
 ```
 
-### Quick Setup
-1. **Access TrackFlow**: Open `/desk/trackflow` — TrackFlow appears as its own app in the Frappe v16 desk with sidebar links for Dashboard, Campaigns, and Tracked Links
-2. **Configure Settings**: TrackFlow Settings → Enable tracking, set attribution model
-3. **Create Campaign**: Campaigns → New → Add UTM parameters and budget
-4. **Generate Links**: Tracked Links → New → Create trackable URLs (the short link auto-uses the current site domain)
-5. **Test Attribution**: Visit a tracked link, fill a form/create a lead, and verify the visitor → lead → deal attribution chain in CRM
+### First-Run Setup
 
-**[📖 Complete setup guide →](GETTING_STARTED.md)**
+1. **Open the workspace**: navigate to `https://your-site/desk/trackflow`
+2. **Configure settings** (Settings shortcut on workspace, or `/app/trackflow-settings`): enable tracking, set short-code length, choose attribution model
+3. **Create a Tracked Link** (Tracked Links → +): set Title and Destination URL, save — short URL and QR code are generated immediately
+4. **Test the redirect**: open the short URL — it should redirect (301) to the destination with `?tf_visitor=v_<id>` appended
+5. **View clicks**: open the Tracked Link form → 📊 Analytics button → Click Events filtered by that link
 
-## 📈 Analytics & Reporting
+> **Note**: Frappe CRM is a separate SPA at `/crm/` and does **not** host the TrackFlow workspace. Use `/desk/trackflow` for TrackFlow.
 
-### Campaign Performance Metrics
-- **Click-through rates** and engagement metrics
-- **Conversion rates** by traffic source
-- **Revenue attribution** across all touchpoints
-- **Visitor journey analysis** and funnel optimization
-- **ROI calculations** with cost-per-acquisition
+---
 
-### Attribution Insights
-- **Multi-touch journey mapping**
-- **Channel performance comparison**
-- **Campaign contribution analysis**
-- **Deal attribution breakdowns**
-- **Marketing-influenced revenue tracking**
+## 🗂️ Architecture
 
-## 🛠️ API & Integration
+**Active DocTypes**
 
-### REST API Endpoints
-```javascript
-// Track custom events
-POST /api/method/trackflow.api.tracking.track_event
+| DocType | Purpose |
+|---|---|
+| `Tracked Link` | Short URL + UTM + QR + click stats |
+| `Link Campaign` | Group of tracked links with budget |
+| `Click Event` | One row per click (visitor, timestamp, IP, UA) |
+| `Visitor` | Persistent visitor identity |
+| `Link Conversion` | Conversion event linked to a visitor |
+| `TrackFlow Settings` | Site-wide singleton config |
 
-// Bulk generate tracking links
-POST /api/method/trackflow.api.links.bulk_generate_links
+**Routes**
 
-// Get campaign analytics
-GET /api/method/trackflow.api.analytics.get_campaign_stats
+| Route | Purpose |
+|---|---|
+| `/r/<short_code>` | Click redirect (301) + tracking |
+| `/t/<short_code>` | Alias for `/r/` |
+| `/api/method/trackflow.api.tracking.*` | Tracking endpoints |
+| `/api/method/trackflow.api.links.*` | Link management endpoints |
 
-// Visitor profile data  
-GET /api/method/trackflow.api.visitor.get_visitor_profile
+---
+
+## 🚧 Roadmap
+
+The following features are scaffolded in the codebase but are **not yet end-to-end verified**. Treat them as work-in-progress until they get their own row in [What works today](#-what-works-today).
+
+### Attribution & CRM Integration
+- Multi-touch attribution models (Last Touch / First Touch / Linear / Time Decay / Position-Based)
+- Auto-link `CRM Lead` → visitor via `trackflow_visitor_id` custom field
+- `CRM Deal` revenue attribution and "marketing influenced" flag
+- Per-deal attribution PDF report (`trackflow.api.reports.generate_attribution_pdf`)
+
+### Campaign Analytics
+- Campaign performance dashboard (clicks, unique visitors, conversions, ROI)
+- Top-campaigns / source-breakdown / time-series APIs (`trackflow.api.analytics.*`)
+- Visitor journey timeline view
+
+### Email Tracking
+- 1×1 pixel open tracking (`trackflow.api.email.track_email_open`)
+- Wrapped link click tracking inside email HTML (`wrap_email_links`)
+- Email Campaign Log aggregation
+
+### Web Form Integration
+- Auto-attach `trackflow_visitor_id` to web form submissions
+- Conversion goal tracking on Web Form save
+
+### Other planned items
+- Cross-domain JS tracking embed for external sites (WordPress, Shopify, etc.)
+- Bulk link generation API
+- GDPR consent management UI
+- Internal IP / employee traffic exclusion
+- Webhooks on conversion / threshold alerts
+
+---
+
+## 🐛 Known Issues
+
+- **No "Link Analytics" query report** — the original button referenced a report that was never created. The button now opens the Click Event list filtered by the link instead. A proper aggregated report is on the roadmap.
+- **No CRM frontend integration** — TrackFlow only appears in the Frappe desk (`/desk/trackflow`), not inside the Frappe CRM SPA at `/crm/`. CRM integration is data-level only (via custom fields).
+- **`bench clear-cache` interrupts active desk sessions** — after a cache clear you may need to hard-reload the browser (Cmd/Ctrl+Shift+R) to recover the workspace sidebar.
+- **Workspace `content` field cannot contain HTML with quoted attributes** — the boot-info serializer mangles `\"` escapes. The TrackFlow workspace uses a plain-text header; do not add inline HTML with attributes.
+- **Several admin/diagnostic API methods are unverified** — e.g. `trackflow.api.debug.*`, `trackflow.api.emergency.*`. Review before exposing.
+- **Frontend SPA (`/frontend/`)** — a Vue dashboard exists in the repo but is not wired into the install flow.
+
+---
+
+## 🛠️ Development
+
+```bash
+# Bench dev server
+bench start
+
+# Rebuild after JS/JSON changes
+bench build --app trackflow
+
+# Apply doctype/fixture changes
+bench --site your-site-name migrate
+
+# Clear cache after fixture or boot-info changes
+bench --site your-site-name clear-cache
 ```
 
-### JavaScript Tracking
-```html
-<!-- Add to your website -->
-<script src="/api/method/trackflow.api.tracking.get_tracking_script"></script>
-```
+See [GETTING_STARTED.md](GETTING_STARTED.md) for the full setup walkthrough and [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines.
 
-## 🏗️ Technical Architecture
-
-**30+ Custom DocTypes** including:
-- `TrackedLink` - Smart link management
-- `LinkCampaign` - Campaign organization
-- `Visitor` - Complete visitor profiles
-- `ClickEvent` - Click tracking and analytics
-- `AttributionModel` - Multi-touch attribution
-- `VisitorSession` - Journey mapping
-- `DealAttribution` - Revenue attribution
-
-**Production-Ready Features:**
-- Rate limiting and security
-- GDPR compliance tools
-- Error handling and logging
-- Cross-domain tracking
-- Mobile-responsive design
-
-## 🚦 Production Status
-
-### ✅ Ready for Production Use
-- **Complete Attribution System**: 5 multi-touch attribution models with real-time calculation
-- **Deep CRM Integration**: 29 DocTypes with automatic lead/deal attribution
-- **Cross-Domain Tracking**: JavaScript embed for external websites (WordPress, Shopify, etc.)
-- **Campaign Analytics**: ROI tracking, visitor journeys, conversion reporting
-- **API Access**: 15+ endpoints for custom integrations and automation
-- **GDPR Compliance**: Cookie consent management and data protection
-- **Performance Optimized**: Handles 100K+ events/month with <100ms response times
-
-### 🔄 Active Development
-- Enhanced real-time dashboard with live metrics
-- Advanced campaign budgeting and ROI forecasting
-- Predictive analytics with ML-powered conversion scoring
-
-**[📊 View complete feature status →](docs/IMPLEMENTATION.md)**
-
-## 🎯 Use Cases
-
-### Digital Marketing Agencies
-Track campaign performance across multiple clients with detailed attribution reporting.
-
-### SaaS Companies  
-Measure trial-to-paid conversion attribution across marketing channels.
-
-### E-commerce Businesses
-Understand which campaigns drive actual revenue with deal attribution.
-
-### Content Marketers
-Track content performance and visitor journey from blog to conversion.
-
-## 📊 Success Metrics
-
-After implementing TrackFlow, businesses typically see:
-- **35% improvement** in campaign ROI measurement accuracy
-- **50% reduction** in time spent on attribution analysis  
-- **25% increase** in marketing qualified leads through better targeting
-- **40% improvement** in campaign optimization decisions
-
-## 🛡️ Privacy & Security
-
-- **GDPR Compliant** visitor tracking with consent management
-- **Data Anonymization** options for privacy-sensitive industries
-- **Secure Cookie Management** with configurable retention periods
-- **Rate Limiting** and DDoS protection for tracking endpoints
-- **Audit Trail** for all attribution and tracking activities
-
-## 🤝 Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
-
-**Quick Start:**
-1. Fork the repository and create a feature branch
-2. Set up local development with `./dev.sh start` (Docker) or bench install
-3. Make your changes and add tests
-4. Submit a pull request with clear description
-
-**Development Resources:**
-- [Implementation Guide](docs/IMPLEMENTATION.md) - Technical architecture and APIs
-- [Getting Started](GETTING_STARTED.md) - Installation and setup guide
+---
 
 ## 📄 License
 
-TrackFlow is open-source software licensed under the [MIT License](LICENSE).
+MIT — see [LICENSE](LICENSE).
 
-## 👨‍💻 About the Creator
+## 👨‍💻 Author
 
-**Chinmay Bhat** - Full-stack developer specializing in Frappe/ERPNext ecosystem
+**Chinmay Bhat** — [@chinmaybhatk](https://github.com/chinmaybhatk) · [chinmaybhatk@gmail.com](mailto:chinmaybhatk@gmail.com)
 
-- 🐙 GitHub: [@chinmaybhatk](https://github.com/chinmaybhatk)  
-- 📧 Email: [chinmaybhatk@gmail.com](mailto:chinmaybhatk@gmail.com)
-- 💼 LinkedIn: [Connect for consulting opportunities](https://linkedin.com/in/chinmaybhatk)
+## 🆘 Support
 
-## 🆘 Support & Community
-
-### Get Help
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/chinmaybhatk/trackflow/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/chinmaybhatk/trackflow/discussions)  
-- 📧 **Direct Support**: [chinmaybhatk@gmail.com](mailto:chinmaybhatk@gmail.com)
-- 📚 **Documentation**: [Wiki](https://github.com/chinmaybhatk/trackflow/wiki)
-
-### Stay Updated
-- ⭐ **Star** this repository for updates
-- 👀 **Watch** for new releases and features
-- 🍴 **Fork** to contribute or customize
-
----
-
-## 🏷️ Tags & Keywords
-
-`frappe-crm` `marketing-attribution` `link-tracking` `campaign-analytics` `utm-tracking` `conversion-tracking` `multi-touch-attribution` `visitor-journey` `marketing-roi` `crm-integration` `qr-code-tracking` `gdpr-compliant` `python` `javascript` `open-source`
-
----
-
-**Transform your marketing attribution today with TrackFlow** - The only attribution platform built specifically for Frappe CRM.
-
-[![Get Started](https://img.shields.io/badge/Get%20Started-Install%20Now-success.svg)](https://github.com/chinmaybhatk/trackflow#quick-installation) [![Documentation](https://img.shields.io/badge/Documentation-Read%20More-blue.svg)](https://github.com/chinmaybhatk/trackflow/wiki)
+- 🐛 **Bugs**: [GitHub Issues](https://github.com/chinmaybhatk/trackflow/issues)
+- 💬 **Discussion**: [GitHub Discussions](https://github.com/chinmaybhatk/trackflow/discussions)
