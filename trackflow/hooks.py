@@ -77,6 +77,10 @@ permission_query_conditions = {
 
 fixtures = [
     {
+        "dt": "Workspace",
+        "filters": [["name", "in", ["TrackFlow"]]],
+    },
+    {
         "dt": "Custom Field",
         "filters": [
             [

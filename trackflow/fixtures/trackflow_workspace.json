@@ -1,0 +1,114 @@
+[
+  {
+    "app": "trackflow",
+    "charts": [],
+    "content": "[{\"id\":\"_m0YKqfCb-\",\"type\":\"header\",\"data\":{\"text\":\"TrackFlow\",\"col\":12}},{\"id\":\"_7qhwGzfpQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Dashboard\",\"col\":4}},{\"id\":\"_8WxuHgnUe\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Campaigns\",\"col\":4}},{\"id\":\"_9PloKjmVf\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Tracked Links\",\"col\":4}},{\"id\":\"_5GhxNmkPa\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Settings\",\"col\":4}}]",
+    "custom_blocks": [],
+    "doctype": "Workspace",
+    "hide_custom": 0,
+    "icon": "trending-up",
+    "is_hidden": 0,
+    "label": "TrackFlow",
+    "links": [
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 1,
+        "is_query_report": 0,
+        "label": "TrackFlow Dashboard",
+        "link_to": "trackflow-dashboard",
+        "link_type": "Page",
+        "onboard": 0,
+        "type": "Link"
+      },
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 2,
+        "is_query_report": 0,
+        "label": "Link Campaign",
+        "link_to": "Link Campaign",
+        "link_type": "DocType",
+        "onboard": 1,
+        "type": "Link"
+      },
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 3,
+        "is_query_report": 0,
+        "label": "Tracked Link",
+        "link_to": "Tracked Link",
+        "link_type": "DocType",
+        "onboard": 1,
+        "type": "Link"
+      },
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 4,
+        "is_query_report": 0,
+        "label": "Click Event",
+        "link_to": "Click Event",
+        "link_type": "DocType",
+        "onboard": 0,
+        "type": "Link"
+      },
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 5,
+        "is_query_report": 0,
+        "label": "TrackFlow Settings",
+        "link_to": "TrackFlow Settings",
+        "link_type": "DocType",
+        "onboard": 0,
+        "type": "Link"
+      }
+    ],
+    "module": "TrackFlow",
+    "name": "TrackFlow",
+    "number_cards": [],
+    "parent_page": null,
+    "public": 1,
+    "quick_lists": [],
+    "roles": [],
+    "sequence_id": 100.0,
+    "shortcuts": [
+      {
+        "color": "Blue",
+        "doctype": "Workspace Shortcut",
+        "idx": 1,
+        "label": "Dashboard",
+        "link_to": "trackflow-dashboard",
+        "type": "Page"
+      },
+      {
+        "color": "Green",
+        "doctype": "Workspace Shortcut",
+        "idx": 2,
+        "label": "Campaigns",
+        "link_to": "Link Campaign",
+        "type": "DocType"
+      },
+      {
+        "color": "Orange",
+        "doctype": "Workspace Shortcut",
+        "idx": 3,
+        "label": "Tracked Links",
+        "link_to": "Tracked Link",
+        "type": "DocType"
+      },
+      {
+        "color": "Purple",
+        "doctype": "Workspace Shortcut",
+        "idx": 4,
+        "label": "Settings",
+        "link_to": "TrackFlow Settings",
+        "type": "DocType"
+      }
+    ],
+    "title": "TrackFlow",
+    "type": null
+  }
+]
