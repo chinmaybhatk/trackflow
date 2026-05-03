@@ -8,7 +8,7 @@ TrackFlow is a link-tracking app for Frappe v16. It generates short trackable UR
 
 ---
 
-## ✅ What works today
+## ✅ Features
 
 ### Tracked Links
 - Create a Tracked Link with a destination URL
@@ -42,6 +42,12 @@ TrackFlow is a link-tracking app for Frappe v16. It generates short trackable UR
 - TrackFlow installs cleanly without Frappe CRM present
 - FCRM-specific custom fields (`trackflow_visitor_id`, etc.) are skipped when CRM is not installed
 - Helper: `trackflow.trackflow.utils.fcrm.is_fcrm_installed()`
+
+### Web Form → CRM Lead Attribution *(requires Frappe CRM)*
+- When a tracked link redirects a user to a Frappe web form on the same site, the visitor is captured via the `tf_visitor` URL param and `trackflow_visitor` cookie
+- On lead creation, a `before_insert` hook stamps `trackflow_visitor_id` plus the last-touch `source` / `medium` / `campaign` onto the `CRM Lead`
+- A `Visitor` record is auto-created (on first click) and linked back to the lead (`Visitor.crm_lead`, `lead_created_date`)
+- Engagement score on the Visitor reflects clicks, page views, conversions, and lead linkage
 
 ---
 
@@ -104,7 +110,7 @@ bench restart
 
 ## 🚧 Roadmap
 
-The following features are scaffolded in the codebase but are **not yet end-to-end verified**. Treat them as work-in-progress until they get their own row in [What works today](#-what-works-today).
+The following features are scaffolded in the codebase but are **not yet end-to-end verified**. Treat them as work-in-progress until they get their own row in [Features](#-what-works-today).
 
 ### Attribution & CRM Integration
 - Multi-touch attribution models (Last Touch / First Touch / Linear / Time Decay / Position-Based)
@@ -122,9 +128,9 @@ The following features are scaffolded in the codebase but are **not yet end-to-e
 - Wrapped link click tracking inside email HTML (`wrap_email_links`)
 - Email Campaign Log aggregation
 
-### Web Form Integration
-- Auto-attach `trackflow_visitor_id` to web form submissions
-- Conversion goal tracking on Web Form save
+### Web Form: deeper integration
+- Conversion goal tracking on Web Form save (the hook scaffolding exists but the conversion record is not yet created from web-form submissions)
+- Auto-injection of a hidden `tf_visitor` field into Frappe web form HTML so cross-domain submissions work too
 
 ### Other planned items
 - Cross-domain JS tracking embed for external sites (WordPress, Shopify, etc.)
