@@ -31,7 +31,7 @@ frappe.ui.form.on('Tracked Link', {
             });
 
             frm.add_custom_button(__('📊 Analytics'), function () {
-                frappe.set_route('query-report', 'Link Analytics', {
+                frappe.set_route('List', 'Click Event', {
                     tracked_link: frm.doc.name
                 });
             });
