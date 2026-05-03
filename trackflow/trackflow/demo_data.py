@@ -138,7 +138,7 @@ def create_demo_tracking_links(campaigns):
         {
             "title": "Spring Sale - Email Header",
             "campaign": campaigns[0].name,
-            "destination_url": "https://example.com/spring-sale",
+            "target_url": "https://example.com/spring-sale",
             "utm_parameters": {
                 "utm_source": "email",
                 "utm_medium": "newsletter",
@@ -149,7 +149,7 @@ def create_demo_tracking_links(campaigns):
         {
             "title": "Spring Sale - Email Footer",
             "campaign": campaigns[0].name,
-            "destination_url": "https://example.com/spring-sale",
+            "target_url": "https://example.com/spring-sale",
             "utm_parameters": {
                 "utm_source": "email",
                 "utm_medium": "newsletter",
@@ -160,7 +160,7 @@ def create_demo_tracking_links(campaigns):
         {
             "title": "AI Product - Facebook Ad",
             "campaign": campaigns[1].name,
-            "destination_url": "https://example.com/ai-assistant",
+            "target_url": "https://example.com/ai-assistant",
             "utm_parameters": {
                 "utm_source": "facebook",
                 "utm_medium": "cpc",
@@ -171,7 +171,7 @@ def create_demo_tracking_links(campaigns):
         {
             "title": "AI Product - LinkedIn Post",
             "campaign": campaigns[1].name,
-            "destination_url": "https://example.com/ai-assistant/demo",
+            "target_url": "https://example.com/ai-assistant/demo",
             "utm_parameters": {
                 "utm_source": "linkedin",
                 "utm_medium": "social",
@@ -182,7 +182,7 @@ def create_demo_tracking_links(campaigns):
         {
             "title": "Blog - Ultimate Guide to AI",
             "campaign": campaigns[2].name,
-            "destination_url": "https://example.com/blog/ultimate-guide-ai",
+            "target_url": "https://example.com/blog/ultimate-guide-ai",
             "utm_parameters": {
                 "utm_source": "google",
                 "utm_medium": "organic",
@@ -196,7 +196,7 @@ def create_demo_tracking_links(campaigns):
         link = frappe.new_doc("Tracked Link")
         link.title = link_data["title"]
         link.campaign = link_data["campaign"]
-        link.destination_url = link_data["destination_url"]
+        link.target_url = link_data["target_url"]
         link.tracking_id = generate_tracking_id()
         
         # Add UTM parameters

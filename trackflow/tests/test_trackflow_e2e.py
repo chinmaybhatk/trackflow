@@ -44,7 +44,7 @@ class TestTrackFlowE2E(unittest.TestCase):
             "doctype": "Tracked Link",
             "campaign": self.test_campaign,
             "custom_identifier": "summer-email-header",
-            "destination_url": "https://example.com/summer-sale",
+            "target_url": "https://example.com/summer-sale",
             "medium": "email",
             "source": "newsletter",
             "status": "Active"

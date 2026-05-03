@@ -204,7 +204,7 @@ def get_lead_tracking_info(lead):
             lla.click_event,
             lla.association_date,
             tl.short_code,
-            tl.destination_url,
+            tl.target_url,
             tl.campaign_name,
             ce.timestamp as click_time,
             ce.ip_address,
@@ -247,7 +247,7 @@ def generate_lead_tracked_link(lead, campaign=None, custom_params=None):
     
     # Prepare link data
     link_data = {
-        'destination_url': frappe.db.get_single_value('TrackFlow Settings', 'lead_form_url') or '/lead-form',
+        'target_url': frappe.db.get_single_value('TrackFlow Settings', 'lead_form_url') or '/lead-form',
         'campaign': campaign or 'lead-followup',
         'campaign_name': f"Lead Follow-up - {lead_doc.lead_name}",
         'utm_source': 'email',

@@ -18,7 +18,7 @@ def track_click(short_code=None):
     link = frappe.db.get_value(
         "Tracked Link",
         {"short_code": short_code, "status": "Active"},
-        ["name", "target_url", "destination_url", "campaign", "source", "medium"],
+        ["name", "target_url", "campaign", "source", "medium"],
         as_dict=True,
     )
 
@@ -68,7 +68,6 @@ def create_link(url, campaign=None, title=None, source=None, medium=None, **kwar
     link = frappe.new_doc("Tracked Link")
     link.title = title or url[:140]
     link.target_url = url
-    link.destination_url = url
     link.campaign = campaign
     link.source = source
     link.medium = medium
@@ -143,7 +142,7 @@ def bulk_create_links(links):
 
 def _build_final_url(link):
     """Build final URL with UTM parameters"""
-    url = link.target_url or link.destination_url
+    url = link.target_url
     if not url:
         return "/"
 

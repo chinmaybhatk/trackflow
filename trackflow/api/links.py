@@ -26,7 +26,7 @@ def bulk_generate_links(campaign, identifiers):
             link = frappe.new_doc("Tracked Link")
             link.campaign = campaign
             link.title = identifier
-            link.destination_url = f"https://example.com/{identifier}"
+            link.target_url = f"https://example.com/{identifier}"
             link.status = "Active"
             link.insert()
             created_links.append(link.name)

@@ -4,9 +4,11 @@ Emergency diagnostic script for TrackFlow
 
 import frappe
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist()
 def diagnose():
-    """Emergency diagnostic endpoint that bypasses all hooks"""
+    """Emergency diagnostic endpoint — requires login (System Manager)."""
+    if "System Manager" not in frappe.get_roles():
+        frappe.throw("This endpoint requires System Manager role.", frappe.PermissionError)
     try:
         # Basic system check
         result = {

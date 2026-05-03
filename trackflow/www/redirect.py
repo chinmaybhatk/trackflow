@@ -17,7 +17,7 @@ def get_context(context):
     tracked_link = frappe.db.get_value(
         "Tracked Link",
         {"short_code": tracking_id, "status": "Active"},
-        ["name", "target_url", "destination_url", "campaign", "source", "medium"],
+        ["name", "target_url", "campaign", "source", "medium"],
         as_dict=True,
     )
 
@@ -87,11 +87,7 @@ def get_context(context):
     except Exception:
         frappe.log_error(frappe.get_traceback(), "Click Event Tracking Error")
 
-    destination_url = tracked_link.target_url or tracked_link.destination_url
-
-    if not destination_url and tracked_link.campaign:
-        campaign = frappe.get_doc("Link Campaign", tracked_link.campaign)
-        destination_url = getattr(campaign, "target_url", None)
+    destination_url = tracked_link.target_url
 
     if not destination_url:
         frappe.throw(_("Invalid destination URL"), frappe.ValidationError)

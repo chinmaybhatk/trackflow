@@ -54,7 +54,7 @@ class TestTrackFlowUI:
         
         # Fill form
         page.fill('input[data-fieldname="custom_identifier"]', 'ui-test-link')
-        page.fill('input[data-fieldname="destination_url"]', 'https://example.com/test')
+        page.fill('input[data-fieldname="target_url"]', 'https://example.com/test')
         page.fill('input[data-fieldname="medium"]', 'email')
         page.fill('input[data-fieldname="source"]', 'newsletter')
         

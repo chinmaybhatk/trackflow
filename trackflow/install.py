@@ -10,24 +10,47 @@ def before_install():
 
 def after_install():
     """Tasks to run after installing TrackFlow"""
-    create_fcrm_custom_fields()
-    create_fcrm_property_setters()
+    from trackflow.trackflow.utils.fcrm import is_fcrm_installed
+
+    if is_fcrm_installed():
+        create_fcrm_custom_fields()
+        create_fcrm_property_setters()
+    else:
+        frappe.msgprint(
+            _(
+                "TrackFlow installed in standalone mode. "
+                "Link tracking and QR codes are fully available. "
+                "Install Frappe CRM to unlock lead/deal attribution."
+            ),
+            title=_("TrackFlow — Standalone Mode"),
+            indicator="blue",
+        )
+
     create_trackflow_settings()
     setup_permissions()
 
 
 def after_migrate():
     """Tasks to run after migration"""
-    create_fcrm_custom_fields()
+    from trackflow.trackflow.utils.fcrm import is_fcrm_installed
+
+    if is_fcrm_installed():
+        create_fcrm_custom_fields()
+
     create_trackflow_settings()
 
 
 def check_dependencies():
-    """Check if required apps are installed"""
+    """Check if required apps are installed. FCRM is optional — warn only."""
     installed_apps = frappe.get_installed_apps()
 
     if "crm" not in installed_apps:
-        frappe.throw(_("TrackFlow requires Frappe CRM to be installed"))
+        # Warn but do NOT block installation — standalone mode is supported.
+        print(
+            "\n[TrackFlow] Frappe CRM not detected. "
+            "Installing in standalone mode (link tracking + QR codes only). "
+            "Install Frappe CRM later to enable lead/deal attribution.\n"
+        )
 
 
 def create_trackflow_settings():

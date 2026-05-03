@@ -8,7 +8,6 @@
     "field_order": [
         "title",
         "short_code",
-        "destination_url",
         "target_url",
         "column_break_4",
         "status",
@@ -49,15 +48,10 @@
             "unique": 1
         },
         {
-            "fieldname": "destination_url",
-            "fieldtype": "Data",
-            "label": "Destination URL",
-            "reqd": 1
-        },
-        {
             "fieldname": "target_url",
             "fieldtype": "Data",
-            "label": "Target URL",
+            "label": "Destination URL",
+            "description": "The full URL you want people to land on — e.g. https://yourwebsite.com/offer",
             "reqd": 1
         },
         {
