@@ -27,6 +27,7 @@ def after_install():
         )
 
     create_trackflow_settings()
+    create_web_form_custom_fields()
     setup_permissions()
 
 
@@ -38,6 +39,7 @@ def after_migrate():
         create_fcrm_custom_fields()
 
     create_trackflow_settings()
+    create_web_form_custom_fields()
 
 
 def check_dependencies():
@@ -225,28 +227,6 @@ def create_fcrm_custom_fields():
                 "read_only": 1,
             },
         ],
-        "Web Form": [
-            {
-                "fieldname": "trackflow_section",
-                "label": "TrackFlow Settings",
-                "fieldtype": "Section Break",
-                "insert_after": "custom_css",
-            },
-            {
-                "fieldname": "trackflow_tracking_enabled",
-                "label": "Enable TrackFlow Tracking",
-                "fieldtype": "Check",
-                "insert_after": "trackflow_section",
-            },
-            {
-                "fieldname": "trackflow_conversion_goal",
-                "label": "Conversion Goal",
-                "fieldtype": "Link",
-                "options": "Link Campaign",
-                "insert_after": "trackflow_tracking_enabled",
-                "depends_on": "trackflow_tracking_enabled",
-            },
-        ],
     }
 
     for doctype, fields in custom_fields.items():
@@ -262,6 +242,51 @@ def create_fcrm_custom_fields():
                     cf.insert(ignore_permissions=True)
                 except Exception:
                     pass
+
+
+def create_web_form_custom_fields():
+    """Add TrackFlow tracking config to Frappe core's Web Form (not FCRM-gated)."""
+    fields = [
+        {
+            "fieldname": "trackflow_section",
+            "label": "TrackFlow Settings",
+            "fieldtype": "Section Break",
+            "insert_after": "custom_css",
+            "collapsible": 1,
+        },
+        {
+            "fieldname": "trackflow_tracking_enabled",
+            "label": "Enable TrackFlow Tracking",
+            "fieldtype": "Check",
+            "insert_after": "trackflow_section",
+            "description": (
+                "When enabled, every submission of this form becomes a "
+                "Conversion attributed to the visitor's most recent tracked-link click."
+            ),
+        },
+        {
+            "fieldname": "trackflow_conversion_goal",
+            "label": "Conversion Goal (Campaign)",
+            "fieldtype": "Link",
+            "options": "Link Campaign",
+            "insert_after": "trackflow_tracking_enabled",
+            "depends_on": "trackflow_tracking_enabled",
+            "description": "Campaign to attribute the conversion to (optional).",
+        },
+    ]
+    if not frappe.db.exists("DocType", "Web Form"):
+        return
+    for field in fields:
+        field_name = f"Web Form-{field['fieldname']}"
+        if frappe.db.exists("Custom Field", field_name):
+            continue
+        cf = frappe.new_doc("Custom Field")
+        cf.dt = "Web Form"
+        cf.update(field)
+        try:
+            cf.insert(ignore_permissions=True)
+        except Exception:
+            pass
 
 
 def create_fcrm_property_setters():

@@ -69,6 +69,7 @@ website_route_rules = [
 
 override_whitelisted_methods = {
     "frappe.www.contact.send_message": "trackflow.overrides.contact.track_form_submission",
+    "frappe.website.doctype.web_form.web_form.accept": "trackflow.overrides.web_form.accept",
 }
 
 permission_query_conditions = {
