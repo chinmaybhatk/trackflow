@@ -148,7 +148,7 @@ def utm_campaign_name(campaign_id):
         return "No Campaign"
         
     try:
-        return frappe.get_value("Campaign", campaign_id, "campaign_name") or campaign_id
+        return frappe.get_value("Link Campaign", campaign_id, "campaign_name") or campaign_id
     except:
         return campaign_id
 

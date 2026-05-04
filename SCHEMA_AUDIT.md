@@ -44,22 +44,33 @@ We removed it from `error_handler.py` earlier. Other files still reference it.
 
 ## ⚠️ P1 — Naming / consistency problems
 
-### 4. `Campaign` vs `Link Campaign` overlap
+> **Status:** P1 #4 and #5 shipped. P1 #6 deferred (see note below).
+
+### 4. ~~`Campaign` vs `Link Campaign` overlap~~ ✅ DONE
 Two campaign doctypes:
 - `Campaign` — used by `email.py`, `dashboard.py`, `jinja_filters.py`, `campaign_performance_report.py`, `trackflow_dashboard`. Looks like the **email-marketing** flavor.
 - `Link Campaign` — used by ~50 references. The **link-tracking** flavor. Has fields like `budget`, `start_date`, `end_date`, `status`.
 
 **Proposal:** Merge into `Link Campaign` and add a `campaign_type` enum (Email / Link / Mixed). Update email tracking to use `Link Campaign` with `campaign_type=Email`. Removes 1 doctype.
 
-### 5. `Click Event.click_timestamp` vs `creation`
+**Resolved:** `Campaign` doctype deleted (had 0 records). All 6 callers migrated to `Link Campaign`. `Link Campaign` already had a `campaign_type` Select with options Email/Social/SEM/Content/Affiliate/Display/Direct Mail/Event/Other.
+
+### 5. ~~`Click Event.click_timestamp` vs `creation`~~ ✅ DONE
 Some queries filter on `creation` (`tabClick Event` in `analytics.py`), others on `click_timestamp` (in `crm_lead.py`). They're usually equal, but not always (if a click is backfilled).
 
 **Proposal:** Standardize on `click_timestamp` everywhere. `creation` is a system field, not a business field.
 
-### 6. Click Event UTM duplication
+**Resolved:** All `analytics.py` queries now use `click_timestamp` for Click Event and `conversion_timestamp` for Link Conversion. Verified `get_analytics(period="30days")` returns real numbers (5 clicks, 5 unique visitors).
+
+### 6. Click Event UTM duplication ⏸ DEFERRED
 `Click Event` has `utm_source`, `utm_medium`, `utm_campaign`, `utm_term`, `utm_content` AND `campaign` AND `short_code`. The `tracked_link` link already implies `campaign` and UTMs. This is denormalized data that can drift.
 
 **Proposal:** Keep `utm_*` (we want frozen point-in-time values), drop the redundant `campaign` field (derivable from `tracked_link.campaign`).
+
+**Deferred** because:
+- 5+ files would need rewrites with JOINs through `tracked_link`, adding query overhead
+- The field is set once at insert from `tracked_link.campaign`; tracked links rarely re-campaign, so drift risk is low
+- Revisit if there's a concrete drift bug, or if the schema gets a major refactor
 
 ---
 

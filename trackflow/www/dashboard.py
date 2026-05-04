@@ -4,7 +4,7 @@ from frappe import _
 def get_context(context):
     """Get context for TrackFlow public dashboard."""
     # Check if user has permission
-    if not frappe.has_permission("Campaign", "read"):
+    if not frappe.has_permission("Link Campaign", "read"):
         frappe.throw(_("You don't have permission to access this page"), frappe.PermissionError)
     
     context.title = "TrackFlow Analytics Dashboard"

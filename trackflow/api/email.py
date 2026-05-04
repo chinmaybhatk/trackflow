@@ -112,15 +112,15 @@ def prepare_tracked_email(subject, content, recipients, campaign_name):
     """Prepare email with tracking"""
     try:
         # Create or get campaign
-        if not frappe.db.exists("Campaign", campaign_name):
-            campaign = frappe.new_doc("Campaign")
+        if not frappe.db.exists("Link Campaign", campaign_name):
+            campaign = frappe.new_doc("Link Campaign")
             campaign.campaign_name = campaign_name
             campaign.campaign_type = "Email"
             campaign.start_date = frappe.utils.nowdate()
             campaign.status = "Active"
             campaign.insert()
         else:
-            campaign = frappe.get_doc("Campaign", campaign_name)
+            campaign = frappe.get_doc("Link Campaign", campaign_name)
             
         tracked_emails = []
         

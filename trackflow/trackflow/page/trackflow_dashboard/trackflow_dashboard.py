@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 @frappe.whitelist()
 def get_dashboard_data():
     """Get comprehensive dashboard data for TrackFlow analytics."""
-    if not frappe.has_permission("Campaign", "read"):
+    if not frappe.has_permission("Link Campaign", "read"):
         frappe.throw(_("You don't have permission to access this data"))
     
     # Get date range (last 30 days by default)
@@ -260,7 +260,7 @@ def get_attribution_data(start_date, end_date):
 @frappe.whitelist()
 def get_chart_data(chart_type, start_date=None, end_date=None):
     """Get specific chart data based on type."""
-    if not frappe.has_permission("Campaign", "read"):
+    if not frappe.has_permission("Link Campaign", "read"):
         frappe.throw(_("You don't have permission to access this data"))
     
     if not start_date:

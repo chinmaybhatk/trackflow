@@ -115,28 +115,28 @@ def get_traffic_metrics(from_date, to_date):
     # Total clicks
     metrics["total_clicks"] = frappe.db.sql("""
         SELECT COUNT(*) FROM `tabClick Event`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(click_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
-    
+
     # Unique visitors
     metrics["unique_visitors"] = frappe.db.sql("""
         SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(click_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
-    
+
     # Average clicks per visitor
     metrics["avg_clicks_per_visitor"] = (
-        metrics["total_clicks"] / metrics["unique_visitors"] 
+        metrics["total_clicks"] / metrics["unique_visitors"]
         if metrics["unique_visitors"] else 0
     )
-    
+
     # New vs returning visitors
     new_visitors = frappe.db.sql("""
         SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(click_timestamp) BETWEEN %s AND %s
         AND visitor_id NOT IN (
             SELECT DISTINCT visitor_id FROM `tabClick Event`
-            WHERE DATE(creation) < %s
+            WHERE DATE(click_timestamp) < %s
         )
     """, (from_date, to_date, from_date))[0][0] or 0
     
@@ -152,29 +152,29 @@ def get_conversion_metrics(from_date, to_date):
     # Total conversions
     metrics["total_conversions"] = frappe.db.sql("""
         SELECT COUNT(*) FROM `tabLink Conversion`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
-    
+
     # Conversion value
     metrics["total_value"] = frappe.db.sql("""
         SELECT COALESCE(SUM(conversion_value), 0) FROM `tabLink Conversion`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
-    
+
     # Conversion types breakdown
     conversion_types = frappe.db.sql("""
         SELECT conversion_type, COUNT(*) as count
         FROM `tabLink Conversion`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
         GROUP BY conversion_type
     """, (from_date, to_date), as_dict=True)
-    
+
     metrics["by_type"] = {ct["conversion_type"]: ct["count"] for ct in conversion_types}
-    
+
     # Conversion rate
     clicks = frappe.db.sql("""
         SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(click_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
     
     metrics["conversion_rate"] = (
@@ -194,7 +194,7 @@ def get_top_campaigns(from_date, to_date):
             COALESCE(SUM(lc.conversion_value), 0) as revenue
         FROM `tabClick Event` ce
         LEFT JOIN `tabLink Conversion` lc ON lc.campaign = ce.campaign
-        WHERE DATE(ce.creation) BETWEEN %s AND %s
+        WHERE DATE(ce.click_timestamp) BETWEEN %s AND %s
         AND ce.campaign IS NOT NULL
         GROUP BY ce.campaign
         ORDER BY clicks DESC
@@ -218,7 +218,7 @@ def get_source_breakdown(from_date, to_date):
             COUNT(*) as clicks,
             COUNT(DISTINCT visitor_id) as visitors
         FROM `tabClick Event`
-        WHERE DATE(creation) BETWEEN %s AND %s
+        WHERE DATE(click_timestamp) BETWEEN %s AND %s
         GROUP BY utm_source, utm_medium
         ORDER BY clicks DESC
         LIMIT 20
@@ -230,16 +230,16 @@ def get_timeseries_data(from_date, to_date):
     """Get time series data for charts"""
     # Daily clicks and conversions
     daily_data = frappe.db.sql("""
-        SELECT 
-            DATE(ce.creation) as date,
+        SELECT
+            DATE(ce.click_timestamp) as date,
             COUNT(DISTINCT ce.name) as clicks,
             COUNT(DISTINCT ce.visitor_id) as visitors,
             COUNT(DISTINCT lc.name) as conversions
         FROM `tabClick Event` ce
-        LEFT JOIN `tabLink Conversion` lc 
-            ON DATE(lc.creation) = DATE(ce.creation)
-        WHERE DATE(ce.creation) BETWEEN %s AND %s
-        GROUP BY DATE(ce.creation)
+        LEFT JOIN `tabLink Conversion` lc
+            ON DATE(lc.conversion_timestamp) = DATE(ce.click_timestamp)
+        WHERE DATE(ce.click_timestamp) BETWEEN %s AND %s
+        GROUP BY DATE(ce.click_timestamp)
         ORDER BY date
     """, (from_date, to_date), as_dict=True)
     
@@ -251,9 +251,9 @@ def get_visitor_journey(visitor_id):
     try:
         # Get all touchpoints
         touchpoints = frappe.db.sql("""
-            SELECT 
+            SELECT
                 'click' as type,
-                creation as timestamp,
+                click_timestamp as timestamp,
                 tracked_link,
                 utm_source,
                 utm_medium,
@@ -262,15 +262,15 @@ def get_visitor_journey(visitor_id):
                 referrer
             FROM `tabClick Event`
             WHERE visitor_id = %s
-            
+
             UNION ALL
-            
-            SELECT 
+
+            SELECT
                 'conversion' as type,
-                creation as timestamp,
-                document_name as tracked_link,
-                source as utm_source,
-                medium as utm_medium,
+                conversion_timestamp as timestamp,
+                tracked_link,
+                NULL as utm_source,
+                NULL as utm_medium,
                 campaign as utm_campaign,
                 NULL as page_url,
                 NULL as referrer
