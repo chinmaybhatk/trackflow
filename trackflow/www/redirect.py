@@ -43,7 +43,7 @@ def get_context(context):
             frappe.local.cookie_manager.set_cookie(
                 "trackflow_visitor",
                 visitor_id,
-                expires=365 * 24 * 60 * 60,
+                max_age=365 * 24 * 60 * 60,
             )
 
         request_data = {

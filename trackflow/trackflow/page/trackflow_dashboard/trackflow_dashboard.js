@@ -145,19 +145,13 @@ class TrackFlowDashboard {
                     </div>
                 </div>
 
-                <!-- Charts Row 2 -->
+                <!-- Conversion Funnel (full width) -->
                 <div class="dashboard-charts-row-2">
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-12">
                             <div class="dashboard-card">
                                 <h4>${__('Conversion Funnel')}</h4>
                                 <div id="funnel-chart"></div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="dashboard-card">
-                                <h4>${__('Device Distribution')}</h4>
-                                <div id="device-chart"></div>
                             </div>
                         </div>
                     </div>
@@ -176,14 +170,6 @@ class TrackFlowDashboard {
                     <div class="dashboard-card">
                         <h4>${__('Recent Visitors')}</h4>
                         <div id="visitor-table"></div>
-                    </div>
-                </div>
-
-                <!-- Attribution Analysis -->
-                <div class="dashboard-attribution">
-                    <div class="dashboard-card">
-                        <h4>${__('Attribution Analysis')}</h4>
-                        <div id="attribution-chart"></div>
                     </div>
                 </div>
             </div>
@@ -263,10 +249,8 @@ class TrackFlowDashboard {
         this.render_visitor_trend_chart();
         this.render_source_chart();
         this.render_funnel_chart();
-        this.render_device_chart();
         this.render_campaign_table();
         this.render_visitor_table();
-        this.render_attribution_chart();
     }
 
     render_summary_cards() {
@@ -375,51 +359,29 @@ class TrackFlowDashboard {
     }
 
     render_funnel_chart() {
-        const campaigns = this.data.campaigns || [];
-        
-        // Create funnel stages from campaign data
+        // Site-wide funnel built from real summary metrics, not campaign
+        // aggregates (which collapse to 0 when there are no Active campaigns).
+        const summary = this.data.summary || {};
         const stages = [
-            { label: __('Visitors'), value: campaigns.reduce((sum, c) => sum + (c.visitors || 0), 0) },
-            { label: __('Sessions'), value: campaigns.reduce((sum, c) => sum + (c.sessions || 0), 0) },
-            { label: __('Page Views'), value: campaigns.reduce((sum, c) => sum + (c.page_views || 0), 0) },
-            { label: __('Conversions'), value: campaigns.reduce((sum, c) => sum + (c.conversions || 0), 0) }
+            { label: __('Unique Visitors'),  value: summary.total_visitors    || 0 },
+            { label: __('Clicks Tracked'),   value: summary.total_sessions    || 0 },
+            { label: __('Conversions'),      value: summary.total_conversions || 0 },
         ];
 
-        // Render funnel visualization
-        const funnel_html = stages.map((stage, idx) => {
-            const percentage = idx === 0 ? 100 : (stage.value / stages[0].value * 100).toFixed(1);
-            const width = `${percentage}%`;
+        const top = Math.max(stages[0].value, 1); // avoid divide-by-zero
+        const funnel_html = stages.map((stage) => {
+            const pct = (stage.value / top * 100).toFixed(1);
             return `
                 <div class="funnel-stage">
-                    <div class="funnel-bar" style="width: ${width};">
+                    <div class="funnel-bar" style="width: ${pct}%;">
                         <span class="funnel-label">${stage.label}</span>
-                        <span class="funnel-value">${format_number(stage.value)} (${percentage}%)</span>
+                        <span class="funnel-value">${format_number(stage.value)} (${pct}%)</span>
                     </div>
                 </div>
             `;
         }).join('');
 
         $('#funnel-chart').html(`<div class="funnel-container">${funnel_html}</div>`);
-    }
-
-    render_device_chart() {
-        const devices = this.data.devices || {};
-        
-        // Prepare data for donut chart
-        const labels = Object.keys(devices);
-        const data = labels.map(device => devices[device].sessions || 0);
-
-        this.charts.device = new frappe.Chart('#device-chart', {
-            data: {
-                labels: labels,
-                datasets: [{
-                    values: data
-                }]
-            },
-            type: 'donut',
-            height: 300,
-            colors: ['#7cd6fd', '#5e64ff', '#743ee2', '#ff5858']
-        });
     }
 
     render_campaign_table() {
@@ -512,55 +474,6 @@ class TrackFlowDashboard {
         `;
 
         $('#visitor-table').html(table_html);
-    }
-
-    render_attribution_chart() {
-        const attribution = this.data.attribution || [];
-        
-        if (attribution.length === 0) {
-            $('#attribution-chart').html(`<p class="text-muted">${__('No attribution data available')}</p>`);
-            return;
-        }
-
-        // Group by model and calculate totals
-        const models = {};
-        attribution.forEach(attr => {
-            const key = attr.model_name;
-            if (!models[key]) {
-                models[key] = {
-                    name: attr.model_name,
-                    type: attr.model_type,
-                    total_value: 0,
-                    deals: 0
-                };
-            }
-            models[key].total_value += attr.total_attributed_value || 0;
-            models[key].deals += attr.deals_influenced || 0;
-        });
-
-        // Render attribution comparison
-        const chart_html = `
-            <div class="attribution-comparison">
-                ${Object.values(models).map(model => `
-                    <div class="attribution-model">
-                        <h5>${model.name}</h5>
-                        <p class="text-muted">${model.type}</p>
-                        <div class="attribution-stats">
-                            <div class="stat">
-                                <div class="stat-value">${format_currency(model.total_value)}</div>
-                                <div class="stat-label">${__('Attributed Value')}</div>
-                            </div>
-                            <div class="stat">
-                                <div class="stat-value">${format_number(model.deals)}</div>
-                                <div class="stat-label">${__('Deals Influenced')}</div>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
-            </div>
-        `;
-
-        $('#attribution-chart').html(chart_html);
     }
 
     export_data() {

@@ -13,6 +13,7 @@ import frappe
 from frappe import _
 
 
+@frappe.whitelist(allow_guest=True)
 def accept(web_form, data):
     """Drop-in replacement for `frappe.website.doctype.web_form.web_form.accept`.
 
