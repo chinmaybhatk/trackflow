@@ -74,21 +74,21 @@ Some queries filter on `creation` (`tabClick Event` in `analytics.py`), others o
 
 ---
 
-## 🪦 P2 — Orphaned doctypes (0 code references — candidates for removal)
+## 🪦 P2 — Orphaned doctypes ✅ DONE (all 9 deleted)
 
-| Doctype | Refs | Safe to delete? |
-|---|---|---|
-| `API Key IP Whitelist` | 0 | Yes, scaffolding |
-| `API Key Permission` | 0 | Yes, scaffolding |
-| `API Key Webhook Event` | 0 | Yes, scaffolding |
-| `API Request Log` | 0 | Yes, never written |
-| `Attribution Channel Rule` | 0 | Yes |
-| `Campaign Link Variant` | 0 | Yes |
-| `Click Queue` | 0 | Yes (intended for async tracking?) |
-| `Domain Header Configuration` | 0 | Yes |
-| `Template Variable` | 0 | Yes |
+| Doctype | Status |
+|---|---|
+| `API Key IP Whitelist` | Deleted |
+| `API Key Permission` | Deleted |
+| `API Key Webhook Event` | Deleted |
+| `API Request Log` | Deleted |
+| `Attribution Channel Rule` | Deleted |
+| `Campaign Link Variant` | Deleted |
+| `Click Queue` | Deleted |
+| `Domain Header Configuration` | Deleted |
+| `Template Variable` | Deleted |
 
-**Proposal:** Delete all 9. That's −31% doctype count with zero functional impact.
+**Result:** 29 → 19 doctypes (−34%). All deletions clean — no foreign key cascades, no broken references.
 
 ### Doctypes with very few references (review needed)
 
