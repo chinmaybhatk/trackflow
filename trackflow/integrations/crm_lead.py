@@ -114,7 +114,7 @@ def on_lead_create(doc, method):
             # Track conversion if from campaign
             campaign = doc.get('trackflow_campaign')
             if campaign:
-                track_conversion(doc, "lead_created", visitor_id, campaign)
+                track_conversion(doc, "Lead", visitor_id, campaign)
                 
     except Exception as e:
         # Log error but don't block lead creation
@@ -140,7 +140,7 @@ def on_lead_update(doc, method):
             visitor_id = doc.get('trackflow_visitor_id')
             campaign = doc.get('trackflow_campaign')
             if visitor_id:
-                track_conversion(doc, "lead_qualified", visitor_id, campaign)
+                track_conversion(doc, "Lead", visitor_id, campaign)
 
 @handle_error(error_type="CRM Lead Trash", return_response=False)
 def on_lead_trash(doc, method):
@@ -160,35 +160,45 @@ def on_lead_trash(doc, method):
         }, severity="warning")
 
 def track_conversion(doc, conversion_type, visitor_id, campaign=None):
-    """Track conversion event"""
+    """Create a Link Conversion linked to the visitor's most recent click."""
     try:
-        # Create conversion record using new DocType
-        conversion = frappe.new_doc("Conversion")
-        
-        # Get visitor name
-        visitor_name = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
-        if visitor_name:
-            conversion.visitor = visitor_name
-        
+        last_click = frappe.db.sql(
+            """
+            SELECT name, tracked_link
+            FROM `tabClick Event`
+            WHERE visitor_id = %s
+            ORDER BY click_timestamp DESC
+            LIMIT 1
+            """,
+            visitor_id,
+            as_dict=True,
+        )
+        if not last_click:
+            # No tracked click for this visitor — Link Conversion requires both
+            # click_event and tracked_link, so we cannot record one. Skip silently.
+            return
+
+        conversion = frappe.new_doc("Link Conversion")
+        conversion.visitor_id = visitor_id
+        conversion.click_event = last_click[0].name
+        conversion.tracked_link = last_click[0].tracked_link
         conversion.conversion_type = conversion_type
-        conversion.conversion_date = frappe.utils.now()
-        
-        # Add tracking details
-        conversion.source = doc.get('trackflow_source') or doc.get('source')
-        conversion.medium = doc.get('trackflow_medium')
-        conversion.campaign = campaign
-        
-        # Add metadata
-        conversion.metadata = frappe.as_json({
+        conversion.conversion_timestamp = frappe.utils.now()
+        if campaign:
+            conversion.campaign = campaign
+        conversion.source_doctype = "CRM Lead"
+        conversion.source_document = doc.name
+        conversion.lead = doc.name
+        conversion.conversion_metadata = frappe.as_json({
             "doctype": "CRM Lead",
             "document": doc.name,
             "lead_name": doc.lead_name,
             "email": doc.email,
-            "status": doc.status
+            "status": doc.status,
+            "source": doc.get("trackflow_source") or doc.get("source"),
+            "medium": doc.get("trackflow_medium"),
         })
-        
         conversion.insert(ignore_permissions=True)
-        
     except Exception as e:
         raise IntegrationError(f"Failed to track conversion: {str(e)}")
 
@@ -227,18 +237,18 @@ def get_lead_tracking_data(lead):
             
             # Get click events
             clicks = frappe.get_all("Click Event",
-                filters={"visitor": visitor_name},
-                fields=["name", "tracked_link", "click_time", "browser", "device_type"],
-                order_by="click_time desc",
+                filters={"visitor_id": data["visitor_id"]},
+                fields=["name", "tracked_link", "click_timestamp", "ip_address", "user_agent"],
+                order_by="click_timestamp desc",
                 limit=10
             )
             data["click_history"] = clicks
-            
+
             # Get conversions
-            conversions = frappe.get_all("Conversion",
-                filters={"visitor": visitor_name},
-                fields=["name", "conversion_type", "conversion_date", "conversion_value"],
-                order_by="conversion_date desc"
+            conversions = frappe.get_all("Link Conversion",
+                filters={"visitor_id": data["visitor_id"]},
+                fields=["name", "conversion_type", "conversion_timestamp", "conversion_value"],
+                order_by="conversion_timestamp desc"
             )
             data["conversions"] = conversions
     

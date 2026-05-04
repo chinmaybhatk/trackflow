@@ -321,7 +321,7 @@ def setup_permissions():
         "Visitor",
         "Visitor Event",
         "Visitor Session",
-        "Conversion",
+        "Link Conversion",
     ]
 
     for doctype in trackflow_doctypes:

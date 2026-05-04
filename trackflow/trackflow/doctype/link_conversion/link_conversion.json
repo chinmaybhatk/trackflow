@@ -160,7 +160,7 @@
    "fieldname": "lead",
    "fieldtype": "Link",
    "label": "Lead",
-   "options": "Lead"
+   "options": "CRM Lead"
   },
   {
    "fieldname": "contact",

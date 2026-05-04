@@ -95,17 +95,16 @@ def track_conversion(visitor_id, conversion_type, conversion_value=None, metadat
         if not frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
             return None
 
-        conversion = frappe.new_doc("Conversion")
-        conversion.visitor = frappe.db.get_value("Visitor", {"visitor_id": visitor_id}, "name")
+        conversion = frappe.new_doc("Link Conversion")
+        conversion.visitor_id = visitor_id
         conversion.conversion_type = conversion_type
         conversion.conversion_value = conversion_value
-        conversion.conversion_date = frappe.utils.now()
+        conversion.conversion_timestamp = frappe.utils.now()
 
         if metadata:
-            conversion.source = metadata.get("source")
-            conversion.medium = metadata.get("medium")
-            conversion.campaign = metadata.get("campaign")
-            conversion.metadata = frappe.as_json(metadata)
+            if metadata.get("campaign"):
+                conversion.campaign = metadata["campaign"]
+            conversion.conversion_metadata = frappe.as_json(metadata)
 
         conversion.insert(ignore_permissions=True)
         return conversion

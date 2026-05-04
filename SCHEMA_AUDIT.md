@@ -8,7 +8,9 @@ A pass over the 29 doctypes in `trackflow/trackflow/doctype/` to identify schema
 
 ## 🔥 P0 — Will cause runtime errors
 
-### 1. `Conversion` vs `Link Conversion` split-brain
+> **Status:** P0 #1 shipped. P0 #2 (Internal IP Range refs) and #3 (Visitor Session) still open.
+
+### 1. ~~`Conversion` vs `Link Conversion` split-brain~~ ✅ DONE
 Two doctypes for the same concept; code is inconsistent.
 
 | File | Uses |
@@ -25,6 +27,8 @@ Two doctypes for the same concept; code is inconsistent.
 **Fields differ too:** `Conversion` has `conversion_date`, `conversion_value`, `document_name`. `Link Conversion` has `conversion_timestamp`, `tracked_link`, `campaign`, no `document_name`.
 
 **Proposal:** Pick one. Recommend keeping `Link Conversion` (it's the newer, better-modeled one used by analytics). Delete `Conversion`. Migrate the 4-5 call sites. Add `document_name` to `Link Conversion` if cross-doctype attribution is wanted.
+
+**Resolved:** All write-sites migrated to `Link Conversion`. Field map: `visitor` → `visitor_id`, `conversion_date` → `conversion_timestamp`, `linked_document_type` → `source_doctype`, `linked_document` → `source_document`, `metadata` → `conversion_metadata`. Auto-populated `click_event` + `tracked_link` from the visitor's most recent click. Mapped `conversion_type` to the Select options (`"Lead"` instead of `"lead_created"`). Fixed Link Conversion `lead` field options from `Lead` → `CRM Lead`. Verified end-to-end: lead creation triggers a conversion linked to visitor + click + lead. Doctype count: 19 → **18**.
 
 ### 2. `Internal IP Range` doctype is gone but 10 references remain
 We removed it from `error_handler.py` earlier. Other files still reference it.
