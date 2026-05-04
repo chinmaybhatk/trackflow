@@ -185,13 +185,14 @@
    "label": "Conversion Metadata"
   }
  ],
+ "description": "A Conversion is a downstream outcome (lead, signup, purchase, form submission, etc.) attributed to a tracked-link click. Click Event captures the visit; Conversion captures what happened next.",
  "in_create": 1,
  "index_web_pages_for_search": 0,
  "links": [],
  "modified": "2024-01-15 11:20:00.000000",
  "modified_by": "Administrator",
  "module": "TrackFlow",
- "name": "Link Conversion",
+ "name": "Conversion",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [

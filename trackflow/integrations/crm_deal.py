@@ -138,7 +138,7 @@ def get_deal_touchpoints(doc):
 def track_deal_conversion(doc):
     """Track deal conversion"""
     try:
-        conversion = frappe.new_doc("Link Conversion")
+        conversion = frappe.new_doc("Conversion")
         conversion.doctype_name = "CRM Deal"
         conversion.document_name = doc.name
         conversion.conversion_type = "deal_won"

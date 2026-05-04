@@ -10,7 +10,14 @@ A pass over the 29 doctypes in `trackflow/trackflow/doctype/` to identify schema
 
 > **Status:** P0 #1 shipped. P0 #2 (Internal IP Range refs) and #3 (Visitor Session) still open.
 
-### 1. ~~`Conversion` vs `Link Conversion` split-brain~~ ✅ DONE
+### 1. ~~`Conversion` vs `Link Conversion` split-brain~~ ✅ DONE (twice)
+
+First pass (P0 #1): consolidated to `Link Conversion`. Second pass (post-audit user request): renamed `Link Conversion` → `Conversion` now that the conflict is gone.
+
+Industry check: YOURLS uses no conversion concept (pure click counter). Bitly, Google Analytics, HubSpot all use "Conversion". TrackFlow now matches.
+
+The doctype JSON also carries a description used in the UI:
+> A Conversion is a downstream outcome (lead, signup, purchase, form submission, etc.) attributed to a tracked-link click. Click Event captures the visit; Conversion captures what happened next.
 Two doctypes for the same concept; code is inconsistent.
 
 | File | Uses |

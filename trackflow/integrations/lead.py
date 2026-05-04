@@ -91,7 +91,7 @@ def track_lead_conversion(lead, tracked_link, conversion_value=0):
     
     # Create conversion record
     conversion = frappe.get_doc({
-        'doctype': 'Link Conversion',
+        'doctype': 'Conversion',
         'tracked_link': tracked_link,
         'campaign': campaign,
         'conversion_type': 'Lead Created',
@@ -142,7 +142,7 @@ def track_lead_final_conversion(doc):
     for assoc in associations:
         # Create final conversion record
         frappe.get_doc({
-            'doctype': 'Link Conversion',
+            'doctype': 'Conversion',
             'tracked_link': assoc.tracked_link,
             'conversion_type': 'Lead Converted',
             'conversion_value': doc.get('expected_value', 0),
@@ -219,7 +219,7 @@ def get_lead_tracking_info(lead):
     
     # Get conversions
     conversions = frappe.get_all(
-        'Link Conversion',
+        'Conversion',
         filters={
             'reference_doctype': 'Lead',
             'reference_name': lead

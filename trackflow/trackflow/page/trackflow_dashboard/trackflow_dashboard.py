@@ -1,7 +1,7 @@
 """TrackFlow Dashboard backend.
 
 Provides aggregate metrics from the live schema: Click Event, Visitor,
-Link Conversion, Link Campaign, Tracked Link. Returns shapes the existing
+Conversion, Link Campaign, Tracked Link. Returns shapes the existing
 trackflow_dashboard.js consumes; missing data points are returned as
 empty lists / zeros instead of raising.
 """
@@ -51,7 +51,7 @@ def get_summary_stats(start_date, end_date):
     )[0][0] or 0
 
     total_conversions = frappe.db.sql(
-        "SELECT COUNT(*) FROM `tabLink Conversion` WHERE conversion_timestamp BETWEEN %s AND %s",
+        "SELECT COUNT(*) FROM `tabConversion` WHERE conversion_timestamp BETWEEN %s AND %s",
         (start_date, end_date),
     )[0][0] or 0
 
@@ -65,7 +65,7 @@ def get_summary_stats(start_date, end_date):
 
     converted_visitors = frappe.db.sql(
         """
-        SELECT COUNT(DISTINCT visitor_id) FROM `tabLink Conversion`
+        SELECT COUNT(DISTINCT visitor_id) FROM `tabConversion`
         WHERE conversion_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
         """,
         (start_date, end_date),
@@ -101,7 +101,7 @@ def get_campaign_performance(start_date, end_date):
         LEFT JOIN `tabClick Event` ce
             ON ce.campaign = c.name
             AND ce.click_timestamp BETWEEN %(start_date)s AND %(end_date)s
-        LEFT JOIN `tabLink Conversion` lc
+        LEFT JOIN `tabConversion` lc
             ON lc.campaign = c.name
             AND lc.conversion_timestamp BETWEEN %(start_date)s AND %(end_date)s
         WHERE c.status = 'Active'
@@ -151,7 +151,7 @@ def get_conversion_data(start_date, end_date):
             conversion_type,
             COUNT(*) as count,
             COALESCE(SUM(conversion_value), 0) as total_value
-        FROM `tabLink Conversion`
+        FROM `tabConversion`
         WHERE conversion_timestamp BETWEEN %s AND %s
         GROUP BY date, conversion_type
         ORDER BY date
@@ -244,7 +244,7 @@ def get_conversion_funnel(start_date, end_date):
         (start_date, end_date),
     )[0][0] or 0
     total_conversions = frappe.db.sql(
-        "SELECT COUNT(*) FROM `tabLink Conversion` WHERE conversion_timestamp BETWEEN %s AND %s",
+        "SELECT COUNT(*) FROM `tabConversion` WHERE conversion_timestamp BETWEEN %s AND %s",
         (start_date, end_date),
     )[0][0] or 0
 

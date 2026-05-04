@@ -40,7 +40,7 @@ def get_campaign_stats(campaign=None, campaign_name=None):
         """, campaign_name, as_dict=True)
 
         # Get conversions
-        conversions = frappe.db.count("Link Conversion", {"campaign": campaign_name})
+        conversions = frappe.db.count("Conversion", {"campaign": campaign_name})
         
         # Calculate conversion rate
         conversion_rate = 0
@@ -151,20 +151,20 @@ def get_conversion_metrics(from_date, to_date):
     
     # Total conversions
     metrics["total_conversions"] = frappe.db.sql("""
-        SELECT COUNT(*) FROM `tabLink Conversion`
+        SELECT COUNT(*) FROM `tabConversion`
         WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
 
     # Conversion value
     metrics["total_value"] = frappe.db.sql("""
-        SELECT COALESCE(SUM(conversion_value), 0) FROM `tabLink Conversion`
+        SELECT COALESCE(SUM(conversion_value), 0) FROM `tabConversion`
         WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
     """, (from_date, to_date))[0][0] or 0
 
     # Conversion types breakdown
     conversion_types = frappe.db.sql("""
         SELECT conversion_type, COUNT(*) as count
-        FROM `tabLink Conversion`
+        FROM `tabConversion`
         WHERE DATE(conversion_timestamp) BETWEEN %s AND %s
         GROUP BY conversion_type
     """, (from_date, to_date), as_dict=True)
@@ -193,7 +193,7 @@ def get_top_campaigns(from_date, to_date):
             COUNT(DISTINCT lc.name) as conversions,
             COALESCE(SUM(lc.conversion_value), 0) as revenue
         FROM `tabClick Event` ce
-        LEFT JOIN `tabLink Conversion` lc ON lc.campaign = ce.campaign
+        LEFT JOIN `tabConversion` lc ON lc.campaign = ce.campaign
         WHERE DATE(ce.click_timestamp) BETWEEN %s AND %s
         AND ce.campaign IS NOT NULL
         GROUP BY ce.campaign
@@ -236,7 +236,7 @@ def get_timeseries_data(from_date, to_date):
             COUNT(DISTINCT ce.visitor_id) as visitors,
             COUNT(DISTINCT lc.name) as conversions
         FROM `tabClick Event` ce
-        LEFT JOIN `tabLink Conversion` lc
+        LEFT JOIN `tabConversion` lc
             ON DATE(lc.conversion_timestamp) = DATE(ce.click_timestamp)
         WHERE DATE(ce.click_timestamp) BETWEEN %s AND %s
         GROUP BY DATE(ce.click_timestamp)
@@ -274,7 +274,7 @@ def get_visitor_journey(visitor_id):
                 campaign as utm_campaign,
                 NULL as page_url,
                 NULL as referrer
-            FROM `tabLink Conversion`
+            FROM `tabConversion`
             WHERE visitor_id = %s
             
             ORDER BY timestamp

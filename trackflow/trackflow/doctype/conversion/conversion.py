@@ -5,5 +5,5 @@ import frappe
 from frappe.model.document import Document
 
 
-class LinkConversion(Document):
+class Conversion(Document):
     pass

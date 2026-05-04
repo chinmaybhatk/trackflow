@@ -130,7 +130,7 @@ def get_campaign_performance_data(campaign_name=None, date_range=None):
         for campaign in campaigns:
             # Get detailed metrics
             clicks = frappe.db.count("Click Event", {"campaign": campaign.name})
-            conversions = frappe.db.count("Link Conversion", {"campaign": campaign.name})
+            conversions = frappe.db.count("Conversion", {"campaign": campaign.name})
             
             performance_data.append({
                 "campaign": campaign.campaign_name,

@@ -47,12 +47,12 @@ def get_campaign_performance(campaign_name=None, from_date=None, to_date=None):
             WHERE campaign = %s
         """, campaign_name)[0][0] if campaign_name else 0
         
-        conversions = frappe.db.count("Link Conversion", filters)
+        conversions = frappe.db.count("Conversion", filters)
         
         # Calculate revenue
         revenue = frappe.db.sql("""
             SELECT SUM(conversion_value) 
-            FROM `tabLink Conversion` 
+            FROM `tabConversion` 
             WHERE campaign = %s
         """, campaign_name)[0][0] or 0 if campaign_name else 0
         
@@ -95,7 +95,7 @@ def get_campaign_list():
                 COUNT(DISTINCT lc.name) as conversions
             FROM `tabLink Campaign` c
             LEFT JOIN `tabClick Event` ce ON ce.campaign = c.name
-            LEFT JOIN `tabLink Conversion` lc ON lc.campaign = c.name
+            LEFT JOIN `tabConversion` lc ON lc.campaign = c.name
             GROUP BY c.name
             ORDER BY c.creation DESC
         """, as_dict=True)

@@ -94,7 +94,7 @@ bench restart
 | `Link Campaign` | Group of tracked links with budget |
 | `Click Event` | One row per click (visitor, timestamp, IP, UA) |
 | `Visitor` | Persistent visitor identity |
-| `Link Conversion` | Conversion event linked to a visitor |
+| `Conversion` | A downstream outcome (lead, signup, purchase, form submission, etc.) attributed to a tracked-link click. Click Event = the visit; Conversion = what happened next. |
 | `TrackFlow Settings` | Site-wide singleton config |
 
 **Routes**

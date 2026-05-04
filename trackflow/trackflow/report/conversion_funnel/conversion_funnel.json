@@ -37,7 +37,7 @@
  "module": "TrackFlow",
  "name": "Conversion Funnel",
  "owner": "Administrator",
- "ref_doctype": "Link Conversion",
+ "ref_doctype": "Conversion",
  "report_name": "Conversion Funnel",
  "report_type": "Script Report",
  "roles": [

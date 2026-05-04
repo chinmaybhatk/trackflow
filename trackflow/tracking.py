@@ -82,7 +82,7 @@ def track_conversion(visitor_id, conversion_type, conversion_value=None, metadat
         if not frappe.db.exists("Visitor", {"visitor_id": visitor_id}):
             return None
 
-        conversion = frappe.new_doc("Link Conversion")
+        conversion = frappe.new_doc("Conversion")
         conversion.visitor_id = visitor_id
         conversion.conversion_type = conversion_type
         conversion.conversion_value = conversion_value

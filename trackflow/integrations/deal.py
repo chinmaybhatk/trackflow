@@ -217,7 +217,7 @@ def track_deal_closure(doc):
     for campaign in campaigns:
         # Create final conversion record
         frappe.get_doc({
-            'doctype': 'Link Conversion',
+            'doctype': 'Conversion',
             'campaign': campaign.campaign,
             'conversion_type': 'Deal Won' if is_won else 'Deal Lost',
             'conversion_value': doc.get('opportunity_amount', 0) if is_won else 0,

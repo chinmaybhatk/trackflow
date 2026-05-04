@@ -79,7 +79,7 @@ def calculate_engagement_score(doc):
 def track_conversion(doc, conversion_type):
     """Track organization conversion"""
     try:
-        conversion = frappe.new_doc("Link Conversion")
+        conversion = frappe.new_doc("Conversion")
         conversion.doctype_name = "CRM Organization"
         conversion.document_name = doc.name
         conversion.conversion_type = conversion_type

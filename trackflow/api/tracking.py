@@ -311,7 +311,7 @@ def get_link_statistics(link_name):
         SELECT
             COUNT(*) as total_conversions,
             COALESCE(SUM(conversion_value), 0) as total_value
-        FROM `tabLink Conversion`
+        FROM `tabConversion`
         WHERE tracked_link = %s
     """, link_name, as_dict=True)[0]
     
@@ -346,7 +346,7 @@ def track_conversion(**kwargs):
         raise ValidationError(_("Visitor not found"))
     
     # Create conversion record
-    conversion = frappe.new_doc("Link Conversion")
+    conversion = frappe.new_doc("Conversion")
     conversion.visitor_id = visitor_id
     conversion.conversion_type = kwargs.get("conversion_type", "general")
     conversion.tracked_link = kwargs.get("tracked_link")

@@ -315,7 +315,7 @@ def setup_permissions():
         "TrackFlow Settings",
         "Visitor",
         "Visitor Event",
-        "Link Conversion",
+        "Conversion",
     ]
 
     for doctype in trackflow_doctypes:

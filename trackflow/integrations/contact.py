@@ -71,7 +71,7 @@ def track_contact_conversion(contact, tracked_link):
     
     # Create conversion record
     conversion = frappe.get_doc({
-        'doctype': 'Link Conversion',
+        'doctype': 'Conversion',
         'tracked_link': tracked_link,
         'campaign': campaign,
         'conversion_type': 'Contact Created',

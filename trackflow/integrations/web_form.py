@@ -73,7 +73,7 @@ def on_web_form_submit(doc, method):
         visitor_id = frappe.request.cookies.get("tf_visitor_id")
         
         # Create conversion record
-        conversion = frappe.new_doc("Link Conversion")
+        conversion = frappe.new_doc("Conversion")
         conversion.doctype_name = doc.doctype
         conversion.document_name = doc.name
         conversion.conversion_type = "web_form_submission"

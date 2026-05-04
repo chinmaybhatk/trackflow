@@ -315,7 +315,7 @@ def check_campaign_performance():
         
         # Get current metrics
         conversions = frappe.db.count(
-            "Link Conversion",
+            "Conversion",
             filters={
                 "campaign": campaign.name,
                 "docstatus": ["<", 2]

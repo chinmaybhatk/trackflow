@@ -160,7 +160,13 @@ def on_lead_trash(doc, method):
         }, severity="warning")
 
 def track_conversion(doc, conversion_type, visitor_id, campaign=None):
-    """Create a Link Conversion linked to the visitor's most recent click."""
+    """Record a Conversion event.
+
+    A Conversion is a downstream outcome (lead created, signup, purchase,
+    form submission, etc.) attributed back to the visitor's most recent
+    tracked-link click. Click Event = the visit; Conversion = what
+    happened next.
+    """
     try:
         last_click = frappe.db.sql(
             """
@@ -174,11 +180,11 @@ def track_conversion(doc, conversion_type, visitor_id, campaign=None):
             as_dict=True,
         )
         if not last_click:
-            # No tracked click for this visitor — Link Conversion requires both
+            # No tracked click for this visitor — Conversion requires both
             # click_event and tracked_link, so we cannot record one. Skip silently.
             return
 
-        conversion = frappe.new_doc("Link Conversion")
+        conversion = frappe.new_doc("Conversion")
         conversion.visitor_id = visitor_id
         conversion.click_event = last_click[0].name
         conversion.tracked_link = last_click[0].tracked_link
@@ -236,7 +242,7 @@ def get_lead_tracking_data(lead):
             data["click_history"] = clicks
 
             # Get conversions
-            conversions = frappe.get_all("Link Conversion",
+            conversions = frappe.get_all("Conversion",
                 filters={"visitor_id": data["visitor_id"]},
                 fields=["name", "conversion_type", "conversion_timestamp", "conversion_value"],
                 order_by="conversion_timestamp desc"

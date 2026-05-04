@@ -52,12 +52,25 @@
         "link_to": "Click Event",
         "link_type": "DocType",
         "onboard": 0,
-        "type": "Link"
+        "type": "Link",
+        "description": "One row per click on a tracked link. The top of the funnel."
       },
       {
         "doctype": "Workspace Link",
         "hidden": 0,
         "idx": 5,
+        "is_query_report": 0,
+        "label": "Conversion",
+        "link_to": "Conversion",
+        "link_type": "DocType",
+        "onboard": 0,
+        "type": "Link",
+        "description": "A downstream outcome (lead, signup, purchase, form submission) attributed to a tracked-link click."
+      },
+      {
+        "doctype": "Workspace Link",
+        "hidden": 0,
+        "idx": 6,
         "is_query_report": 0,
         "label": "TrackFlow Settings",
         "link_to": "TrackFlow Settings",
