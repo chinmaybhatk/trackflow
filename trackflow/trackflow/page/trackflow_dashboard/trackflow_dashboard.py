@@ -32,6 +32,47 @@ def get_dashboard_data():
     }
 
 
+def _window_metrics(start_date, end_date):
+    """Raw counts for a [start, end] window — used for current and prior periods."""
+    visitors = frappe.db.count("Visitor", {"first_seen": ["between", [start_date, end_date]]})
+    clicks = frappe.db.sql(
+        "SELECT COUNT(*) FROM `tabClick Event` WHERE click_timestamp BETWEEN %s AND %s",
+        (start_date, end_date),
+    )[0][0] or 0
+    conversions = frappe.db.sql(
+        "SELECT COUNT(*) FROM `tabConversion` WHERE conversion_timestamp BETWEEN %s AND %s",
+        (start_date, end_date),
+    )[0][0] or 0
+    active = frappe.db.sql(
+        """
+        SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
+        WHERE click_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
+        """,
+        (start_date, end_date),
+    )[0][0] or 0
+    converted = frappe.db.sql(
+        """
+        SELECT COUNT(DISTINCT visitor_id) FROM `tabConversion`
+        WHERE conversion_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
+        """,
+        (start_date, end_date),
+    )[0][0] or 0
+    rate = (converted / active * 100) if active else 0
+    return {
+        "visitors": visitors,
+        "clicks": clicks,
+        "conversions": conversions,
+        "rate": rate,
+    }
+
+
+def _delta_pct(current, previous):
+    """Percent change from previous to current. Returns float or None if N/A."""
+    if previous in (None, 0):
+        return None  # no baseline; UI should hide the indicator
+    return round((current - previous) / previous * 100, 1)
+
+
 def get_summary_stats(start_date, end_date):
     """Top-row KPI cards.
 
@@ -42,44 +83,30 @@ def get_summary_stats(start_date, end_date):
 
     This bounds the rate to 0–100% and counts each visitor once,
     regardless of how many click/conversion rows they have.
+
+    Each card also gets a *_delta period-over-period percentage,
+    comparing this window to the prior window of equal length.
     """
-    total_visitors = frappe.db.count("Visitor", {"first_seen": ["between", [start_date, end_date]]})
+    cur = _window_metrics(start_date, end_date)
 
-    total_clicks = frappe.db.sql(
-        "SELECT COUNT(*) FROM `tabClick Event` WHERE click_timestamp BETWEEN %s AND %s",
-        (start_date, end_date),
-    )[0][0] or 0
-
-    total_conversions = frappe.db.sql(
-        "SELECT COUNT(*) FROM `tabConversion` WHERE conversion_timestamp BETWEEN %s AND %s",
-        (start_date, end_date),
-    )[0][0] or 0
-
-    active_visitors = frappe.db.sql(
-        """
-        SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
-        WHERE click_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
-        """,
-        (start_date, end_date),
-    )[0][0] or 0
-
-    converted_visitors = frappe.db.sql(
-        """
-        SELECT COUNT(DISTINCT visitor_id) FROM `tabConversion`
-        WHERE conversion_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
-        """,
-        (start_date, end_date),
-    )[0][0] or 0
-
-    conversion_rate = (converted_visitors / active_visitors * 100) if active_visitors else 0
+    window = end_date - start_date
+    prev_end = start_date
+    prev_start = prev_end - window
+    prev = _window_metrics(prev_start, prev_end)
 
     return {
-        "total_visitors": total_visitors,
-        "total_sessions": total_clicks,
-        "total_page_views": total_clicks,
-        "total_conversions": total_conversions,
-        "conversion_rate": round(conversion_rate, 2),
+        "total_visitors": cur["visitors"],
+        "total_sessions": cur["clicks"],
+        "total_page_views": cur["clicks"],
+        "total_conversions": cur["conversions"],
+        "conversion_rate": round(cur["rate"], 2),
         "avg_session_duration": 0,
+        # Period-over-period deltas (None when no baseline).
+        "visitors_delta": _delta_pct(cur["visitors"], prev["visitors"]),
+        "sessions_delta": _delta_pct(cur["clicks"], prev["clicks"]),
+        "page_views_delta": _delta_pct(cur["clicks"], prev["clicks"]),
+        "conversions_delta": _delta_pct(cur["conversions"], prev["conversions"]),
+        "rate_delta": _delta_pct(cur["rate"], prev["rate"]),
     }
 
 

@@ -63,7 +63,7 @@ class TrackFlowDashboard {
             label: __('Campaign'),
             fieldtype: 'Link',
             fieldname: 'campaign',
-            options: 'Campaign',
+            options: 'Link Campaign',
             change: () => this.refresh_dashboard()
         });
 
@@ -132,7 +132,7 @@ class TrackFlowDashboard {
                     <div class="row">
                         <div class="col-md-8">
                             <div class="dashboard-card">
-                                <h4>${__('Visitor Trend')}</h4>
+                                <h4>${__('Conversion Trend')}</h4>
                                 <div id="visitor-trend-chart"></div>
                             </div>
                         </div>
@@ -271,50 +271,44 @@ class TrackFlowDashboard {
 
     render_summary_cards() {
         const summary = this.data.summary || {};
-        const cards_html = `
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${format_number(summary.total_visitors || 0)}</div>
-                    <div class="card-label">${__('Total Visitors')}</div>
-                    <div class="card-indicator positive">+12.5%</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${format_number(summary.total_sessions || 0)}</div>
-                    <div class="card-label">${__('Sessions')}</div>
-                    <div class="card-indicator positive">+8.3%</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${format_number(summary.total_page_views || 0)}</div>
-                    <div class="card-label">${__('Page Views')}</div>
-                    <div class="card-indicator negative">-2.1%</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${summary.conversion_rate || 0}%</div>
-                    <div class="card-label">${__('Conversion Rate')}</div>
-                    <div class="card-indicator positive">+15.7%</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${format_number(summary.total_conversions || 0)}</div>
-                    <div class="card-label">${__('Conversions')}</div>
-                    <div class="card-indicator positive">+23.4%</div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-2">
-                <div class="summary-card">
-                    <div class="card-value">${format_duration(summary.avg_session_duration || 0)}</div>
-                    <div class="card-label">${__('Avg Duration')}</div>
-                    <div class="card-indicator neutral">0%</div>
-                </div>
-            </div>
-        `;
+
+        // Build a card with a real period-over-period delta indicator.
+        // delta is null when there is no prior-window baseline.
+        const card = (value, label, delta) => {
+            let indicator = '';
+            if (delta === null || delta === undefined) {
+                indicator = `<div class="card-indicator neutral">—</div>`;
+            } else if (delta > 0) {
+                indicator = `<div class="card-indicator positive">+${delta}%</div>`;
+            } else if (delta < 0) {
+                indicator = `<div class="card-indicator negative">${delta}%</div>`;
+            } else {
+                indicator = `<div class="card-indicator neutral">0%</div>`;
+            }
+            return `
+                <div class="col-sm-6 col-lg-2">
+                    <div class="summary-card">
+                        <div class="card-value">${value}</div>
+                        <div class="card-label">${label}</div>
+                        ${indicator}
+                    </div>
+                </div>`;
+        };
+
+        const cards_html = [
+            card(format_number(summary.total_visitors || 0), __('Total Visitors'),
+                 summary.visitors_delta),
+            card(format_number(summary.total_sessions || 0), __('Sessions'),
+                 summary.sessions_delta),
+            card(format_number(summary.total_page_views || 0), __('Page Views'),
+                 summary.page_views_delta),
+            card(`${summary.conversion_rate || 0}%`, __('Conversion Rate'),
+                 summary.rate_delta),
+            card(format_number(summary.total_conversions || 0), __('Conversions'),
+                 summary.conversions_delta),
+            card(format_duration(summary.avg_session_duration || 0), __('Avg Duration'),
+                 null),
+        ].join('');
 
         this.container.find('.dashboard-summary .row').html(cards_html);
     }
