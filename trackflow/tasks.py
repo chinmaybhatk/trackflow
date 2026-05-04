@@ -6,32 +6,8 @@ import frappe
 
 
 def process_visitor_sessions():
-    """Close stale visitor sessions (no activity for 30 min)"""
-    try:
-        stale_time = frappe.utils.add_to_date(frappe.utils.now(), minutes=-30)
-
-        sessions = frappe.get_all(
-            "Visitor Session",
-            filters={"end_time": ["is", "not set"], "last_activity": ["<", stale_time]},
-            fields=["name", "start_time", "last_activity"],
-        )
-
-        for session in sessions:
-            start = frappe.utils.get_datetime(session.start_time)
-            end = frappe.utils.get_datetime(session.last_activity)
-            duration = int((end - start).total_seconds())
-
-            frappe.db.set_value(
-                "Visitor Session",
-                session.name,
-                {"end_time": session.last_activity, "duration": duration},
-                update_modified=False,
-            )
-
-        if sessions:
-            frappe.db.commit()
-    except Exception as e:
-        frappe.log_error(f"process_visitor_sessions error: {e}", "TrackFlow Tasks")
+    """No-op: session tracking is on the roadmap (see SCHEMA_AUDIT P0 #3)."""
+    return
 
 
 def update_campaign_metrics():
@@ -88,7 +64,6 @@ def cleanup_expired_data():
         cutoff_date = frappe.utils.add_to_date(frappe.utils.today(), days=-retention_days)
 
         frappe.db.delete("Visitor Event", {"creation": ["<", cutoff_date]})
-        frappe.db.delete("Visitor Session", {"start_time": ["<", cutoff_date]})
         frappe.db.commit()
     except Exception as e:
         frappe.log_error(f"cleanup_expired_data error: {e}", "TrackFlow Tasks")

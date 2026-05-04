@@ -120,29 +120,10 @@ class TestTrackFlowE2E(unittest.TestCase):
             ]})
         self.assertGreater(len(clicks), 0)
         
-    def test_06_visitor_session_tracking(self):
-        """Test visitor session creation and tracking"""
-        session = frappe.get_doc({
-            "doctype": "Visitor Session",
-            "visitor_id": "test_visitor_456",
-            "session_start": now_datetime(),
-            "first_page": "/products",
-            "referrer_source": "google",
-            "device_type": "Desktop",
-            "browser": "Chrome"
-        })
-        session.insert()
-        
-        # Add page views
-        session.append("page_views", {
-            "page_url": "/products/summer-sale",
-            "view_time": now_datetime(),
-            "time_on_page": 45
-        })
-        session.save()
-        
-        self.assertEqual(len(session.page_views), 1)
-        
+    # test_06 removed: per-session bucketing (Visitor Session) is on the
+    # roadmap, see SCHEMA_AUDIT P0 #3.
+
+
     def test_07_redirect_handling(self):
         """Test tracked link redirect URL generation"""
         link = frappe.get_doc("Tracked Link", self.test_tracked_link)

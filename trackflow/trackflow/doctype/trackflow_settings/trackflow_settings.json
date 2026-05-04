@@ -12,6 +12,7 @@
         "default_shortlink_domain",
         "column_break_6",
         "exclude_internal_traffic",
+        "internal_ip_ranges",
         "gdpr_compliance_enabled",
         "cookie_expires_days",
         "attribution_section",
@@ -65,6 +66,13 @@
             "fieldname": "exclude_internal_traffic",
             "fieldtype": "Check",
             "label": "Exclude Internal Traffic"
+        },
+        {
+            "depends_on": "exclude_internal_traffic",
+            "description": "One CIDR or IP prefix per line (e.g. 10.0.0.0/8, 192.168.1.5)",
+            "fieldname": "internal_ip_ranges",
+            "fieldtype": "Small Text",
+            "label": "Internal IP Ranges"
         },
         {
             "default": "1",

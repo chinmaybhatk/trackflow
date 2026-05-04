@@ -10,7 +10,7 @@ def crm_lead_dashboard(data=None):
         "transactions": [
             {
                 "label": _("TrackFlow Attribution"),
-                "items": ["Click Event", "Visitor Session", "Attribution Model"]
+                "items": ["Click Event", "Link Conversion", "Attribution Model"]
             },
             {
                 "label": _("Campaign Performance"),

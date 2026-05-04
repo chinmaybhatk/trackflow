@@ -81,31 +81,8 @@ def get_visitor_from_request():
         return None
 
 
-def create_visitor_session(visitor, landing_page=None):
-    """Create a new visitor session"""
-    try:
-        session = frappe.new_doc("Visitor Session")
-        session.visitor = visitor.name if hasattr(visitor, "name") else visitor
-        session.session_id = frappe.generate_hash(length=32)
-        session.start_time = frappe.utils.now()
-        session.last_activity = frappe.utils.now()
-        session.landing_page = landing_page
-        session.page_views = 1
-
-        if frappe.request:
-            session.ip_address = frappe.request.environ.get("REMOTE_ADDR")
-            session.user_agent = frappe.request.environ.get("HTTP_USER_AGENT")
-            session.referrer = frappe.request.environ.get("HTTP_REFERER")
-            session.source = get_referrer_source(session.referrer)
-            session.medium = frappe.form_dict.get("utm_medium", "organic")
-            session.campaign = frappe.form_dict.get("utm_campaign")
-
-        session.insert(ignore_permissions=True)
-        return session
-
-    except Exception as e:
-        frappe.log_error(f"Error creating visitor session: {str(e)}", "TrackFlow")
-        return None
+# create_visitor_session removed: per-session bucketing is on the roadmap
+# (see SCHEMA_AUDIT P0 #3).
 
 
 def get_tracking_script(api_key=None):

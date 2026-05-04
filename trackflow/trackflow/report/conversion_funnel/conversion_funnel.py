@@ -107,7 +107,7 @@ def get_total_visitors(filters):
     
     result = frappe.db.sql("""
         SELECT COUNT(DISTINCT visitor_id) as count
-        FROM `tabVisitor Session`
+        FROM `tabClick Event`
         WHERE docstatus < 2 {conditions}
     """.format(conditions=conditions), filters, as_dict=1)
     
@@ -122,22 +122,20 @@ def get_stage_data(stage, filters):
                 COUNT(DISTINCT visitor_id) as count,
                 0 as avg_time,
                 0 as value
-            FROM `tabVisitor Session`
+            FROM `tabClick Event`
             WHERE docstatus < 2 {conditions}
         """.format(conditions=conditions), filters, as_dict=1)[0]
     
     elif stage == "viewed":
+        # Page View tracking is on the roadmap; treat as a click for now.
         return frappe.db.sql("""
-            SELECT 
-                COUNT(DISTINCT vs.visitor_id) as count,
-                AVG(TIMESTAMPDIFF(SECOND, vs.creation, pv.creation)) as avg_time,
+            SELECT
+                COUNT(DISTINCT visitor_id) as count,
+                0 as avg_time,
                 0 as value
-            FROM `tabVisitor Session` vs
-            INNER JOIN `tabPage View` pv ON pv.session = vs.name
-            WHERE vs.docstatus < 2 
-            AND pv.page_type IN ('Product', 'Service', 'Solution')
-            {conditions}
-        """.format(conditions=conditions.replace("creation", "vs.creation")), filters, as_dict=1)[0]
+            FROM `tabClick Event`
+            WHERE docstatus < 2 {conditions}
+        """.format(conditions=conditions), filters, as_dict=1)[0]
     
     elif stage == "form_submitted":
         return frappe.db.sql("""
@@ -146,7 +144,7 @@ def get_stage_data(stage, filters):
                 AVG(TIMESTAMPDIFF(SECOND, vs.creation, c.creation)) as avg_time,
                 0 as value
             FROM `tabLink Conversion` c
-            INNER JOIN `tabVisitor Session` vs ON vs.visitor_id = c.visitor_id
+            INNER JOIN `tabClick Event` vs ON vs.visitor_id = c.visitor_id
             WHERE c.docstatus < 2 
             AND c.conversion_type = 'Form Submission'
             {conditions}
@@ -160,7 +158,7 @@ def get_stage_data(stage, filters):
                 0 as value
             FROM `tabLead` l
             INNER JOIN `tabLead Link Association` lla ON lla.lead = l.name
-            INNER JOIN `tabVisitor Session` vs ON vs.visitor_id = lla.visitor_id
+            INNER JOIN `tabClick Event` vs ON vs.visitor_id = lla.visitor_id
             WHERE l.docstatus < 2
             {conditions}
         """.format(conditions=conditions.replace("creation", "l.creation")), filters, as_dict=1)[0]

@@ -109,19 +109,8 @@ def get_or_create_visitor(visitor_id, ip_address):
     return visitor.name
 
 def update_visitor_session(visitor_id, event_type):
-    """Update visitor session if it exists"""
-    session_id = frappe.request.cookies.get("trackflow_session")
-    
-    if session_id and frappe.db.exists("Visitor Session", {"session_id": session_id}):
-        frappe.db.set_value("Visitor Session", {"session_id": session_id}, "last_activity", frappe.utils.now())
-        
-        # For pageview events, increment session page views
-        if event_type == "pageview":
-            frappe.db.sql("""
-                UPDATE `tabVisitor Session`
-                SET page_views = IFNULL(page_views, 0) + 1
-                WHERE session_id = %s
-            """, session_id)
+    """No-op: session tracking is on the roadmap (see SCHEMA_AUDIT P0 #3)."""
+    return
 
 @frappe.whitelist(allow_guest=True)
 @handle_error(error_type="Script Generation", return_response=False)

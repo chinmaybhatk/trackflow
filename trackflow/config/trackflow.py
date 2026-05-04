@@ -23,12 +23,6 @@ def get_data():
                 },
                 {
                     "type": "doctype",
-                    "name": "Visitor Session",
-                    "label": _("Visitor Sessions"),
-                    "description": _("Track visitor behavior"),
-                },
-                {
-                    "type": "doctype",
                     "name": "Click Event",
                     "label": _("Click Events"),
                     "description": _("View all click events"),

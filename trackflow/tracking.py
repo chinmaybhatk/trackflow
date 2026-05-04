@@ -49,20 +49,7 @@ def track_page_view():
         "last_seen": frappe.utils.now(),
         "page_views": frappe.db.get_value("Visitor", visitor_name, "page_views", 0) + 1,
     }, update_modified=False)
-
-    session_id = frappe.request.cookies.get("trackflow_session") if frappe.request else None
-    if session_id and frappe.db.exists("Visitor Session", {"session_id": session_id}):
-        vs_name = frappe.db.get_value("Visitor Session", {"session_id": session_id}, "name")
-        frappe.db.set_value("Visitor Session", vs_name, {
-            "page_views": frappe.db.get_value("Visitor Session", vs_name, "page_views", 0) + 1,
-            "last_activity": frappe.utils.now(),
-        }, update_modified=False)
-    else:
-        from trackflow.utils import create_visitor_session
-        visitor_doc = frappe.get_doc("Visitor", visitor_name)
-        session = create_visitor_session(visitor_doc, frappe.request.url if frappe.request else None)
-        if session:
-            frappe.local.cookie_manager.set_cookie("trackflow_session", session.session_id)
+    # Per-session bucketing is on the roadmap (see SCHEMA_AUDIT P0 #3).
 
 
 def track_event(visitor_id, event_type, event_data=None):

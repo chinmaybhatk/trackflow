@@ -30,7 +30,7 @@ Two doctypes for the same concept; code is inconsistent.
 
 **Resolved:** All write-sites migrated to `Link Conversion`. Field map: `visitor` → `visitor_id`, `conversion_date` → `conversion_timestamp`, `linked_document_type` → `source_doctype`, `linked_document` → `source_document`, `metadata` → `conversion_metadata`. Auto-populated `click_event` + `tracked_link` from the visitor's most recent click. Mapped `conversion_type` to the Select options (`"Lead"` instead of `"lead_created"`). Fixed Link Conversion `lead` field options from `Lead` → `CRM Lead`. Verified end-to-end: lead creation triggers a conversion linked to visitor + click + lead. Doctype count: 19 → **18**.
 
-### 2. `Internal IP Range` doctype is gone but 10 references remain
+### 2. ~~`Internal IP Range` doctype + 10 stale refs~~ ✅ DONE
 We removed it from `error_handler.py` earlier. Other files still reference it.
 
 **Files still referencing:**
@@ -39,10 +39,16 @@ We removed it from `error_handler.py` earlier. Other files still reference it.
 
 **Proposal:** Either restore the doctype or remove all references. Recommend removing — modern internal-IP filtering can be a Settings text field with comma-separated CIDRs.
 
-### 3. `Visitor Session` is queried but never created
+**Resolved:** Replaced `Internal IP Range` child table with a `internal_ip_ranges` `Small Text` field on `TrackFlow Settings` (one CIDR/prefix per line). Updated `utils.py` to parse line-separated tokens and `install.py` to seed defaults. Deleted the doctype, the legacy patches (`ensure_internal_ip_range_doctype`, `manual_fix_internal_ip_range`, `fix_ip_range_validation`), and the patches.txt entries.
+
+### 3. ~~`Visitor Session` queried but never created~~ ✅ DONE
 29 references in code, but no flow ever inserts a `Visitor Session` row. `get_lead_tracking_data` returns it as `session_history`, always empty.
 
 **Proposal:** Either implement session tracking (a session = clicks within N min from same visitor), or remove the queries and the doctype. Quickest path: remove the queries; document Sessions as Roadmap.
+
+**Resolved:** Followed the audit's quickest path. Deleted the `Visitor Session` doctype + folder. Stubbed `process_visitor_sessions` (scheduled task), `update_visitor_session` (api/tracking.py), `create_visitor_session` (utils.py + utils/__init__.py), `get_bounce_rate` (utils.py) and the `test_06_visitor_session_tracking` test. Removed Visitor Session refs from `dashboard.py`, `install.py`, `config/trackflow.py`, `tracking.py`. Swapped `tabVisitor Session` → `tabClick Event` in the conversion-funnel report. Deleted the dead `trackflow/trackflow/integrations/` folder (broken duplicate web_form.py + opportunity.py) and the unused `trackflow/trackflow/demo_data.py`. Per-session bucketing is now on the Roadmap.
+
+Doctype count: 18 → **16**.
 
 ---
 

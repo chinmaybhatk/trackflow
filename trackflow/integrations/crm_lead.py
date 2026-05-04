@@ -221,20 +221,11 @@ def get_lead_tracking_data(lead):
         "touch_count": lead_doc.get('trackflow_touch_count', 0)
     }
     
-    # Get visitor sessions if visitor exists
+    # Get visitor click + conversion history if visitor exists
     if data["visitor_id"]:
         visitor_name = frappe.db.get_value("Visitor", {"visitor_id": data["visitor_id"]}, "name")
-        
+
         if visitor_name:
-            # Get visitor sessions
-            sessions = frappe.get_all("Visitor Session",
-                filters={"visitor": visitor_name},
-                fields=["name", "visit_date", "utm_source", "utm_medium", "utm_campaign", "page_views", "duration"],
-                order_by="visit_date desc",
-                limit=10
-            )
-            data["session_history"] = sessions
-            
             # Get click events
             clicks = frappe.get_all("Click Event",
                 filters={"visitor_id": data["visitor_id"]},

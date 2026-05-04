@@ -76,15 +76,10 @@ def create_trackflow_settings():
             }
         )
 
-        default_ranges = [
-            {"ip_range": "127.0.0.0/8", "description": "Localhost"},
-            {"ip_range": "10.0.0.0/8", "description": "Private Class A"},
-            {"ip_range": "172.16.0.0/12", "description": "Private Class B"},
-            {"ip_range": "192.168.0.0/16", "description": "Private Class C"},
-        ]
-
-        for ip_range in default_ranges:
-            settings.append("internal_ip_ranges", ip_range)
+        # Internal IP ranges are stored as a newline-separated text field.
+        settings.internal_ip_ranges = (
+            "127.0.0.0/8\n10.0.0.0/8\n172.16.0.0/12\n192.168.0.0/16"
+        )
 
         settings.insert(ignore_permissions=True)
         frappe.db.commit()
@@ -320,7 +315,6 @@ def setup_permissions():
         "TrackFlow Settings",
         "Visitor",
         "Visitor Event",
-        "Visitor Session",
         "Link Conversion",
     ]
 

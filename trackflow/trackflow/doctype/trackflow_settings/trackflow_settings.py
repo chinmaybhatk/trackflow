@@ -16,9 +16,13 @@ def get_settings():
 
 class TrackFlowSettings(Document):
     def validate(self):
-        # Validate IP ranges if exclude internal traffic is enabled
-        if getattr(self, 'exclude_internal_traffic', 0) and not getattr(self, 'internal_ip_ranges', []):
-            frappe.throw("Please specify at least one internal IP range when excluding internal traffic")
+        # Require at least one IP range when exclude_internal_traffic is on.
+        if getattr(self, "exclude_internal_traffic", 0):
+            ranges = (getattr(self, "internal_ip_ranges", "") or "").strip()
+            if not ranges:
+                frappe.throw(
+                    "Please specify at least one internal IP range when excluding internal traffic"
+                )
         
         # Validate attribution window
         attribution_window = getattr(self, 'attribution_window_days', 30)

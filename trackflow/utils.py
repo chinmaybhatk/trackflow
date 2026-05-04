@@ -100,77 +100,7 @@ def generate_visitor_id():
     return f"v_{hashlib.md5((timestamp + random_str).encode()).hexdigest()[:16]}"
 
 
-def create_visitor_session(visitor, page_url=None):
-    """Create a new visitor session"""
-    try:
-        # Check if visitor exists
-        if not visitor or not isinstance(visitor, frappe.model.document.Document):
-            return None
-        
-        # Create new session
-        session = frappe.new_doc("Visitor Session")
-        session.visitor = visitor.name
-        session.session_id = generate_session_id()
-        session.start_time = frappe.utils.now()
-        session.ip_address = frappe.local.request_ip
-        session.user_agent = frappe.request.headers.get('User-Agent', '')
-        
-        # Set landing page if provided
-        if page_url:
-            session.landing_page = sanitize_url(page_url)
-        
-        # Parse referrer for attribution
-        referrer = frappe.request.headers.get('Referer', '')
-        if referrer:
-            session.referrer = sanitize_url(referrer)
-            session.referrer_source = get_referrer_source(referrer)
-        
-        # Get UTM parameters from request
-        session.utm_source = frappe.form_dict.get('utm_source')
-        session.utm_medium = frappe.form_dict.get('utm_medium')
-        session.utm_campaign = frappe.form_dict.get('utm_campaign')
-        session.utm_term = frappe.form_dict.get('utm_term')
-        session.utm_content = frappe.form_dict.get('utm_content')
-        
-        # Initialize metrics
-        session.page_views = 1
-        session.duration = 0
-        
-        # Insert session
-        session.insert(ignore_permissions=True)
-        
-        # Update visitor's session count
-        visitor.total_sessions = (visitor.total_sessions or 0) + 1
-        visitor.last_seen = frappe.utils.now()
-        visitor.save(ignore_permissions=True)
-        
-        # Set session cookie (30-minute expiry for session)
-        cookie_options = {
-            'expires': (datetime.now() + timedelta(minutes=30)).strftime('%a, %d %b %Y %H:%M:%S GMT'),
-            'path': '/',
-            'secure': frappe.request.is_secure,
-            'httponly': True,
-            'samesite': 'Lax'
-        }
-        
-        frappe.local.cookie_manager.set_cookie(
-            'trackflow_session', 
-            session.session_id,
-            **cookie_options
-        )
-        
-        return session
-        
-    except Exception as e:
-        frappe.log_error(f"Error creating visitor session: {str(e)}", "TrackFlow Session Creation")
-        return None
-
-
-def generate_session_id():
-    """Generate unique session ID"""
-    timestamp = datetime.now().isoformat()
-    random_str = frappe.generate_hash(length=10)
-    return f"s_{hashlib.md5((timestamp + random_str).encode()).hexdigest()[:16]}"
+# Per-session bucketing (Visitor Session) is on the roadmap; helper removed.
 
 
 def get_tracking_script():
@@ -389,23 +319,8 @@ def format_duration(seconds):
 
 
 def get_bounce_rate(visitor):
-    """Calculate bounce rate for a visitor"""
-    if not visitor:
-        return 0
-        
-    sessions = frappe.get_all(
-        "Visitor Session",
-        filters={"visitor": visitor.name},
-        fields=["page_views"]
-    )
-    
-    if not sessions:
-        return 0
-        
-    single_page_sessions = sum(1 for s in sessions if (s.page_views or 0) <= 1)
-    bounce_rate = (single_page_sessions / len(sessions)) * 100
-    
-    return round(bounce_rate, 2)
+    """Bounce rate requires session tracking — on the roadmap."""
+    return 0
 
 
 def is_internal_traffic(ip_address):
@@ -419,24 +334,23 @@ def is_internal_traffic(ip_address):
             return False
             
         settings = frappe.get_cached_doc("TrackFlow Settings", "TrackFlow Settings")
-        
+
         if not settings.exclude_internal_traffic:
             return False
-            
-        # Get internal IP ranges
-        internal_ips = frappe.get_all(
-            "Internal IP Range",
-            filters={"parent": "TrackFlow Settings"},
-            fields=["ip_range"]
-        )
-        
-        # Check against internal IP ranges
-        for ip_range in internal_ips:
-            if is_ip_in_range(ip_address, ip_range.ip_range):
+
+        # Internal IP ranges are stored as a newline/comma-separated text field
+        # on TrackFlow Settings (one CIDR or prefix per line).
+        raw = (settings.get("internal_ip_ranges") or "").strip()
+        if not raw:
+            return False
+
+        for token in raw.replace(",", "\n").splitlines():
+            ip_range = token.strip()
+            if ip_range and is_ip_in_range(ip_address, ip_range):
                 return True
-                
+
         return False
-    except:
+    except Exception:
         # If any error, don't exclude the traffic
         return False
 
