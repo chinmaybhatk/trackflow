@@ -33,24 +33,45 @@ def get_dashboard_data():
 
 
 def get_summary_stats(start_date, end_date):
-    """Top-row KPI cards."""
+    """Top-row KPI cards.
+
+    Conversion rate is computed as:
+        distinct visitors who converted in the window
+        / distinct visitors active in the window (had >= 1 click)
+        * 100
+
+    This bounds the rate to 0–100% and counts each visitor once,
+    regardless of how many click/conversion rows they have.
+    """
     total_visitors = frappe.db.count("Visitor", {"first_seen": ["between", [start_date, end_date]]})
+
     total_clicks = frappe.db.sql(
-        """
-        SELECT COUNT(*) FROM `tabClick Event`
-        WHERE click_timestamp BETWEEN %s AND %s
-        """,
+        "SELECT COUNT(*) FROM `tabClick Event` WHERE click_timestamp BETWEEN %s AND %s",
         (start_date, end_date),
     )[0][0] or 0
+
     total_conversions = frappe.db.sql(
+        "SELECT COUNT(*) FROM `tabLink Conversion` WHERE conversion_timestamp BETWEEN %s AND %s",
+        (start_date, end_date),
+    )[0][0] or 0
+
+    active_visitors = frappe.db.sql(
         """
-        SELECT COUNT(*) FROM `tabLink Conversion`
-        WHERE conversion_timestamp BETWEEN %s AND %s
+        SELECT COUNT(DISTINCT visitor_id) FROM `tabClick Event`
+        WHERE click_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
         """,
         (start_date, end_date),
     )[0][0] or 0
 
-    conversion_rate = (total_conversions / total_visitors * 100) if total_visitors else 0
+    converted_visitors = frappe.db.sql(
+        """
+        SELECT COUNT(DISTINCT visitor_id) FROM `tabLink Conversion`
+        WHERE conversion_timestamp BETWEEN %s AND %s AND visitor_id IS NOT NULL
+        """,
+        (start_date, end_date),
+    )[0][0] or 0
+
+    conversion_rate = (converted_visitors / active_visitors * 100) if active_visitors else 0
 
     return {
         "total_visitors": total_visitors,
