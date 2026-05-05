@@ -3,8 +3,10 @@
 
 frappe.ui.form.on('Tracked Link', {
     refresh: function (frm) {
+        // Allow attaching links to campaigns that are still being prepared
+        // (Planned) or currently running (Active). Hide finished campaigns.
         frm.set_query('campaign', function () {
-            return { filters: { 'status': ['in', ['Active', 'Draft']] } };
+            return { filters: { 'status': ['in', ['Planned', 'Active']] } };
         });
 
         if (!frm.is_new()) {
